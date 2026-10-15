@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+
+# Exclude demo draws and internal/private routes
+Disallow: /*/raffles/draw-demo
+Disallow: /raffles/draw-demo
+Disallow: /*/account
+Disallow: /account
+Disallow: /*/dashboard
+Disallow: /dashboard
+Disallow: /*/my-raffles
+Disallow: /my-raffles
+Disallow: /*/notifications
+Disallow: /notifications
+Disallow: /*/payment/
+Disallow: /payment/
+Disallow: /*/forgot-password
+Disallow: /forgot-password
+Disallow: /api/
+Disallow: /out/
+
+Sitemap: https://carramarket.com/sitemap.xml

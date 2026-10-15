@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <defs>
+    <style>
+      .cls-1 {
+        letter-spacing: 0em;
+      }
+
+      .cls-2 {
+        fill: #fff;
+      }
+
+      .cls-3 {
+        font-family: Nextra, Nextra;
+        font-size: 21.41px;
+      }
+
+      .cls-4 {
+        letter-spacing: -.02em;
+      }
+    </style>
+  </defs>
+  <g>
+    <path d="M200.92,45.78h-101.84c-18.27,0-33.07,14.81-33.07,33.07v101.84c0,18.27,14.81,33.07,33.07,33.07h101.84c18.27,0,33.07-14.81,33.07-33.07v-101.84c0-18.27-14.81-33.07-33.07-33.07ZM199.7,182.87h-99.39v-28.63h0c11.6,0,21-12.88,21-24.47,0-11.6-9.4-23.38-21-23.38h0v-29.72h99.39s0,29.72,0,29.72h-48.68v47.86h48.68v28.63Z"/>
+    <path class="cls-2" d="M151.01,106.39h48.68v-29.72h-99.39v29.72h0c11.6,0,21,11.79,21,23.38,0,11.6-9.4,24.47-21,24.47h0v28.63h99.39v-28.63h-48.68v-47.86Z"/>
+  </g>
+  <text class="cls-3" transform="translate(46.04 249)"><tspan class="cls-4" x="0" y="0">C</tspan><tspan x="16.7" y="0">ARRA MAR</tspan><tspan class="cls-1" x="156.09" y="0">K</tspan><tspan x="173.45" y="0">ET</tspan></text>
+</svg>
