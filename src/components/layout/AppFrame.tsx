@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 
 const AUTH_FULL_BLEED =
-  /^\/(login|signup|forgot-password)(\/|$)/;
+  /^\/(login|signup|forgot-password|staffpanel)(\/|$)/;
 
 export function AppFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || "";

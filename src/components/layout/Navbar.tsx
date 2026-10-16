@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, LogOut, Settings, Menu, X } from "lucide-react";
+import { LayoutDashboard, LogOut, Settings, ShieldCheck, Menu, X } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { isStaffRole } from "@/services/auth.service";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 export const Navbar = () => {
@@ -103,6 +104,15 @@ export const Navbar = () => {
 
                     {accountMenuOpen && (
                       <div className="absolute right-0 z-50 mt-2 w-56 rounded-lg border bg-white shadow-lg">
+                        {isStaffRole(user.role) && (
+                          <Link
+                            href="/staffpanel"
+                            className="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5 text-sm font-bold text-[var(--brand-blue)] hover:bg-blue-50/60"
+                            onClick={() => setAccountMenuOpen(false)}
+                          >
+                            <ShieldCheck className="h-4 w-4" /> Staff Panel
+                          </Link>
+                        )}
                         <Link
                           href="/dashboard"
                           className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"

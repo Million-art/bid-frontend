@@ -1,16 +1,31 @@
 import { apiFetch, resetCsrfToken, syncCsrfToken, type ApiResponse } from "@/lib/api";
 
+export type UserRole =
+  | "super_admin"
+  | "admin"
+  | "compliance"
+  | "agent"
+  | "participant";
+
 export interface User {
   id: string;
   email: string;
   fullName: string;
   phone?: string;
+  role?: UserRole | string;
+  status?: string;
   location?: string;
   picture?: string;
   /** "password" | "google" from API */
   authProvider?: string;
   createdAt: string;
 }
+
+export function isStaffRole(role?: string | null): boolean {
+  if (!role) return false;
+  return ["super_admin", "admin", "compliance"].includes(role.toLowerCase());
+}
+
 
 export interface SignupPayload {
   phone: string;
