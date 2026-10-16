@@ -5,8 +5,6 @@ import { Bell, Check, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { getNotifications, markAsRead, markAllAsRead, getUnreadCount, type Notification } from '@/services/notifications.service';
 import { formatDistanceToNow } from 'date-fns';
-import { wsClient } from '@/lib/websocket';
-import { toast } from 'sonner';
 
 export const NotificationBell: React.FC<{ className?: string }> = ({ className }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -22,40 +20,12 @@ export const NotificationBell: React.FC<{ className?: string }> = ({ className }
         }
     }, [isOpen, notifications.length]);
 
-    // Load unread count on mount and listen to web sockets
+    // Load unread count on mount and poll periodically
     useEffect(() => {
         loadUnreadCount();
         const interval = setInterval(loadUnreadCount, 30000);
-
-        let unsubscribe: (() => void) | undefined;
-
-        if (wsClient) {
-            unsubscribe = wsClient.on('user_notification', (msg: unknown) => {
-                const m = msg as { type?: string; data?: Notification };
-                if (m.type === 'notification' && m.data) {
-                    const newNotif = m.data;
-                    setNotifications(prev => {
-                        // Prevent duplicates
-                        if (prev.some(n => n.id === newNotif.id)) return prev;
-                        return [newNotif, ...prev];
-                    });
-                    setUnreadCount(prev => prev + 1);
-
-                    // Trigger real-time toast
-                    toast.info(newNotif.title, {
-                        description: newNotif.message,
-                        action: newNotif.actionUrl ? {
-                            label: newNotif.actionLabel || 'View',
-                            onClick: () => window.location.href = newNotif.actionUrl!
-                        } : undefined
-                    });
-                }
-            });
-        }
-
         return () => {
             clearInterval(interval);
-            if (unsubscribe) unsubscribe();
         };
     }, []);
 

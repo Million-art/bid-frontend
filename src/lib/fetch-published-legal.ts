@@ -31,10 +31,8 @@ function legalApiOrigins(): string[] {
       out.push(o);
     }
   };
-  if (typeof window === "undefined") {
-
-  }
   push(process.env.NEXT_PUBLIC_API_URL);
+  push("http://localhost:8080");
   return out;
 }
 

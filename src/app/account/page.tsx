@@ -131,18 +131,7 @@ function AccountSettingsContent() {
         </div>
 
         <form onSubmit={handleProfileSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider text-slate-400">
-              Email Address (Cannot be changed)
-            </label>
-            <Input
-              id="email"
-              type="email"
-              value={user.email || ""}
-              disabled
-              className="mt-2 h-11 bg-slate-50 border-slate-200 text-slate-500 font-medium rounded-xl select-none"
-            />
-          </div>
+
           
           <div>
             <label htmlFor="fullName" className="block text-xs font-bold uppercase tracking-wider text-slate-500">

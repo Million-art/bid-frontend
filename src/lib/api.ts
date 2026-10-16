@@ -2,13 +2,13 @@ export const getApiBase = (): string => {
   if (typeof window !== "undefined") {
     const hostname = window.location.hostname;
     if (hostname === "localhost" || hostname === "127.0.0.1") {
-      return "http://localhost:8081";
+      return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
     }
-    return process.env.NEXT_PUBLIC_API_URL || "https://clientbackend.carramarket.com";
+    return process.env.NEXT_PUBLIC_API_URL || "https://adminbackend.carramarket.com";
   }
   return (
     process.env.NEXT_PUBLIC_API_URL ||
-    "https://clientbackend.carramarket.com"
+    "http://localhost:8080"
   );
 };
 
