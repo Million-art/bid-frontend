@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
     Bell,
     Check,
@@ -9,7 +9,6 @@ import {
     ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
-import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { SimplePagination } from "@/components/ui/pagination";
 import {
     getNotifications,
@@ -31,19 +30,6 @@ export default function NotificationsPage() {
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [modalState, setModalState] = useState<{
-        isOpen: boolean;
-        title: string;
-        message: string;
-        onConfirm: () => void;
-        variant: "danger" | "primary";
-    }>({
-        isOpen: false,
-        title: "",
-        message: "",
-        onConfirm: () => { },
-        variant: "primary",
-    });
 
     const loadNotifications = useCallback(async (page: number) => {
         setLoading(true);
@@ -114,17 +100,6 @@ export default function NotificationsPage() {
     return (
         <div className="min-h-screen bg-slate-50 text-slate-900 pb-20 pt-24">
             <div className="container mx-auto max-w-4xl px-4">
-                {/* Modal */}
-                <ConfirmModal
-                    isOpen={modalState.isOpen}
-                    title={modalState.title}
-                    message={modalState.message}
-                    variant={modalState.variant}
-                    onConfirm={modalState.onConfirm}
-                    onCancel={() => setModalState(prev => ({ ...prev, isOpen: false }))}
-                    confirmLabel={modalState.variant === "danger" ? "Delete" : "Confirm"}
-                />
-
                 {/* Header */}
                 <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -286,16 +261,16 @@ function getIconForType(type: string) {
         case 'payout_ready': return '💸';
         case 'payout_completed': return '💰';
         case 'prize_not_delivered': return '🚨';
-        case 'raffle_approved':
+        case 'bid_approved':
         case 'auction_approved':
             return '🔨';
-        case 'raffle_rejected':
+        case 'bid_rejected':
         case 'auction_rejected':
             return '🛑';
-        case 'raffle_submitted':
+        case 'bid_submitted':
         case 'auction_submitted':
             return '📝';
-        case 'raffle_drawn':
+        case 'bid_drawn':
         case 'auction_closed':
             return '🏆';
         case 'winner_compensated': return '💵';

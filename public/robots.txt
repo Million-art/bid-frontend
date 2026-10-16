@@ -2,14 +2,14 @@ User-agent: *
 Allow: /
 
 # Exclude demo draws and internal/private routes
-Disallow: /*/raffles/draw-demo
-Disallow: /raffles/draw-demo
+Disallow: /*/bids/draw-demo
+Disallow: /bids/draw-demo
 Disallow: /*/account
 Disallow: /account
 Disallow: /*/dashboard
 Disallow: /dashboard
-Disallow: /*/my-raffles
-Disallow: /my-raffles
+Disallow: /*/my-bids
+Disallow: /my-bids
 Disallow: /*/notifications
 Disallow: /notifications
 Disallow: /*/payment/

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ProductStatusSchema = z.enum([
+export const AuctionStatusSchema = z.enum([
   "draft",
   "active",
   "postponed",
@@ -9,42 +9,42 @@ export const ProductStatusSchema = z.enum([
   "cancelled",
 ]);
 
-export type ProductStatus = z.infer<typeof ProductStatusSchema>;
+export type AuctionStatus = z.infer<typeof AuctionStatusSchema>;
 
-export const LubProductSchema = z.object({
+export const AuctionSchema = z.object({
   id: z.string(),
-  name: z.string(),
+  title: z.string(),
   description: z.string().optional().default(""),
   imageUrl: z.string().optional().nullable(),
   videoUrl: z.string().optional().nullable(),
-  status: ProductStatusSchema.or(z.string()),
+  status: AuctionStatusSchema.or(z.string()),
   entranceFee: z.coerce.number(),
   minBidValue: z.coerce.number().optional().default(0.01),
   maxBidValue: z.coerce.number().optional().nullable(),
   startAt: z.string().optional().nullable(),
   closeAt: z.string().optional().nullable(),
   executedAt: z.string().optional().nullable(),
-  winnerId: z.string().optional().nullable(),
+  winnerBidId: z.string().optional().nullable(),
+  winnerParticipantId: z.string().optional().nullable(),
   winnerBidValue: z.coerce.number().optional().nullable(),
-  winnerName: z.string().optional().nullable(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });
 
-export type LubProduct = z.infer<typeof LubProductSchema>;
+export type Auction = z.infer<typeof AuctionSchema>;
 
-export const LubProductsListSchema = z.object({
-  items: z.array(LubProductSchema),
+export const AuctionsListSchema = z.object({
+  items: z.array(AuctionSchema),
   total: z.coerce.number().optional().default(0),
   page: z.coerce.number().optional().default(1),
   limit: z.coerce.number().optional().default(20),
 });
 
-export type LubProductsList = z.infer<typeof LubProductsListSchema>;
+export type AuctionsList = z.infer<typeof AuctionsListSchema>;
 
-export const BidEntrySchema = z.object({
+export const BidSchema = z.object({
   id: z.string(),
-  productId: z.string(),
+  auctionId: z.string(),
   participantId: z.string().optional(),
   bidValue: z.coerce.number(),
   isUnique: z.boolean().optional().default(false),
@@ -53,16 +53,16 @@ export const BidEntrySchema = z.object({
   updatedAt: z.string().optional(),
 });
 
-export type BidEntry = z.infer<typeof BidEntrySchema>;
+export type Bid = z.infer<typeof BidSchema>;
 
-export const LubParticipationSchema = z.object({
+export const AuctionParticipationSchema = z.object({
   id: z.string(),
-  productId: z.string(),
+  auctionId: z.string(),
   participantId: z.string().optional(),
   feePaid: z.coerce.number().optional(),
   status: z.string().optional(),
-  joinedAt: z.string().optional(),
+  createdAt: z.string().optional(),
   transactionId: z.string().optional(),
 });
 
-export type LubParticipation = z.infer<typeof LubParticipationSchema>;
+export type AuctionParticipation = z.infer<typeof AuctionParticipationSchema>;

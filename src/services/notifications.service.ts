@@ -7,7 +7,7 @@ export interface Notification {
     message: string;
     actionUrl?: string;
     actionLabel?: string;
-    raffleId?: string;
+    bidId?: string;
     auctionId?: string;
     isRead: boolean;
     priority: string;

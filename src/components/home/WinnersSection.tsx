@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Gavel, Trophy } from "lucide-react";
 import { SectionTag } from "@/components/home/SectionTag";
-import type { LubProduct } from "@/services/auctions.service";
+import type { Auction } from "@/services/auctions.service";
 
 function formatEtb(n: number) {
   return `${n.toLocaleString(undefined, {
@@ -10,15 +10,7 @@ function formatEtb(n: number) {
   })} ETB`;
 }
 
-function displayName(name: string | null | undefined) {
-  const trimmed = name?.trim();
-  if (!trimmed) return "A CarraMarket bidder";
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) return parts[0];
-  return `${parts[0]} ${parts[parts.length - 1][0]}.`;
-}
-
-export function WinnersSection({ winners }: { winners: LubProduct[] }) {
+export function WinnersSection({ winners }: { winners: Auction[] }) {
   return (
     <section
       id="winners"
@@ -46,7 +38,7 @@ export function WinnersSection({ winners }: { winners: LubProduct[] }) {
           </h2>
           <p className="mt-3 text-base text-slate-600">
             When an auction closes, the lowest value placed by exactly one
-            person takes the product.
+            person wins the item.
           </p>
         </div>
 
@@ -67,7 +59,7 @@ export function WinnersSection({ winners }: { winners: LubProduct[] }) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={auction.imageUrl}
-                      alt={auction.name}
+                      alt={auction.title}
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
                   ) : (
@@ -82,15 +74,15 @@ export function WinnersSection({ winners }: { winners: LubProduct[] }) {
                 </div>
                 <div className="flex flex-1 flex-col gap-3 p-4">
                   <h3 className="line-clamp-2 text-base font-bold text-slate-900 group-hover:text-[var(--brand-blue)]">
-                    {auction.name}
+                    {auction.title}
                   </h3>
                   <div className="mt-auto flex items-end justify-between gap-3">
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        Winner
+                        Status
                       </p>
                       <p className="text-sm font-bold text-slate-900">
-                        {displayName(auction.winnerName)}
+                        Won
                       </p>
                     </div>
                     {auction.winnerBidValue != null && (

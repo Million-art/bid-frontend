@@ -67,7 +67,7 @@ export default function AuctionDetailPage({
                 {String(auction.status)}
               </p>
               <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-slate-900">
-                {auction.name}
+                {auction.title}
               </h1>
               {closes && !Number.isNaN(closes.getTime()) && (
                 <p className="mt-2 flex items-center gap-1.5 text-sm text-slate-500">

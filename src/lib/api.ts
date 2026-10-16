@@ -7,7 +7,6 @@ export const getApiBase = (): string => {
     return process.env.NEXT_PUBLIC_API_URL || "https://clientbackend.carramarket.com";
   }
   return (
-    process.env.CLIENT_BACKEND_INTERNAL_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
     "https://clientbackend.carramarket.com"
   );

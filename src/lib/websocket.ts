@@ -1,25 +1,21 @@
-// Wire types include legacy raffle_* names the backend may still emit.
 export type WebSocketMessageType =
-    | 'raffle_update'
-    | 'ticket_purchase'
-    | 'raffle_locked'
-    | 'raffle_executed'
-    | 'raffle_countdown'
+    | 'bid_update'
+    | 'bid_locked'
+    | 'bid_executed'
+    | 'bid_countdown'
     | 'draw_started'
-    | 'raffle_approved'
+    | 'bid_approved'
     | 'subscribe'
     | 'unsubscribe'
     | 'notification'
     | 'user_notification'
     | 'authenticate'
     | 'auth_success'
-    | 'auth_error'
-    | 'seat_hold'
-    | 'seat_release';
+    | 'auth_error';
 
 export interface WebSocketMessage {
     type: WebSocketMessageType;
-    raffleId?: string;
+    bidId?: string;
     auctionId?: string;
     token?: string;
     data?: Record<string, unknown>;
@@ -55,7 +51,7 @@ class WebSocketClient {
                     this.subscriptions.forEach((topicId) => {
                         this.send({
                             type: 'subscribe',
-                            raffleId: topicId,
+                            bidId: topicId,
                             auctionId: topicId,
                         });
                     });
@@ -88,7 +84,7 @@ class WebSocketClient {
                     }
                 };
 
-                this.ws.onclose = (_event) => {
+                this.ws.onclose = () => {
                     this.authenticated = false;
                     this.handleReconnect();
                 };
@@ -126,20 +122,20 @@ class WebSocketClient {
     }
 
     private handleMessage(message: WebSocketMessage) {
-        const { type, raffleId, auctionId, data } = message;
-        const topicId = auctionId || raffleId;
+        const { type, bidId, auctionId, data } = message;
+        const topicId = auctionId || bidId;
 
         const typeListeners = this.listeners.get(type);
         if (typeListeners) {
             typeListeners.forEach((callback) =>
-                callback({ raffleId, auctionId: topicId, ...data })
+                callback({ bidId, auctionId: topicId, ...data })
             );
         }
 
         if (topicId) {
             const topicListeners =
                 this.listeners.get(`auction:${topicId}`) ||
-                this.listeners.get(`raffle:${topicId}`);
+                this.listeners.get(`bid:${topicId}`);
             if (topicListeners) {
                 topicListeners.forEach((callback) => callback({ type, ...data }));
             }
@@ -166,7 +162,7 @@ class WebSocketClient {
         if (this.isConnected()) {
             this.send({
                 type: 'subscribe',
-                raffleId: topicId,
+                bidId: topicId,
                 auctionId: topicId,
             });
         }
@@ -177,7 +173,7 @@ class WebSocketClient {
         if (this.isConnected()) {
             this.send({
                 type: 'unsubscribe',
-                raffleId: topicId,
+                bidId: topicId,
                 auctionId: topicId,
             });
         }
@@ -241,7 +237,7 @@ const getWsUrl = () => {
       return `ws://${hostname}:8080/ws`;
     }
   }
-  return process.env.NEXT_PUBLIC_WS_URL || "wss://adminbackend.carramarket.com/ws";
+  return "wss://adminbackend.carramarket.com/ws";
 };
 
 const WS_URL = getWsUrl();

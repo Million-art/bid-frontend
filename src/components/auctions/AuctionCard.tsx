@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Clock, Gavel } from "lucide-react";
-import type { LubProduct } from "@/services/auctions.service";
+import type { Auction } from "@/services/auctions.service";
 
 function formatEtb(n: number) {
   return `${n.toLocaleString(undefined, {
@@ -28,7 +28,7 @@ function statusLabel(status: string) {
   }
 }
 
-export function AuctionCard({ auction }: { auction: LubProduct }) {
+export function AuctionCard({ auction }: { auction: Auction }) {
   const closes = auction.closeAt ? new Date(auction.closeAt) : null;
   const closesLabel =
     closes && !Number.isNaN(closes.getTime())
@@ -45,7 +45,7 @@ export function AuctionCard({ auction }: { auction: LubProduct }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={auction.imageUrl}
-            alt={auction.name}
+            alt={auction.title}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />
         ) : (
@@ -59,7 +59,7 @@ export function AuctionCard({ auction }: { auction: LubProduct }) {
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <h3 className="line-clamp-2 text-base font-bold text-slate-900 group-hover:text-[var(--brand-blue)]">
-          {auction.name}
+          {auction.title}
         </h3>
         <p className="line-clamp-2 text-sm text-slate-500">
           {auction.description || "Lowest Unique Bid auction"}

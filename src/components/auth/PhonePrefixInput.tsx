@@ -15,10 +15,6 @@ type PhonePrefixInputProps = {
   disabled?: boolean;
   autoComplete?: string;
   "aria-invalid"?: boolean;
-  // Deprecated props, keeping them optional so it doesn't break before we refactor consumers
-  country?: string;
-  onCountryChange?: (country: string) => void;
-  callingCodeDigits?: string;
 };
 
 

@@ -15,18 +15,10 @@ export const Navbar = () => {
   const pathname = usePathname();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   useEffect(() => {
     setMobileMenuOpen(false);
+    setAccountMenuOpen(false);
   }, [pathname]);
 
   const handleLogout = async () => {
@@ -36,8 +28,6 @@ export const Navbar = () => {
     router.push("/");
   };
 
-  const isHome = false;
-
   const navLinks = [
     { label: "Auctions", href: "/auctions" },
     { label: "How it works", href: "/#how-it-works" },
@@ -46,34 +36,20 @@ export const Navbar = () => {
   ];
 
   return (
-    <nav
-      className={`fixed top-0 z-50 w-full transition-all duration-500 ${
-        isHome && !isScrolled && !mobileMenuOpen
-          ? "border-transparent bg-transparent py-4"
-          : "border-b border-slate-200 bg-white/95 py-0 shadow-sm backdrop-blur-md"
-      }`}
-    >
+    <nav className="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/95 py-0 shadow-sm backdrop-blur-md transition-all duration-500">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`rounded-lg p-2 transition-colors md:hidden ${
-              isHome && !isScrolled && !mobileMenuOpen
-                ? "text-white hover:bg-white/10"
-                : "text-slate-600 hover:bg-slate-50"
-            }`}
+            className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-50 md:hidden"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
 
           <Link href="/" className="flex shrink-0 items-center">
             <Image
-              src={
-                isHome && !isScrolled && !mobileMenuOpen
-                  ? "/white_logo.png"
-                  : "/logo.png"
-              }
+              src="/logo.png"
               alt="CarraMarket"
               width={160}
               height={50}
@@ -88,11 +64,7 @@ export const Navbar = () => {
             <Link
               key={link.label}
               href={link.href}
-              className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                isHome && !isScrolled
-                  ? "text-white/85 hover:bg-white/10 hover:text-white"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-              }`}
+              className="rounded-lg px-3 py-2 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
             >
               {link.label}
             </Link>
@@ -109,11 +81,7 @@ export const Navbar = () => {
                     <button
                       type="button"
                       onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-                      className={`flex max-w-[min(100vw-8rem,220px)] items-center gap-2 rounded-full border px-2 py-1.5 text-sm font-medium transition-colors sm:px-3 ${
-                        isHome && !isScrolled && !mobileMenuOpen
-                          ? "border-white/30 text-white hover:bg-white/10"
-                          : "border-slate-200 text-gray-700 hover:bg-gray-50"
-                      }`}
+                      className="flex max-w-[min(100vw-8rem,220px)] items-center gap-2 rounded-full border border-slate-200 px-2 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:px-3"
                     >
                       {user.picture ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -164,21 +132,13 @@ export const Navbar = () => {
                 <div className="flex items-center gap-2 sm:gap-3">
                   <Link
                     href="/login"
-                    className={`inline-flex min-h-10 items-center justify-center rounded-xl border-2 px-4 text-sm font-bold shadow-sm transition-all active:scale-[0.98] sm:px-5 ${
-                      isHome && !isScrolled && !mobileMenuOpen
-                        ? "border-white/90 text-white hover:bg-white/10"
-                        : "border-slate-900 bg-transparent text-slate-900 hover:bg-slate-50"
-                    }`}
+                    className="inline-flex min-h-10 items-center justify-center rounded-xl border-2 border-slate-900 bg-transparent px-4 text-sm font-bold text-slate-900 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:px-5"
                   >
                     Login
                   </Link>
                   <Link
                     href="/signup"
-                    className={`inline-flex min-h-10 items-center justify-center rounded-xl px-4 text-sm font-bold shadow-md transition-all hover:brightness-110 active:scale-[0.98] sm:px-5 ${
-                      isHome && !isScrolled && !mobileMenuOpen
-                        ? "bg-white text-[var(--brand-blue)] shadow-white/20"
-                        : "border-2 border-[var(--brand-blue)] bg-[var(--brand-blue)] text-white shadow-blue-500/20"
-                    }`}
+                    className="inline-flex min-h-10 items-center justify-center rounded-xl border-2 border-[var(--brand-blue)] bg-[var(--brand-blue)] px-4 text-sm font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:brightness-110 active:scale-[0.98] sm:px-5"
                   >
                     Sign up
                   </Link>

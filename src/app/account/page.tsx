@@ -9,11 +9,8 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/contexts/AuthContext";
 import { updateProfile, changePassword } from "@/services/auth.service";
 import { toastApiError } from "@/lib/toast-api-error";
-
-
+import { validatePasswordPolicy } from "@/lib/passwordPolicy";
 import { PhonePrefixInput } from "@/components/auth/PhonePrefixInput";
-import { walletService, type WalletBalance, type WalletTransaction } from "@/services/wallet.service";
-import { Wallet, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -35,36 +32,14 @@ function AccountSettingsContent() {
   const [showNew, setShowNew] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
 
-  const [wallet, setWallet] = useState<WalletBalance | null>(null);
-  const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
-  const [isWalletLoading, setIsWalletLoading] = useState(false);
-
-  const isGoogleOnly =
-    user?.authProvider === "google";
+  const isGoogleOnly = user?.authProvider === "google";
 
   useEffect(() => {
     if (user) {
       setFullName(user.fullName || "");
       setPhone(user.phone || "");
-      fetchWallet();
     }
   }, [user]);
-
-  const fetchWallet = async () => {
-    setIsWalletLoading(true);
-    try {
-      const [bal, txs] = await Promise.all([
-        walletService.getBalance(),
-        walletService.getTransactions(1, 5)
-      ]);
-      setWallet(bal);
-      setTransactions(txs.transactions);
-    } catch (err) {
-      console.error("Failed to fetch wallet:", err);
-    } finally {
-      setIsWalletLoading(false);
-    }
-  };
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +65,11 @@ function AccountSettingsContent() {
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const policyErr = validatePasswordPolicy(newPassword);
+    if (policyErr) {
+      toast.error(policyErr);
+      return;
+    }
     if (newPassword !== confirmPassword) {
       toast.error("New passwords do not match");
       return;
@@ -123,7 +103,7 @@ function AccountSettingsContent() {
       <div className="mb-8">
         <h1 className="text-3xl font-black tracking-tight text-slate-900">Account Settings</h1>
         <p className="mt-2 text-sm font-medium text-slate-500 leading-relaxed">
-          Manage your personal profile, active wallet funds, transaction history, and account security.
+          Manage your personal profile and account security.
         </p>
       </div>
 
@@ -142,70 +122,6 @@ function AccountSettingsContent() {
           </p>
         </div>
       )}
-
-      {/* Wallet Balance Card (Vibrant Brand Gradient) */}
-      {wallet && (
-        <div className="bg-gradient-to-br from-[#1b7fd8] to-[#0d599c] rounded-3xl p-6 text-white shadow-xl relative overflow-hidden mb-6 border border-blue-400/20">
-          {/* Decorative design circles */}
-          <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -left-6 -top-6 w-28 h-28 bg-white/5 rounded-full blur-xl pointer-events-none" />
-          
-          <div className="relative flex justify-between items-center">
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/80">Available Balance</span>
-              <h3 className="text-4xl font-black tracking-tight mt-1.5 flex items-baseline gap-1.5">
-                {wallet.availableBalance.toFixed(2)}
-                <span className="text-lg font-extrabold text-[var(--brand-yellow)]">ETB</span>
-              </h3>
-              {wallet.pendingBalance > 0 && (
-                <p className="text-xs font-semibold text-white/70 mt-1.5 flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-                  Pending: {wallet.pendingBalance.toFixed(2)} ETB
-                </p>
-              )}
-            </div>
-            <div className="p-4 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm shadow-inner">
-              <Wallet className="h-8 w-8 text-[var(--brand-yellow)]" />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Recent Transactions List Card */}
-      <div className="rounded-3xl border border-slate-100/80 bg-white p-6 shadow-lg shadow-slate-100/40 mb-8">
-        <div className="flex items-center gap-2 mb-5">
-          <History className="h-5 w-5 text-[var(--brand-blue)]" strokeWidth={2.2} />
-          <h3 className="text-base font-extrabold text-slate-900">Recent Transactions</h3>
-        </div>
-
-        {isWalletLoading ? (
-          <div className="py-8 text-center text-sm text-slate-400 font-bold">Loading transactions...</div>
-        ) : transactions.length === 0 ? (
-          <div className="py-12 text-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50">
-            <p className="text-sm font-bold text-slate-500">No transactions yet</p>
-            <p className="text-xs text-slate-400 mt-1 font-semibold">Refunds and referral rewards will appear here.</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-slate-100 border-t border-slate-100">
-            {transactions.map((tx) => {
-              const isPositive = tx.amount > 0;
-              return (
-                <div key={tx.id} className="py-4 flex items-center justify-between">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-slate-950 truncate leading-snug">{tx.description}</p>
-                    <p className="text-[11px] text-slate-400 font-extrabold mt-1">
-                      {new Date(tx.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} · {tx.type}
-                    </p>
-                  </div>
-                  <div className={`text-sm font-black ml-4 px-3 py-1 rounded-full border ${isPositive ? "bg-emerald-50 text-emerald-600 border-emerald-100/80" : "bg-rose-50 text-rose-600 border-rose-100/80"}`}>
-                    {isPositive ? "+" : ""}{tx.amount.toFixed(2)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
 
       {/* Profile Form Card */}
       <section className="rounded-3xl border border-slate-100/80 bg-white p-6 shadow-lg shadow-slate-100/40 mb-8">
@@ -256,9 +172,11 @@ function AccountSettingsContent() {
                 autoComplete="tel"
               />
             </div>
-            <p className="mt-2.5 text-xs font-semibold text-slate-400 leading-relaxed">
-              {isGoogleOnly ? "Google accounts do not share a phone with us." : ""}
-            </p>
+            {isGoogleOnly && (
+              <p className="mt-2.5 text-xs font-semibold text-slate-400 leading-relaxed">
+                Google accounts do not share a phone with us.
+              </p>
+            )}
           </div>
 
           <Button

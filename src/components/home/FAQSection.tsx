@@ -19,7 +19,7 @@ const faqs = [
   },
   {
     q: "How do I pay?",
-    a: "Entrance fees use our secure payment flow. You can pay with supported methods, or with your wallet balance when it is available.",
+    a: "Entrance fees use our secure payment flow with supported payment methods.",
   },
   {
     q: "How is the winner chosen?",

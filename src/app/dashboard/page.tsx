@@ -44,17 +44,17 @@ function DashboardContent() {
           </div>
         ) : (
           <ul className="space-y-3">
-            {items.map(({ product, participation, bids }) => (
-              <li key={participation.id || product.id}>
+            {items.map(({ auction, participation, bids }) => (
+              <li key={participation.id || auction.id}>
                 <Link
-                  href={`/auctions/${product.id}`}
+                  href={`/auctions/${auction.id}`}
                   className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-[var(--brand-blue)]/40"
                 >
                   <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                    {product.imageUrl ? (
+                    {auction.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={product.imageUrl}
+                        src={auction.imageUrl}
                         alt=""
                         className="h-full w-full object-cover"
                       />
@@ -62,10 +62,10 @@ function DashboardContent() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-bold text-slate-900">
-                      {product.name}
+                      {auction.title}
                     </p>
                     <p className="mt-0.5 text-xs uppercase tracking-wide text-slate-400">
-                      {String(product.status)}
+                      {String(auction.status)}
                       {bids?.length
                         ? ` · ${bids.length} bid${bids.length === 1 ? "" : "s"}`
                         : ""}

@@ -13,8 +13,8 @@ import {
   participateInAuction,
   placeBid,
   updateBid,
-  type BidEntry,
-  type LubProduct,
+  type Auction,
+  type Bid,
 } from "@/services/auctions.service";
 
 function formatEtb(n: number) {
@@ -29,9 +29,9 @@ export function BidPanel({
   participating,
   myBids,
 }: {
-  auction: LubProduct;
+  auction: Auction;
   participating: boolean;
-  myBids: BidEntry[];
+  myBids: Bid[];
 }) {
   const { user } = useAuth();
   const router = useRouter();
@@ -102,11 +102,6 @@ export function BidPanel({
         {auction.winnerBidValue != null ? (
           <p className="mt-2 text-lg font-bold text-slate-900">
             Winning bid: {formatEtb(Number(auction.winnerBidValue))}
-            {auction.winnerName ? (
-              <span className="mt-1 block text-sm font-medium text-slate-600">
-                Winner: {auction.winnerName}
-              </span>
-            ) : null}
           </p>
         ) : (
           <p className="mt-2 text-sm text-slate-600">Results are in.</p>

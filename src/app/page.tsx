@@ -22,7 +22,7 @@ export default async function HomePage() {
       .filter(
         (a) =>
           ["executed", "closed"].includes(String(a.status)) &&
-          (a.winnerName || a.winnerBidValue != null)
+          a.winnerBidValue != null
       )
       .slice(0, 6);
   } catch {

@@ -241,13 +241,13 @@ const NotificationContent: React.FC<{ notification: Notification }> = ({ notific
                 {notification.type === 'payout_ready' && '💸'}
                 {notification.type === 'payout_completed' && '💰'}
                 {notification.type === 'prize_not_delivered' && '🚨'}
-                {(notification.type === 'raffle_approved' || notification.type === 'auction_approved') && '🔨'}
-                {(notification.type === 'raffle_rejected' || notification.type === 'auction_rejected') && '🛑'}
-                {(notification.type === 'raffle_submitted' || notification.type === 'auction_submitted') && '📝'}
-                {(notification.type === 'raffle_drawn' || notification.type === 'auction_closed') && '🏆'}
+                {(notification.type === 'bid_approved' || notification.type === 'auction_approved') && '🔨'}
+                {(notification.type === 'bid_rejected' || notification.type === 'auction_rejected') && '🛑'}
+                {(notification.type === 'bid_submitted' || notification.type === 'auction_submitted') && '📝'}
+                {(notification.type === 'bid_drawn' || notification.type === 'auction_closed') && '🏆'}
                 {notification.type === 'winner_compensated' && '💵'}
                 {notification.type === 'legal_document_updated' && '📜'}
-                {!['winner_confirmation_request', 'payout_ready', 'payout_completed', 'prize_not_delivered', 'raffle_approved', 'raffle_rejected', 'raffle_submitted', 'raffle_drawn', 'auction_approved', 'auction_rejected', 'auction_submitted', 'auction_closed', 'winner_compensated', 'legal_document_updated'].includes(notification.type) && '✨'}
+                {!['winner_confirmation_request', 'payout_ready', 'payout_completed', 'prize_not_delivered', 'bid_approved', 'bid_rejected', 'bid_submitted', 'bid_drawn', 'auction_approved', 'auction_rejected', 'auction_submitted', 'auction_closed', 'winner_compensated', 'legal_document_updated'].includes(notification.type) && '✨'}
             </div>
             <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-slate-900">{notification.title}</p>

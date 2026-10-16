@@ -1,18 +1,18 @@
 import { apiFetch, type ApiResponse } from "@/lib/api";
 import {
-  BidEntrySchema,
-  LubParticipationSchema,
-  LubProductSchema,
-  LubProductsListSchema,
-  type BidEntry,
-  type LubParticipation,
-  type LubProduct,
-  type LubProductsList,
+  AuctionParticipationSchema,
+  AuctionSchema,
+  AuctionsListSchema,
+  BidSchema,
+  type Auction,
+  type AuctionParticipation,
+  type AuctionsList,
+  type Bid,
 } from "@/lib/schemas";
 
-export type { BidEntry, LubParticipation, LubProduct, LubProductsList };
+export type { Auction, AuctionParticipation, AuctionsList, Bid };
 
-function unwrapData<T>(payload: unknown): unknown {
+function unwrapData(payload: unknown): unknown {
   if (payload && typeof payload === "object" && "data" in payload) {
     return (payload as { data: unknown }).data;
   }
@@ -22,7 +22,7 @@ function unwrapData<T>(payload: unknown): unknown {
 export async function listAuctions(params?: {
   page?: number;
   limit?: number;
-}): Promise<LubProductsList> {
+}): Promise<AuctionsList> {
   const page = params?.page ?? 1;
   const limit = params?.limit ?? 20;
   const qs = new URLSearchParams({
@@ -30,16 +30,15 @@ export async function listAuctions(params?: {
     limit: String(limit),
   });
   const res = await apiFetch<ApiResponse<unknown>>(
-    `/api/lub-products?${qs.toString()}`
+    `/api/public/auctions?${qs.toString()}`
   );
   const raw = unwrapData(res) ?? res.data ?? res;
-  const parsed = LubProductsListSchema.safeParse(raw);
+  const parsed = AuctionsListSchema.safeParse(raw);
   if (parsed.success) return parsed.data;
-  // Fallback if API returns a bare array
   if (Array.isArray(raw)) {
     return {
       items: raw
-        .map((item) => LubProductSchema.safeParse(item))
+        .map((item) => AuctionSchema.safeParse(item))
         .filter((r) => r.success)
         .map((r) => r.data),
       total: raw.length,
@@ -50,29 +49,28 @@ export async function listAuctions(params?: {
   return { items: [], total: 0, page, limit };
 }
 
-export async function getAuction(id: string): Promise<LubProduct> {
-  const res = await apiFetch<ApiResponse<unknown>>(`/api/lub-products/${id}`);
+export async function getAuction(id: string): Promise<Auction> {
+  const res = await apiFetch<ApiResponse<unknown>>(`/api/public/auctions/${id}`);
   const raw = unwrapData(res) ?? res.data ?? res;
-  return LubProductSchema.parse(raw);
+  return AuctionSchema.parse(raw);
 }
 
 export interface ParticipateResult {
   checkoutUrl?: string;
-  participation?: LubParticipation;
+  participation?: AuctionParticipation;
   message?: string;
 }
 
-/** Pay entrance fee (wallet or Chapa checkout via client-backend). */
+/** Pay entrance fee via Chapa checkout. */
 export async function participateInAuction(
-  productId: string,
-  options?: { useWallet?: boolean; checkoutUrl?: string }
+  auctionId: string,
+  options?: { checkoutUrl?: string }
 ): Promise<ParticipateResult> {
   const body: Record<string, unknown> = {};
-  if (options?.useWallet) body.useWallet = true;
   if (options?.checkoutUrl) body.checkoutUrl = options.checkoutUrl;
 
   const res = await apiFetch<ApiResponse<ParticipateResult>>(
-    `/api/lub-products/${productId}/participate`,
+    `/api/public/auctions/${auctionId}/participate`,
     {
       method: "POST",
       body: JSON.stringify(body),
@@ -82,37 +80,37 @@ export async function participateInAuction(
 }
 
 export async function placeBid(
-  productId: string,
+  auctionId: string,
   bidValue: number
-): Promise<BidEntry> {
-  const res = await apiFetch<ApiResponse<unknown>>(`/api/lub-bids`, {
+): Promise<Bid> {
+  const res = await apiFetch<ApiResponse<unknown>>(`/api/public/bids`, {
     method: "POST",
-    body: JSON.stringify({ productId, bidValue }),
+    body: JSON.stringify({ auctionId, bidValue }),
   });
   const raw = unwrapData(res) ?? res.data ?? res;
-  return BidEntrySchema.parse(raw);
+  return BidSchema.parse(raw);
 }
 
 export async function updateBid(
   bidId: string,
   newBidValue: number
-): Promise<BidEntry> {
-  const res = await apiFetch<ApiResponse<unknown>>(`/api/lub-bids/${bidId}`, {
+): Promise<Bid> {
+  const res = await apiFetch<ApiResponse<unknown>>(`/api/public/bids/${bidId}`, {
     method: "PATCH",
     body: JSON.stringify({ newBidValue }),
   });
   const raw = unwrapData(res) ?? res.data ?? res;
-  return BidEntrySchema.parse(raw);
+  return BidSchema.parse(raw);
 }
 
-export async function getMyBids(productId: string): Promise<BidEntry[]> {
+export async function getMyBids(auctionId: string): Promise<Bid[]> {
   const res = await apiFetch<ApiResponse<unknown>>(
-    `/api/lub-products/${productId}/my-bids`
+    `/api/public/auctions/${auctionId}/my-bids`
   );
   const raw = unwrapData(res) ?? res.data ?? res;
   if (Array.isArray(raw)) {
     return raw
-      .map((item) => BidEntrySchema.safeParse(item))
+      .map((item) => BidSchema.safeParse(item))
       .filter((r) => r.success)
       .map((r) => r.data);
   }
@@ -120,17 +118,17 @@ export async function getMyBids(productId: string): Promise<BidEntry[]> {
 }
 
 export async function getMyParticipation(
-  productId: string
-): Promise<{ participating: boolean; participation?: LubParticipation }> {
+  auctionId: string
+): Promise<{ participating: boolean; participation?: AuctionParticipation }> {
   const res = await apiFetch<ApiResponse<unknown>>(
-    `/api/lub-products/${productId}/my-participation`
+    `/api/public/auctions/${auctionId}/my-participation`
   );
   const raw = (unwrapData(res) ?? res.data ?? res) as Record<string, unknown>;
   if (raw && typeof raw === "object") {
     const participating = Boolean(raw.participating);
-    let participation: LubParticipation | undefined;
+    let participation: AuctionParticipation | undefined;
     if (raw.participation) {
-      const parsed = LubParticipationSchema.safeParse(raw.participation);
+      const parsed = AuctionParticipationSchema.safeParse(raw.participation);
       if (parsed.success) participation = parsed.data;
     }
     return { participating, participation };
@@ -143,9 +141,9 @@ export async function listMyParticipations(params?: {
   limit?: number;
 }): Promise<{
   items: Array<{
-    product: LubProduct;
-    participation: LubParticipation;
-    bids?: BidEntry[];
+    auction: Auction;
+    participation: AuctionParticipation;
+    bids?: Bid[];
   }>;
   total: number;
 }> {
@@ -157,7 +155,7 @@ export async function listMyParticipations(params?: {
   });
   try {
     const res = await apiFetch<ApiResponse<unknown>>(
-      `/api/me/lub-participations?${qs.toString()}`
+      `/api/me/participations?${qs.toString()}`
     );
     const raw = (unwrapData(res) ?? res.data ?? res) as {
       items?: unknown[];
@@ -167,26 +165,26 @@ export async function listMyParticipations(params?: {
       ? raw.items
           .map((row) => {
             const r = row as Record<string, unknown>;
-            const product = LubProductSchema.safeParse(r.product ?? r);
-            const participation = LubParticipationSchema.safeParse(
+            const auction = AuctionSchema.safeParse(r.auction ?? r);
+            const participation = AuctionParticipationSchema.safeParse(
               r.participation ?? r
             );
-            if (!product.success || !participation.success) return null;
+            if (!auction.success || !participation.success) return null;
             return {
-              product: product.data,
+              auction: auction.data,
               participation: participation.data,
               bids: Array.isArray(r.bids)
                 ? r.bids
-                    .map((b) => BidEntrySchema.safeParse(b))
+                    .map((b) => BidSchema.safeParse(b))
                     .filter((x) => x.success)
                     .map((x) => x.data)
                 : undefined,
             };
           })
           .filter(Boolean) as Array<{
-          product: LubProduct;
-          participation: LubParticipation;
-          bids?: BidEntry[];
+          auction: Auction;
+          participation: AuctionParticipation;
+          bids?: Bid[];
         }>
       : [];
     return { items, total: raw?.total ?? items.length };

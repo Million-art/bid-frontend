@@ -32,7 +32,7 @@ function legalApiOrigins(): string[] {
     }
   };
   if (typeof window === "undefined") {
-    push(process.env.CLIENT_BACKEND_INTERNAL_URL);
+
   }
   push(process.env.NEXT_PUBLIC_API_URL);
   return out;

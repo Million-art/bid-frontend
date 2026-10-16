@@ -5,12 +5,9 @@ export interface User {
   email: string;
   fullName: string;
   phone?: string;
-  telegramUsername?: string;
-  telegramId?: number;
-  isClaimed?: boolean;
   location?: string;
   picture?: string;
-  /** "password" | "google" | "telegram" from API */
+  /** "password" | "google" from API */
   authProvider?: string;
   createdAt: string;
 }
@@ -118,25 +115,6 @@ export async function googleLogin(credential: string, opts?: GoogleLoginOptions)
       isSignup: opts?.isSignup ?? false,
       acceptTerms: opts?.acceptTerms ?? false,
     }),
-  });
-  return response.data;
-}
-
-export interface TelegramLoginPayload {
-  id: number;
-  first_name?: string;
-  last_name?: string;
-  username?: string;
-  photo_url?: string;
-  auth_date: number;
-  hash: string;
-}
-
-export async function telegramLogin(payload: TelegramLoginPayload): Promise<AuthResponse> {
-  await syncCsrfToken();
-  const response = await apiFetch<ApiResponse<AuthResponse>>("/api/auth/telegram", {
-    method: "POST",
-    body: JSON.stringify(payload),
   });
   return response.data;
 }

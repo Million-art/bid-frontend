@@ -19,9 +19,6 @@ export const queryKeys = {
   me: {
     auctions: (filters?: { page?: number; limit?: number }) =>
       [...queryKeys.all, "me", "auctions", filters ?? {}] as const,
-    wallet: () => [...queryKeys.all, "me", "wallet"] as const,
-    transactions: (filters?: { page?: number; limit?: number }) =>
-      [...queryKeys.all, "me", "wallet", "transactions", filters ?? {}] as const,
   },
   notifications: {
     all: () => [...queryKeys.all, "notifications"] as const,
