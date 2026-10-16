@@ -52,7 +52,7 @@ export function Footer() {
               />
             </Link>
             <p className="max-w-xs text-sm leading-relaxed text-slate-400">
-              Lowest Unique Bid auctions — platform products, fair rules, secure
+              Lowest Unique Bid auctions   platform products, fair rules, secure
               payments.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">

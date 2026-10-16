@@ -29,7 +29,7 @@ export function HowLubWorks() {
             Lowest Unique Bid
           </h2>
           <p className="mt-3 text-base text-slate-600">
-            CarraMarket runs the auctions. You bid smart — not highest.
+            CarraMarket runs the auctions. You bid smart   not highest.
           </p>
         </div>
         <div className="mt-12 grid gap-6 md:grid-cols-3">

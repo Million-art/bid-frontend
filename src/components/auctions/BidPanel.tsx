@@ -62,7 +62,7 @@ export function BidPanel({
         window.location.href = result.checkoutUrl;
         return;
       }
-      toast.success("You're in — place your bids");
+      toast.success("You're in   place your bids");
       invalidate();
     },
     onError: (err) => toastApiError(err, "Could not join this auction"),

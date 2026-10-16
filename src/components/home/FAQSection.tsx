@@ -11,7 +11,7 @@ const faqs = [
   },
   {
     q: "Who lists the products?",
-    a: "CarraMarket posts every auction. There are no third-party sellers — we run the products ourselves.",
+    a: "CarraMarket posts every auction. There are no third-party sellers   we run the products ourselves.",
   },
   {
     q: "How do I join an auction?",

@@ -630,7 +630,7 @@ function AuctionActivityModal({
                         {b.bidValue.toFixed(2)} ETB
                       </td>
                       <td className="py-2.5 font-mono text-xs text-slate-600">
-                        {b.participantId || "—"}
+                        {b.participantId || " "}
                       </td>
                       <td className="py-2.5">
                         <div className="flex gap-1.5">
@@ -649,7 +649,7 @@ function AuctionActivityModal({
                       <td className="py-2.5 text-xs text-slate-500">
                         {b.placedAt
                           ? new Date(b.placedAt).toLocaleString()
-                          : "—"}
+                          : " "}
                       </td>
                     </tr>
                   ))}
@@ -679,13 +679,13 @@ function AuctionActivityModal({
                 {partsQuery.data.items.map((p) => (
                   <tr key={p.id}>
                     <td className="py-2.5 font-mono text-xs text-slate-700">
-                      {p.participantId || "—"}
+                      {p.participantId || " "}
                     </td>
                     <td className="py-2.5 font-semibold text-slate-900">
-                      {p.feePaid != null ? `${p.feePaid.toFixed(2)} ETB` : "—"}
+                      {p.feePaid != null ? `${p.feePaid.toFixed(2)} ETB` : " "}
                     </td>
                     <td className="py-2.5 font-mono text-xs text-slate-500">
-                      {p.transactionId || "—"}
+                      {p.transactionId || " "}
                     </td>
                     <td className="py-2.5">
                       <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold uppercase text-slate-700">
@@ -695,7 +695,7 @@ function AuctionActivityModal({
                     <td className="py-2.5 text-xs text-slate-500">
                       {p.createdAt
                         ? new Date(p.createdAt).toLocaleString()
-                        : "—"}
+                        : " "}
                     </td>
                   </tr>
                 ))}

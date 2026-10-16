@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-/** Legacy payment return URL — send users to their auction dashboard. */
+/** Legacy payment return URL   send users to their auction dashboard. */
 export default function PaymentStatusPage() {
   const router = useRouter();
 

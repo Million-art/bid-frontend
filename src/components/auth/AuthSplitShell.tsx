@@ -75,7 +75,7 @@ export function AuthSplitShell({ children }: AuthSplitShellProps) {
             <div className="rounded-2xl border-2 border-sky-200/65 bg-white/5 p-2.5 shadow-2xl">
               <Image
                 src="/image.png"
-                alt="CarraMarket — Lowest Unique Bid auctions"
+                alt="CarraMarket   Lowest Unique Bid auctions"
                 width={800}
                 height={800}
                 className="block h-auto w-[200px] max-w-full rounded-xl bg-white/95 ring-1 ring-white/25 xl:w-[240px]"
