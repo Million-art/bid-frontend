@@ -7,11 +7,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, LogOut, Settings, ShieldCheck, Menu, X } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { isStaffRole } from "@/services/auth.service";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 
 export const Navbar = () => {
   const { user, loading, logout } = useAuth();
+  const { dict } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -30,10 +33,10 @@ export const Navbar = () => {
   };
 
   const navLinks = [
-    { label: "Auctions", href: "/auctions" },
-    { label: "How it works", href: "/#how-it-works" },
-    { label: "Winners", href: "/#winners" },
-    { label: "FAQ", href: "/#faq" },
+    { label: dict.nav.auctions, href: "/auctions" },
+    { label: dict.nav.howItWorks, href: "/#how-it-works" },
+    { label: dict.nav.winners, href: "/#winners" },
+    { label: dict.nav.faq, href: "/#faq" },
   ];
 
   return (
@@ -44,6 +47,7 @@ export const Navbar = () => {
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-50 md:hidden"
+            aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -63,7 +67,7 @@ export const Navbar = () => {
         <div className="hidden flex-1 items-center justify-center gap-1 md:flex lg:gap-4">
           {navLinks.map((link) => (
             <Link
-              key={link.label}
+              key={link.href}
               href={link.href}
               className="rounded-lg px-3 py-2 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
             >
@@ -73,6 +77,8 @@ export const Navbar = () => {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <LanguageSwitcher variant="pill" className="hidden sm:inline-flex" />
+
           {!loading && (
             <>
               {user ? (
@@ -110,7 +116,7 @@ export const Navbar = () => {
                             className="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5 text-sm font-bold text-[var(--brand-blue)] hover:bg-blue-50/60"
                             onClick={() => setAccountMenuOpen(false)}
                           >
-                            <ShieldCheck className="h-4 w-4" /> Staff Panel
+                            <ShieldCheck className="h-4 w-4" /> {dict.nav.staffPanel}
                           </Link>
                         )}
                         <Link
@@ -118,21 +124,21 @@ export const Navbar = () => {
                           className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
                           onClick={() => setAccountMenuOpen(false)}
                         >
-                          <LayoutDashboard className="h-4 w-4" /> Dashboard
+                          <LayoutDashboard className="h-4 w-4" /> {dict.nav.dashboard}
                         </Link>
                         <Link
                           href="/account"
                           className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
                           onClick={() => setAccountMenuOpen(false)}
                         >
-                          <Settings className="h-4 w-4" /> Account settings
+                          <Settings className="h-4 w-4" /> {dict.nav.accountSettings}
                         </Link>
                         <button
                           type="button"
                           onClick={handleLogout}
                           className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
                         >
-                          <LogOut className="h-4 w-4" /> Sign out
+                          <LogOut className="h-4 w-4" /> {dict.nav.signOut}
                         </button>
                       </div>
                     )}
@@ -142,15 +148,15 @@ export const Navbar = () => {
                 <div className="flex items-center gap-2 sm:gap-3">
                   <Link
                     href="/login"
-                    className="inline-flex min-h-10 items-center justify-center rounded-xl border-2 border-slate-900 bg-transparent px-4 text-sm font-bold text-slate-900 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:px-5"
+                    className="inline-flex min-h-10 items-center justify-center rounded-xl border-2 border-slate-900 bg-transparent px-3 text-sm font-bold text-slate-900 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:px-5"
                   >
-                    Login
+                    {dict.nav.login}
                   </Link>
                   <Link
                     href="/signup"
-                    className="inline-flex min-h-10 items-center justify-center rounded-xl border-2 border-[var(--brand-blue)] bg-[var(--brand-blue)] px-4 text-sm font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:brightness-110 active:scale-[0.98] sm:px-5"
+                    className="inline-flex min-h-10 items-center justify-center rounded-xl border-2 border-[var(--brand-blue)] bg-[var(--brand-blue)] px-3 text-sm font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:brightness-110 active:scale-[0.98] sm:px-5"
                   >
-                    Sign up
+                    {dict.nav.signup}
                   </Link>
                 </div>
               )}
@@ -167,9 +173,14 @@ export const Navbar = () => {
         }`}
       >
         <div className="flex flex-col gap-1 px-4">
+          <div className="mb-2 flex items-center justify-between border-b border-slate-100 pb-3 pt-1">
+            <span className="text-xs font-bold text-slate-500">{dict.nav.language}:</span>
+            <LanguageSwitcher variant="pill" />
+          </div>
+
           {navLinks.map((link) => (
             <Link
-              key={link.label}
+              key={link.href}
               href={link.href}
               className="rounded-lg px-4 py-3 text-base font-bold text-slate-700 transition-colors hover:bg-slate-50 active:bg-slate-100"
               onClick={() => setMobileMenuOpen(false)}

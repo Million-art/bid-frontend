@@ -1,15 +1,20 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Gavel, Lock, ShieldCheck, Target } from "lucide-react";
-
-const features = [
-  { icon: Gavel, label: "Platform auctions" },
-  { icon: Target, label: "Lowest unique wins" },
-  { icon: ShieldCheck, label: "Secure payments" },
-  { icon: Lock, label: "Transparent results" },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function HeroSection() {
+  const { dict } = useLanguage();
+
+  const features = [
+    { icon: Gavel, label: dict.home.features.platformAuctions },
+    { icon: Target, label: dict.home.features.lowestUniqueWins },
+    { icon: ShieldCheck, label: dict.home.features.securePayments },
+    { icon: Lock, label: dict.home.features.transparentResults },
+  ];
+
   return (
     <section className="relative overflow-hidden bg-[#2D9FF6] pt-20 sm:pt-24">
       <Image
@@ -26,21 +31,20 @@ export function HeroSection() {
         <div className="max-w-xl pb-6 lg:pb-16">
           <div className="mb-5 flex items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-[0.18em] text-white/90">
-              Lowest Unique Bid
+              {dict.home.heroTag}
             </span>
-            <span className="h-5 w-1 rounded-full bg-[#FFF307]" />
+            <span className="h-5 w-5 rounded-full bg-[#FFF307]" />
           </div>
 
           <h1 className="text-[2.15rem] font-extrabold leading-[1.12] tracking-tight text-white sm:text-5xl lg:text-[3.35rem] lg:leading-[1.08]">
-            Win products with the
+            {dict.home.heroTitlePrefix}{" "}
             <span className="mt-1 block text-[#FFF307]">
-              lowest unique bid.
+              {dict.home.heroTitleHighlight}
             </span>
           </h1>
 
           <p className="mt-5 max-w-md text-sm leading-relaxed text-white/90 sm:text-base">
-            We post the auctions. You pay the entrance fee, place your bid
-            values, and win when yours is the lowest unique one.
+            {dict.home.heroSubtitle}
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -48,14 +52,14 @@ export function HeroSection() {
               href="/auctions"
               className="inline-flex h-12 items-center gap-2 rounded-full bg-white px-6 text-sm font-bold text-[#1c8ee0] shadow-sm transition hover:bg-white/95"
             >
-              Browse auctions
+              {dict.home.browseAuctions}
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/#how-it-works"
               className="inline-flex h-12 items-center gap-2 rounded-full border-2 border-white/90 bg-transparent px-6 text-sm font-bold text-white transition hover:bg-white/10"
             >
-              How it works
+              {dict.home.howItWorksBtn}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -88,3 +92,4 @@ export function HeroSection() {
     </section>
   );
 }
+

@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Gavel, ShieldCheck, Target } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 
 type AuthSplitShellProps = {
   children: React.ReactNode;
@@ -33,36 +35,41 @@ function HeroDecorations() {
 
 /** Split-screen auth: left marketing panel + right form. */
 export function AuthSplitShell({ children }: AuthSplitShellProps) {
+  const { dict } = useLanguage();
+
   return (
     <div className="flex min-h-screen flex-col bg-white lg:min-h-screen lg:flex-row lg:items-stretch">
       <div className="relative overflow-hidden bg-gradient-to-br from-[#1c6fd4] via-brand-blue to-[#1e5bb8] px-5 py-4 lg:hidden">
         <HeroDecorations />
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-white/95 ring-2 ring-white/25">
-            <Image
-              src="/image.png"
-              alt=""
-              width={256}
-              height={256}
-              className="h-full w-full object-contain object-center"
-              sizes="48px"
-            />
+        <div className="relative z-10 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-white/95 ring-2 ring-white/25">
+              <Image
+                src="/image.png"
+                alt=""
+                width={256}
+                height={256}
+                className="h-full w-full object-contain object-center"
+                sizes="48px"
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold leading-snug text-white">
+                {dict.auth.mobileMarketingTag}
+              </p>
+              <p className="mt-0.5 text-xs text-white/90">
+                {dict.common.brandName} {dict.auth.mobileAuctionsTag}
+              </p>
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold leading-snug text-white">
-              Lowest Unique Bid
-            </p>
-            <p className="mt-0.5 text-xs text-white/90">
-              CarraMarket auctions
-            </p>
-          </div>
+          <LanguageSwitcher size="sm" variant="pill" />
         </div>
         <div className="relative z-10 mt-3 flex flex-wrap gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold text-white">
-            <Gavel className="h-3 w-3" /> Auctions
+            <Gavel className="h-3 w-3" /> {dict.auth.mobileAuctionsTag}
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold text-white">
-            <Target className="h-3 w-3" /> Lowest unique wins
+            <Target className="h-3 w-3" /> {dict.auth.mobileLowestUniqueTag}
           </span>
         </div>
       </div>
@@ -75,7 +82,7 @@ export function AuthSplitShell({ children }: AuthSplitShellProps) {
             <div className="rounded-2xl border-2 border-sky-200/65 bg-white/5 p-2.5 shadow-2xl">
               <Image
                 src="/image.png"
-                alt="CarraMarket   Lowest Unique Bid auctions"
+                alt="CarraMarket"
                 width={800}
                 height={800}
                 className="block h-auto w-[200px] max-w-full rounded-xl bg-white/95 ring-1 ring-white/25 xl:w-[240px]"
@@ -87,11 +94,10 @@ export function AuthSplitShell({ children }: AuthSplitShellProps) {
 
           <div className="max-w-[20rem] text-center">
             <h2 className="text-xl font-bold tracking-tight text-white xl:text-2xl">
-              Bid smart. Win unique.
+              {dict.auth.marketingTitle}
             </h2>
             <p className="mt-2 text-xs leading-relaxed text-white/90 xl:text-sm">
-              Join platform auctions where the lowest unique bid takes the
-              prize.
+              {dict.auth.marketingDesc}
             </p>
           </div>
 
@@ -101,9 +107,11 @@ export function AuthSplitShell({ children }: AuthSplitShellProps) {
                 <Gavel className="h-4 w-4 text-white" />
               </div>
               <div>
-                <p className="text-xs font-bold text-white">Our products</p>
+                <p className="text-xs font-bold text-white">
+                  {dict.auth.marketingFeature1Title}
+                </p>
                 <p className="text-[10px] leading-snug text-white/75">
-                  CarraMarket posts every auction
+                  {dict.auth.marketingFeature1Desc}
                 </p>
               </div>
             </div>
@@ -113,9 +121,11 @@ export function AuthSplitShell({ children }: AuthSplitShellProps) {
                 <Target className="h-4 w-4 text-white" />
               </div>
               <div>
-                <p className="text-xs font-bold text-white">Lowest unique</p>
+                <p className="text-xs font-bold text-white">
+                  {dict.auth.marketingFeature2Title}
+                </p>
                 <p className="text-[10px] leading-snug text-white/75">
-                  One-of-a-kind low bid wins
+                  {dict.auth.marketingFeature2Desc}
                 </p>
               </div>
             </div>
@@ -123,7 +133,7 @@ export function AuthSplitShell({ children }: AuthSplitShellProps) {
             <div className="flex items-center gap-2 px-1 pt-1">
               <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
               <p className="text-[10px] text-white/70">
-                Secure payments on every entrance fee
+                {dict.auth.marketingFeature3}
               </p>
             </div>
           </div>
@@ -135,13 +145,16 @@ export function AuthSplitShell({ children }: AuthSplitShellProps) {
             className="inline-flex items-center gap-2 rounded-full border-2 border-white/85 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden />
-            Back home
+            {dict.common.backHome}
           </Link>
         </div>
       </aside>
 
       <div className="flex min-h-0 w-full flex-1 flex-col bg-slate-50/90 lg:min-h-0 lg:w-1/2 lg:min-w-0 lg:flex-none lg:overflow-y-auto">
         <div className="mx-auto my-auto w-full max-w-2xl px-4 py-5 sm:px-6 sm:py-6 lg:max-w-3xl lg:py-7 lg:pl-10 lg:pr-8 xl:pl-12">
+          <div className="hidden justify-end pb-3 lg:flex">
+            <LanguageSwitcher size="sm" variant="pill" />
+          </div>
           {children}
         </div>
       </div>

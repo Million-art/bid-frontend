@@ -12,32 +12,11 @@ import {
 import { AuctionCard } from "@/components/auctions/AuctionCard";
 import { listAuctions, type Auction } from "@/services/auctions.service";
 import { queryKeys } from "@/lib/query-keys";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type StatusFilter = "all" | "active" | "postponed" | "closed" | "executed";
 type FeeFilter = "all" | "under_100" | "100_to_500" | "over_500";
 type SortOption = "newest" | "closing_soon" | "fee_asc" | "fee_desc";
-
-const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
-  { value: "all", label: "All Auctions" },
-  { value: "active", label: "Live" },
-  { value: "postponed", label: "Extended" },
-  { value: "closed", label: "Closed" },
-  { value: "executed", label: "Winner Drawn" },
-];
-
-const FEE_OPTIONS: { value: FeeFilter; label: string }[] = [
-  { value: "all", label: "Any entrance fee" },
-  { value: "under_100", label: "Up to 100 ETB" },
-  { value: "100_to_500", label: "100 – 500 ETB" },
-  { value: "over_500", label: "500+ ETB" },
-];
-
-const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: "newest", label: "Newest first" },
-  { value: "closing_soon", label: "Closing soonest" },
-  { value: "fee_asc", label: "Entrance fee: Low to High" },
-  { value: "fee_desc", label: "Entrance fee: High to Low" },
-];
 
 function normalizeStatus(status: string): StatusFilter {
   const s = String(status).toLowerCase();
@@ -49,10 +28,42 @@ function normalizeStatus(status: string): StatusFilter {
 }
 
 export default function AuctionsPage() {
+  const { dict, t } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [feeFilter, setFeeFilter] = useState<FeeFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
+
+  const statusOptions: { value: StatusFilter; label: string }[] = useMemo(
+    () => [
+      { value: "all", label: dict.auctions.filters.all },
+      { value: "active", label: dict.auctions.filters.active },
+      { value: "postponed", label: dict.auctions.filters.postponed },
+      { value: "closed", label: dict.auctions.filters.closed },
+      { value: "executed", label: dict.auctions.filters.executed },
+    ],
+    [dict]
+  );
+
+  const feeOptions: { value: FeeFilter; label: string }[] = useMemo(
+    () => [
+      { value: "all", label: dict.auctions.feeFilters.all },
+      { value: "under_100", label: dict.auctions.feeFilters.under100 },
+      { value: "100_to_500", label: dict.auctions.feeFilters.from100To500 },
+      { value: "over_500", label: dict.auctions.feeFilters.over500 },
+    ],
+    [dict]
+  );
+
+  const sortOptions: { value: SortOption; label: string }[] = useMemo(
+    () => [
+      { value: "newest", label: dict.auctions.sortOptions.newest },
+      { value: "closing_soon", label: dict.auctions.sortOptions.closingSoon },
+      { value: "fee_asc", label: dict.auctions.sortOptions.feeAsc },
+      { value: "fee_desc", label: dict.auctions.sortOptions.feeDesc },
+    ],
+    [dict]
+  );
 
   const {
     data,
@@ -154,14 +165,13 @@ export default function AuctionsPage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <header className="mb-8 max-w-2xl">
           <p className="text-xs font-bold uppercase tracking-widest text-[var(--brand-blue)]">
-            CarraMarket
+            {dict.auctions.tag}
           </p>
           <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Auctions
+            {dict.auctions.title}
           </h1>
           <p className="mt-3 text-base text-slate-600">
-            Platform products. Pay the entrance fee, place your bids — lowest
-            unique value wins.
+            {dict.auctions.subtitle}
           </p>
         </header>
 
@@ -178,7 +188,7 @@ export default function AuctionsPage() {
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search auctions by product name or description..."
+                placeholder={dict.auctions.searchPlaceholder}
                 className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-10 pr-9 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-[var(--brand-blue)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/20"
               />
               {search && (
@@ -203,7 +213,7 @@ export default function AuctionsPage() {
                   aria-label="Filter by entrance fee"
                   className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/70 pl-10 pr-8 text-sm font-semibold text-slate-700 focus:border-[var(--brand-blue)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/20"
                 >
-                  {FEE_OPTIONS.map((opt) => (
+                  {feeOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
                     </option>
@@ -219,7 +229,7 @@ export default function AuctionsPage() {
                   aria-label="Sort auctions"
                   className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/70 pl-10 pr-8 text-sm font-semibold text-slate-700 focus:border-[var(--brand-blue)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/20"
                 >
-                  {SORT_OPTIONS.map((opt) => (
+                  {sortOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
                     </option>
@@ -232,7 +242,7 @@ export default function AuctionsPage() {
           {/* Status Pills + Results summary */}
           <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap items-center gap-2">
-              {STATUS_OPTIONS.map((tab) => {
+              {statusOptions.map((tab) => {
                 const active = statusFilter === tab.value;
                 const count = statusCounts[tab.value] ?? 0;
                 return (
@@ -263,11 +273,10 @@ export default function AuctionsPage() {
 
             <div className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-500 sm:justify-end">
               <span>
-                Showing{" "}
-                <strong className="font-bold text-slate-800">
-                  {filteredItems.length}
-                </strong>{" "}
-                of {items.length} auctions
+                {t("auctions.showingSummary", {
+                  count: filteredItems.length,
+                  total: items.length,
+                })}
               </span>
               {hasActiveFilters && (
                 <button
@@ -276,7 +285,7 @@ export default function AuctionsPage() {
                   className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold text-[var(--brand-blue)] hover:bg-sky-50"
                 >
                   <X className="h-3.5 w-3.5" />
-                  Reset filters
+                  {dict.auctions.resetFilters}
                 </button>
               )}
             </div>
@@ -302,7 +311,7 @@ export default function AuctionsPage() {
           </div>
         ) : isError ? (
           <div className="rounded-2xl border border-red-200 bg-red-50 px-6 py-10 text-center text-red-800">
-            <p className="font-bold">Could not load auctions. Please try again.</p>
+            <p className="font-bold">{dict.auctions.loadError}</p>
             <button
               type="button"
               onClick={() => void refetch()}
@@ -310,20 +319,20 @@ export default function AuctionsPage() {
               className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[var(--brand-blue)] px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:brightness-110 disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
-              Retry
+              {dict.common.retry}
             </button>
           </div>
         ) : items.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center text-slate-500">
-            No auctions available yet.
+            {dict.auctions.noAuctionsYet}
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
             <p className="text-base font-bold text-slate-800">
-              No auctions match your filters
+              {dict.auctions.noMatches}
             </p>
             <p className="mt-1 text-sm text-slate-500">
-              Try adjusting your search keywords, status, or entrance fee range.
+              {dict.auctions.noMatchesDesc}
             </p>
             <button
               type="button"
@@ -331,7 +340,7 @@ export default function AuctionsPage() {
               className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[var(--brand-blue)] px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:brightness-110"
             >
               <X className="h-3.5 w-3.5" />
-              Clear all filters
+              {dict.auctions.clearFilters}
             </button>
           </div>
         ) : (
@@ -345,4 +354,5 @@ export default function AuctionsPage() {
     </div>
   );
 }
+
 

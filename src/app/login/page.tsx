@@ -9,6 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
 import { AuthSplitShell } from "@/components/auth/AuthSplitShell";
 import { PhonePrefixInput } from "@/components/auth/PhonePrefixInput";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -49,6 +50,7 @@ function GoogleLoginSection() {
 function LoginForm() {
   const { user, loading: authLoading, login, error, clearError, googleClientId } =
     useAuth();
+  const { dict } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams?.get("redirect") || "/";
@@ -124,10 +126,10 @@ function LoginForm() {
     <AuthSplitShell>
       <header className="mb-3">
         <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl sm:leading-tight">
-          Welcome back
+          {dict.auth.welcomeBack}
         </h1>
         <p className="mt-1 max-w-md text-sm leading-snug text-slate-600">
-          Use the same method you used when you joined.
+          {dict.auth.welcomeBackSubtitle}
         </p>
       </header>
 
@@ -136,7 +138,7 @@ function LoginForm() {
           role="status"
           className="mb-3 rounded-lg border border-emerald-200/80 bg-emerald-50/90 px-3 py-2 text-sm text-emerald-900"
         >
-          Password updated. You can sign in with your new password.
+          {dict.auth.passwordResetSuccess}
         </div>
       )}
 
@@ -148,7 +150,7 @@ function LoginForm() {
             onClick={clearError}
             className="shrink-0 text-xs font-semibold uppercase tracking-wide text-red-600 hover:text-red-800"
           >
-            Dismiss
+            {dict.auth.dismiss}
           </button>
         </div>
       )}
@@ -165,7 +167,7 @@ function LoginForm() {
         </div>
         <div className="relative flex justify-center text-xs font-medium">
           <span className="bg-slate-50 px-3 uppercase tracking-widest text-slate-400">
-            Phone or email
+            {dict.auth.phoneOrEmail}
           </span>
         </div>
       </div>
@@ -181,7 +183,7 @@ function LoginForm() {
                 htmlFor="login-phone"
                 className="text-sm font-semibold text-slate-800"
               >
-                {useEmail ? "Email" : "Phone number"}
+                {useEmail ? dict.auth.emailLabel : dict.auth.phoneLabel}
               </label>
               <button
                 type="button"
@@ -191,7 +193,7 @@ function LoginForm() {
                 }}
                 className="text-xs font-medium text-brand-blue hover:text-blue-600"
               >
-                {useEmail ? "Use phone" : "Use email"}
+                {useEmail ? dict.auth.usePhone : dict.auth.useEmail}
               </button>
             </div>
             {!useEmail ? (
@@ -221,7 +223,7 @@ function LoginForm() {
               htmlFor="login-password"
               className="mb-1.5 block text-sm font-semibold text-slate-800"
             >
-              Password
+              {dict.auth.passwordLabel}
             </label>
             <div className="relative">
               <Input
@@ -232,7 +234,7 @@ function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pr-11"
-                placeholder="Your password"
+                placeholder={dict.auth.passwordLabel}
               />
               <button
                 type="button"
@@ -258,7 +260,7 @@ function LoginForm() {
                 className="size-4 shrink-0 rounded border-slate-300 bg-white text-brand-blue focus:ring-2 focus:ring-brand-blue/35 focus:ring-offset-0"
                 style={{ accentColor: "var(--brand-blue)" }}
               />
-              Remember me
+              {dict.auth.rememberMe}
             </label>
             <Link
               href={
@@ -268,7 +270,7 @@ function LoginForm() {
               }
               className={`text-sm ${linkClass}`}
             >
-              Forgot password?
+              {dict.auth.forgotPassword}
             </Link>
           </div>
 
@@ -277,13 +279,13 @@ function LoginForm() {
             disabled={isLoading}
             className="h-12 w-full text-sm font-bold shadow-sm"
           >
-            {submitting ? "Signing in…" : "Log in"}
+            {submitting ? dict.auth.loggingIn : dict.auth.loginBtn}
           </Button>
         </div>
       </form>
 
       <p className="mt-4 text-center text-sm text-slate-600">
-        Don&apos;t have an account?{" "}
+        {dict.auth.dontHaveAccount}{" "}
         <Link
           href={
             redirect !== "/"
@@ -292,19 +294,19 @@ function LoginForm() {
           }
           className={linkClass}
         >
-          Sign up
+          {dict.auth.signupTitle}
         </Link>
       </p>
 
       <p className="mt-4 text-center text-xs leading-relaxed text-slate-500">
         <Link href="/terms" className={linkClass}>
-          Terms
+          {dict.auth.terms}
         </Link>
         <span className="mx-2 text-slate-300" aria-hidden>
           ·
         </span>
         <Link href="/privacy" className={linkClass}>
-          Privacy
+          {dict.auth.privacy}
         </Link>
       </p>
     </AuthSplitShell>

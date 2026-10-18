@@ -3,32 +3,13 @@
 import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { SectionTag } from "@/components/home/SectionTag";
-
-const faqs = [
-  {
-    q: "What is Lowest Unique Bid?",
-    a: "You pay a one-time entrance fee, then place bid values on a product. The winner is the lowest amount that only one person placed.",
-  },
-  {
-    q: "Who lists the products?",
-    a: "CarraMarket posts every auction. There are no third-party sellers   we run the products ourselves.",
-  },
-  {
-    q: "How do I join an auction?",
-    a: "Log in, pay the entrance fee for that product, then submit one or more bid values. You can update a bid while the auction is still open.",
-  },
-  {
-    q: "How do I pay?",
-    a: "Entrance fees use our secure payment flow with supported payment methods.",
-  },
-  {
-    q: "How is the winner chosen?",
-    a: "When bidding closes, we find the lowest value placed by exactly one person. That unique low bid wins.",
-  },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function FAQSection() {
+  const { dict } = useLanguage();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  const faqs = dict.faq.items;
 
   return (
     <section id="faq" className="scroll-mt-24 relative overflow-hidden py-16 sm:py-20">
@@ -47,7 +28,7 @@ export function FAQSection() {
       />
 
       <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        <SectionTag>FAQ</SectionTag>
+        <SectionTag>{dict.faq.tag}</SectionTag>
         <ul className="space-y-3">
           {faqs.map((item, index) => {
             const open = openIndex === index;
@@ -85,3 +66,4 @@ export function FAQSection() {
     </section>
   );
 }
+

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ArrowLeft, User, Lock, Eye, EyeOff } from "lucide-react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { updateProfile, changePassword } from "@/services/auth.service";
 import { toastApiError } from "@/lib/toast-api-error";
 import { validatePasswordPolicy } from "@/lib/passwordPolicy";
@@ -21,6 +22,7 @@ function AccountSettingsContent() {
   const nextUrl = searchParams.get("next");
 
   const { user, refreshUser } = useAuth();
+  const { dict } = useLanguage();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [profileSaving, setProfileSaving] = useState(false);
@@ -45,19 +47,19 @@ function AccountSettingsContent() {
     e.preventDefault();
     if (!user) return;
     if (!phone.trim()) {
-      toast.error("Phone number is required");
+      toast.error(dict.account.phoneRequiredError);
       return;
     }
     setProfileSaving(true);
     try {
       await updateProfile({ fullName: fullName.trim(), phone: phone.trim() });
       await refreshUser();
-      toast.success("Profile updated");
+      toast.success(dict.account.profileUpdatedSuccess);
       if (nextUrl && nextUrl.startsWith("/")) {
         router.push(nextUrl);
       }
     } catch (err) {
-      toastApiError(err, "Could not update your profile. Please try again.");
+      toastApiError(err, dict.account.profileUpdateError);
     } finally {
       setProfileSaving(false);
     }
@@ -71,7 +73,7 @@ function AccountSettingsContent() {
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("New passwords do not match");
+      toast.error(dict.account.passwordsDoNotMatch);
       return;
     }
     setPasswordSaving(true);
@@ -80,9 +82,9 @@ function AccountSettingsContent() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      toast.success("Password updated");
+      toast.success(dict.account.passwordUpdatedSuccess);
     } catch (err) {
-      toastApiError(err, "Could not change your password. Check your current password and try again.");
+      toastApiError(err, dict.account.passwordUpdateError);
     } finally {
       setPasswordSaving(false);
     }
@@ -97,13 +99,15 @@ function AccountSettingsContent() {
         className="mb-8 inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[var(--brand-blue)] transition-colors"
       >
         <ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
-        Back to Home
+        {dict.account.backToHome}
       </Link>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-black tracking-tight text-slate-900">Account Settings</h1>
+        <h1 className="text-3xl font-black tracking-tight text-slate-900">
+          {dict.account.title}
+        </h1>
         <p className="mt-2 text-sm font-medium text-slate-500 leading-relaxed">
-          Manage your personal profile and account security.
+          {dict.account.subtitle}
         </p>
       </div>
 
@@ -114,11 +118,10 @@ function AccountSettingsContent() {
         >
           <p className="font-bold flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
-            Phone number required
+            {dict.account.phoneRequiredBannerTitle}
           </p>
           <p className="mt-1.5 text-amber-900/90 leading-relaxed font-medium">
-            Please provide a valid phone number. Then save. You can return to checkout or the auction you
-            opened afterward.
+            {dict.account.phoneRequiredBannerDesc}
           </p>
         </div>
       )}
@@ -127,7 +130,7 @@ function AccountSettingsContent() {
       <section className="rounded-3xl border border-slate-100/80 bg-white p-6 shadow-lg shadow-slate-100/40 mb-8">
         <div className="mb-6 flex items-center gap-2 text-slate-900">
           <User className="h-5 w-5 text-[var(--brand-blue)]" strokeWidth={2.2} />
-          <h2 className="text-lg font-extrabold">Profile Details</h2>
+          <h2 className="text-lg font-extrabold">{dict.account.profileTitle}</h2>
         </div>
 
         <form onSubmit={handleProfileSubmit} className="space-y-5">
@@ -135,7 +138,7 @@ function AccountSettingsContent() {
           
           <div>
             <label htmlFor="fullName" className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-              Full Name <span className="text-red-500">*</span>
+              {dict.account.fullName} <span className="text-red-500">*</span>
             </label>
             <Input
               id="fullName"
@@ -149,7 +152,7 @@ function AccountSettingsContent() {
           
           <div>
             <label htmlFor="phone" className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-              Phone Number <span className="text-red-500">*</span>
+              {dict.account.phone} <span className="text-red-500">*</span>
             </label>
             <div className="flex-1">
               <PhonePrefixInput
@@ -163,7 +166,7 @@ function AccountSettingsContent() {
             </div>
             {isGoogleOnly && (
               <p className="mt-2.5 text-xs font-semibold text-slate-400 leading-relaxed">
-                Google accounts do not share a phone with us.
+                {dict.account.phoneHintGoogle}
               </p>
             )}
           </div>
@@ -173,7 +176,7 @@ function AccountSettingsContent() {
             disabled={profileSaving}
             className="w-full sm:w-auto h-11 px-8 text-sm font-bold bg-[var(--brand-blue)] hover:bg-blue-600 text-white rounded-xl shadow-md transition-all active:scale-[0.98]"
           >
-            {profileSaving ? "Saving details…" : "Save profile"}
+            {profileSaving ? dict.account.saving : dict.account.saveChanges}
           </Button>
         </form>
       </section>
@@ -182,24 +185,24 @@ function AccountSettingsContent() {
       <section className="rounded-3xl border border-slate-100/80 bg-white p-6 shadow-lg shadow-slate-100/40 mb-8">
         <div className="mb-6 flex items-center gap-2 text-slate-900">
           <Lock className="h-5 w-5 text-[var(--brand-blue)]" strokeWidth={2.2} />
-          <h2 className="text-lg font-extrabold">Account Security</h2>
+          <h2 className="text-lg font-extrabold">{dict.account.securityTitle}</h2>
         </div>
 
         {isGoogleOnly ? (
           <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl">
             <p className="text-sm font-semibold text-slate-600 leading-relaxed">
-              You are signed in with <strong className="text-slate-800">Google</strong>. Password changes are disabled for this account. To secure your account, please manage your settings on Google.
+              {dict.account.googleNotice}
             </p>
           </div>
         ) : (
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">
-              Use at least 8 characters with uppercase, lowercase, and a number.
+              {dict.account.passwordPolicyHint}
             </p>
             
             <div>
               <label htmlFor="currentPassword" className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-                Current Password
+                {dict.account.currentPassword}
               </label>
               <div className="relative mt-2">
                 <Input
@@ -225,7 +228,7 @@ function AccountSettingsContent() {
             
             <div>
               <label htmlFor="newPassword" className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-                New Password
+                {dict.account.newPassword}
               </label>
               <div className="relative mt-2">
                 <Input
@@ -252,7 +255,7 @@ function AccountSettingsContent() {
             
             <div>
               <label htmlFor="confirmPassword" className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-                Confirm New Password
+                {dict.account.confirmPassword}
               </label>
               <Input
                 id="confirmPassword"
@@ -271,7 +274,7 @@ function AccountSettingsContent() {
               disabled={passwordSaving}
               className="w-full sm:w-auto h-11 px-8 text-sm font-bold border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all active:scale-[0.98]"
             >
-              {passwordSaving ? "Updating password…" : "Change password"}
+              {passwordSaving ? dict.account.updatingPassword : dict.account.updatePassword}
             </Button>
           </form>
         )}
@@ -284,13 +287,13 @@ function AccountSettingsContent() {
       >
         <p className="text-xs font-bold text-slate-400">
           <Link href="/terms" className="text-[var(--brand-blue)] hover:underline">
-            Terms &amp; Conditions
+            {dict.account.termsAndConditions}
           </Link>
           <span className="mx-2 text-slate-300" aria-hidden>
             ·
           </span>
           <Link href="/privacy" className="text-[var(--brand-blue)] hover:underline">
-            Privacy Policy
+            {dict.account.privacyPolicy}
           </Link>
         </p>
       </section>

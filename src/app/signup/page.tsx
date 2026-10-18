@@ -8,7 +8,7 @@ import { sendOtp, verifyOtp } from "@/services/auth.service";
 import { Eye, EyeOff } from "lucide-react";
 import { validatePasswordPolicy } from "@/lib/passwordPolicy";
 import { ApiError, getErrorMessage, getCsrfToken } from "@/lib/api";
-
+import { useLanguage } from "@/contexts/LanguageContext";
 import { AuthSplitShell } from "@/components/auth/AuthSplitShell";
 import { PhonePrefixInput } from "@/components/auth/PhonePrefixInput";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 
 function SignupForm() {
   const { user, loading: authLoading, signup, error, clearError } = useAuth();
+  const { dict } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams?.get("redirect") || "/";
@@ -58,7 +59,7 @@ function SignupForm() {
     const trimmedName = fullName.trim();
     if (!normalizedPhone || !trimmedName) return;
     if (!acceptedTerms) {
-      setFlowError("Please accept the Terms and Privacy Policy first.");
+      setFlowError(dict.auth.acceptTermsError);
       return;
     }
     if (password !== confirmPassword) return;
@@ -86,7 +87,7 @@ function SignupForm() {
     setFlowError(null);
     if (!otpCode.trim() || otpCode.replace(/\D/g, "").length !== 6) return;
     if (!acceptedTerms) {
-      setFlowError("Please accept the Terms and Privacy Policy first.");
+      setFlowError(dict.auth.acceptTermsError);
       return;
     }
     if (!fullName.trim() || password !== confirmPassword || validatePasswordPolicy(password)) {
@@ -141,10 +142,10 @@ function SignupForm() {
     <AuthSplitShell>
       <header className="mb-3">
         <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl sm:leading-tight">
-          {"Create your account"}
+          {dict.auth.signupTitle}
         </h1>
         <p className="mt-1 text-sm leading-snug text-slate-600">
-          {step === 1 ? "" : "Enter the code we sent to finish."}
+          {step === 1 ? dict.auth.signupSubtitle : dict.auth.enterCodeSubtitle}
         </p>
       </header>
 
@@ -162,7 +163,9 @@ function SignupForm() {
               setFlowError(null);
             }}
             className="shrink-0 text-[0.65rem] font-semibold uppercase tracking-wide text-red-600 hover:text-red-800"
-          >{"Dismiss"}</button>
+          >
+            {dict.auth.dismiss}
+          </button>
         </div>
       )}
 
@@ -176,13 +179,13 @@ function SignupForm() {
             style={{ accentColor: "var(--brand-blue)" }}
           />
           <span className="text-xs leading-snug text-slate-600 sm:text-[0.8125rem]">
-            I agree to the{" "}
+            {dict.auth.acceptTermsPrefix}{" "}
             <Link href="/terms" target="_blank" rel="noopener noreferrer" className={linkClass}>
-              Terms
+              {dict.auth.termsOfService}
             </Link>{" "}
-            and{" "}
+            {dict.auth.and}{" "}
             <Link href="/privacy" target="_blank" rel="noopener noreferrer" className={linkClass}>
-              Privacy Policy
+              {dict.auth.privacyPolicy}
             </Link>
             .
           </span>
@@ -192,7 +195,9 @@ function SignupForm() {
           {step === 1 ? (
             <div className="space-y-3.5 sm:space-y-4">
               <div>
-                <label htmlFor="signup-phone" className="mb-1.5 block text-sm font-semibold text-slate-800">{"Phone number"}</label>
+                <label htmlFor="signup-phone" className="mb-1.5 block text-sm font-semibold text-slate-800">
+                  {dict.auth.phoneLabel}
+                </label>
                 <PhonePrefixInput
                   id="signup-phone"
                   value={phone}
@@ -200,24 +205,30 @@ function SignupForm() {
                   aria-invalid={Boolean(step === 1 && flowError)}
                   required
                 />
-                <p className="mt-1 text-[0.7rem] text-slate-500">{"SMS code · rates may apply"}</p>
+                <p className="mt-1 text-[0.7rem] text-slate-500">
+                  {dict.auth.smsRatesNotice}
+                </p>
               </div>
 
               <div>
-                <label htmlFor="signup-name" className="mb-1.5 block text-sm font-semibold text-slate-800">{"Full name"}</label>
+                <label htmlFor="signup-name" className="mb-1.5 block text-sm font-semibold text-slate-800">
+                  {dict.auth.fullNameLabel}
+                </label>
                 <Input
                   id="signup-name"
                   type="text"
                   autoComplete="name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder={"Your full name"}
+                  placeholder={dict.auth.fullNamePlaceholder}
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="signup-password" className="mb-1.5 block text-sm font-semibold text-slate-800">{"Password"}</label>
+                <label htmlFor="signup-password" className="mb-1.5 block text-sm font-semibold text-slate-800">
+                  {dict.auth.passwordLabel}
+                </label>
                 <div className="relative">
                   <Input
                     id="signup-password"
@@ -226,7 +237,7 @@ function SignupForm() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pr-11"
-                    placeholder={"4+ chars"}
+                    placeholder={dict.auth.passwordPlaceholder}
                     required
                     minLength={8}
                   />
@@ -243,7 +254,9 @@ function SignupForm() {
               </div>
 
               <div>
-                <label htmlFor="signup-confirm" className="mb-1.5 block text-sm font-semibold text-slate-800">{"Confirm password"}</label>
+                <label htmlFor="signup-confirm" className="mb-1.5 block text-sm font-semibold text-slate-800">
+                  {dict.auth.confirmPasswordLabel}
+                </label>
                 <div className="relative">
                   <Input
                     id="signup-confirm"
@@ -252,7 +265,7 @@ function SignupForm() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="pr-11"
-                    placeholder={"Re-enter password"}
+                    placeholder={dict.auth.confirmPasswordPlaceholder}
                     required
                   />
                   <button
@@ -264,13 +277,13 @@ function SignupForm() {
                     {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
-                {passwordsMismatch && <p className="mt-1 text-xs text-red-600">{"Passwords don’t match."}</p>}
+                {passwordsMismatch && <p className="mt-1 text-xs text-red-600">{dict.auth.passwordsMismatch}</p>}
               </div>
             </div>
           ) : (
             <div className="space-y-3.5">
               <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                {"Code sent to"} <span className="font-semibold text-slate-900">{normalizedPhone || phone}</span>
+                {dict.auth.codeSentTo} <span className="font-semibold text-slate-900">{normalizedPhone || phone}</span>
                 <button
                   type="button"
                   onClick={() => {
@@ -279,11 +292,15 @@ function SignupForm() {
                     setFlowError(null);
                   }}
                   className={`ml-2 ${linkClass}`}
-                >{"Change number"}</button>
+                >
+                  {dict.auth.changeNumber}
+                </button>
               </p>
 
               <div>
-                <label htmlFor="signup-otp" className="mb-1.5 block text-sm font-semibold text-slate-800">{"Verification code"}</label>
+                <label htmlFor="signup-otp" className="mb-1.5 block text-sm font-semibold text-slate-800">
+                  {dict.auth.verificationCode}
+                </label>
                 <Input
                   id="signup-otp"
                   type="text"
@@ -314,14 +331,18 @@ function SignupForm() {
             }
             className="mt-4 w-full h-12 text-sm font-bold shadow-sm"
           >
-            {step === 1 ? (sendingCode ? "Sending code…" : "Send verification code") : submitting ? "Creating account…" : "Create account"}
+            {step === 1
+              ? (sendingCode ? dict.auth.sendingCode : dict.auth.sendVerificationCode)
+              : submitting ? dict.auth.signingUp : dict.auth.signupBtn}
           </Button>
         </form>
       </div>
 
       <p className="mt-4 text-center text-sm text-slate-600">
-        {"Already joined?"}{" "}
-        <Link href={redirect !== "/" ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login"} className={linkClass}>{"Log in"}</Link>
+        {dict.auth.alreadyJoined}{" "}
+        <Link href={redirect !== "/" ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login"} className={linkClass}>
+          {dict.auth.loginTitle}
+        </Link>
       </p>
     </AuthSplitShell>
   );

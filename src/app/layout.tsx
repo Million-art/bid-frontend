@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Baloo_2 } from "next/font/google";
+import { Baloo_2, Noto_Sans_Ethiopic } from "next/font/google";
 import { AppFrame } from "@/components/layout/AppFrame";
 import { Providers } from "@/components/providers/Providers";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
@@ -14,6 +14,13 @@ const baloo = Baloo_2({
   variable: "--font-baloo",
 });
 
+const notoSansEthiopic = Noto_Sans_Ethiopic({
+  subsets: ["ethiopic"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-ethiopic",
+});
+
 export const metadata: Metadata = createSiteMetadata();
 
 export default function RootLayout({
@@ -25,7 +32,7 @@ export default function RootLayout({
     process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
   return (
-    <html lang="en" className={`antialiased ${baloo.variable}`}>
+    <html lang="en" className={`antialiased ${baloo.variable} ${notoSansEthiopic.variable}`}>
       <body
         className={`${baloo.className} flex min-h-screen flex-col bg-white antialiased selection:bg-brand-blue/10 selection:text-brand-blue`}
       >
@@ -39,3 +46,4 @@ export default function RootLayout({
     </html>
   );
 }
+

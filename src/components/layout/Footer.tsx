@@ -1,6 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { SOCIAL } from "@/lib/social";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 
 function TikTokIcon({ className }: { className?: string }) {
   return (
@@ -27,6 +31,7 @@ const headingClass =
   "mb-4 text-xs font-black uppercase tracking-widest text-white";
 
 export function Footer() {
+  const { dict } = useLanguage();
   const year = new Date().getFullYear();
 
   return (
@@ -52,8 +57,7 @@ export function Footer() {
               />
             </Link>
             <p className="max-w-xs text-sm leading-relaxed text-slate-400">
-              Lowest Unique Bid auctions   platform products, fair rules, secure
-              payments.
+              {dict.home.heroSubtitle}
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <a
@@ -74,54 +78,57 @@ export function Footer() {
               >
                 <TelegramIcon className="h-4 w-4" />
               </a>
+              <div className="ml-2">
+                <LanguageSwitcher variant="pill" />
+              </div>
             </div>
           </div>
 
           <div>
-            <h4 className={headingClass}>Auctions</h4>
+            <h4 className={headingClass}>{dict.footer.auctionsHeading}</h4>
             <ul className="space-y-2.5">
               <li>
                 <Link href="/auctions" className={linkClass}>
-                  Live auctions
+                  {dict.footer.liveAuctions}
                 </Link>
               </li>
               <li>
                 <Link href="/#how-it-works" className={linkClass}>
-                  How LUB works
+                  {dict.footer.howLubWorks}
                 </Link>
               </li>
               <li>
                 <Link href="/#winners" className={linkClass}>
-                  Winners
+                  {dict.footer.winners}
                 </Link>
               </li>
               <li>
                 <Link href="/dashboard" className={linkClass}>
-                  My bids
+                  {dict.footer.myBids}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 className={headingClass}>Company</h4>
+            <h4 className={headingClass}>{dict.footer.companyHeading}</h4>
             <ul className="mb-6 space-y-2.5">
               <li>
                 <Link href="/#faq" className={linkClass}>
-                  FAQ
+                  {dict.footer.faq}
                 </Link>
               </li>
             </ul>
-            <h4 className={headingClass}>Legal</h4>
+            <h4 className={headingClass}>{dict.footer.legalHeading}</h4>
             <ul className="space-y-2.5">
               <li>
                 <Link href="/terms" className={linkClass}>
-                  Terms
+                  {dict.footer.terms}
                 </Link>
               </li>
               <li>
                 <Link href="/privacy" className={linkClass}>
-                  Privacy
+                  {dict.footer.privacy}
                 </Link>
               </li>
             </ul>
@@ -129,12 +136,13 @@ export function Footer() {
         </div>
 
         <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-8 text-xs text-slate-500 sm:flex-row sm:items-center">
-          <p>© {year} CarraMarket. All rights reserved.</p>
+          <p>© {year} CarraMarket. {dict.footer.copyright}</p>
           <p className="text-slate-600 sm:text-right">
-            Lowest Unique Bid auctions
+            {dict.footer.tagline}
           </p>
         </div>
       </div>
     </footer>
   );
 }
+

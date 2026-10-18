@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { getCsrfToken } from "@/lib/api";
@@ -13,7 +14,9 @@ export function Providers({ children, googleClientId }: { children: React.ReactN
 
   const content = (
     <QueryProvider>
-      <AuthProvider googleClientId={googleClientId}>{children}</AuthProvider>
+      <LanguageProvider>
+        <AuthProvider googleClientId={googleClientId}>{children}</AuthProvider>
+      </LanguageProvider>
     </QueryProvider>
   );
 
@@ -23,3 +26,4 @@ export function Providers({ children, googleClientId }: { children: React.ReactN
 
   return <GoogleOAuthProvider clientId={googleClientId}>{content}</GoogleOAuthProvider>;
 }
+

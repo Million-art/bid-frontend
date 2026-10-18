@@ -1,16 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { Gavel, Trophy } from "lucide-react";
 import { SectionTag } from "@/components/home/SectionTag";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { Auction } from "@/services/auctions.service";
 
-function formatEtb(n: number) {
-  return `${n.toLocaleString(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  })} ETB`;
-}
-
 export function WinnersSection({ winners }: { winners: Auction[] }) {
+  const { dict, formatCurrency } = useLanguage();
+
   return (
     <section
       id="winners"
@@ -31,20 +29,19 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
       />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionTag>Winners</SectionTag>
+        <SectionTag>{dict.winners.tag}</SectionTag>
         <div className="mx-auto mb-10 max-w-2xl text-center">
           <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
-            Lowest unique bids that won
+            {dict.winners.title}
           </h2>
           <p className="mt-3 text-base text-slate-600">
-            When an auction closes, the lowest value placed by exactly one
-            person wins the item.
+            {dict.winners.subtitle}
           </p>
         </div>
 
         {winners.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center text-slate-500">
-            No winners yet. Join a live auction and be the first.
+            {dict.winners.empty}
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -69,7 +66,7 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
                   )}
                   <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#FFF307] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-900 shadow-sm">
                     <Trophy className="h-3 w-3" />
-                    Winner
+                    {dict.winners.winner}
                   </span>
                 </div>
                 <div className="flex flex-1 flex-col gap-3 p-4">
@@ -79,19 +76,19 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
                   <div className="mt-auto flex items-end justify-between gap-3">
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        Status
+                        {dict.common.status}
                       </p>
                       <p className="text-sm font-bold text-slate-900">
-                        Won
+                        {dict.winners.won}
                       </p>
                     </div>
                     {auction.winnerBidValue != null && (
                       <div className="text-right">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                          Winning bid
+                          {dict.winners.winningBid}
                         </p>
                         <p className="text-sm font-extrabold text-[#2D9FF6]">
-                          {formatEtb(Number(auction.winnerBidValue))}
+                          {formatCurrency(Number(auction.winnerBidValue))}
                         </p>
                       </div>
                     )}
@@ -105,3 +102,4 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
     </section>
   );
 }
+

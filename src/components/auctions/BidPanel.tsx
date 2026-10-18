@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { queryKeys } from "@/lib/query-keys";
 import { toastApiError } from "@/lib/toast-api-error";
 import {
@@ -16,13 +17,6 @@ import {
   type Auction,
   type Bid,
 } from "@/services/auctions.service";
-
-function formatEtb(n: number) {
-  return `${n.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })} ETB`;
-}
 
 export function BidPanel({
   auction,
@@ -34,6 +28,7 @@ export function BidPanel({
   myBids: Bid[];
 }) {
   const { user } = useAuth();
+  const { dict, formatCurrency, t } = useLanguage();
   const router = useRouter();
   const qc = useQueryClient();
   const [bidValue, setBidValue] = useState("");
@@ -62,31 +57,31 @@ export function BidPanel({
         window.location.href = result.checkoutUrl;
         return;
       }
-      toast.success("You're in   place your bids");
+      toast.success(dict.auctionDetail.joinSuccess);
       invalidate();
     },
-    onError: (err) => toastApiError(err, "Could not join this auction"),
+    onError: (err) => toastApiError(err, dict.auctionDetail.joinError),
   });
 
   const placeMutation = useMutation({
     mutationFn: (value: number) => placeBid(auction.id, value),
     onSuccess: () => {
-      toast.success("Bid placed");
+      toast.success(dict.auctionDetail.bidPlacedSuccess);
       setBidValue("");
       invalidate();
     },
-    onError: (err) => toastApiError(err, "Could not place bid"),
+    onError: (err) => toastApiError(err, dict.auctionDetail.couldNotPlaceBid),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, value }: { id: string; value: number }) =>
       updateBid(id, value),
     onSuccess: () => {
-      toast.success("Bid updated");
+      toast.success(dict.auctionDetail.bidUpdatedSuccess);
       setEditingId(null);
       invalidate();
     },
-    onError: (err) => toastApiError(err, "Could not update bid"),
+    onError: (err) => toastApiError(err, dict.auctionDetail.couldNotUpdateBid),
   });
 
   const requireLogin = () => {
@@ -97,14 +92,18 @@ export function BidPanel({
     return (
       <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5">
         <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">
-          Auction complete
+          {dict.auctionDetail.auctionComplete}
         </p>
         {auction.winnerBidValue != null ? (
           <p className="mt-2 text-lg font-bold text-slate-900">
-            Winning bid: {formatEtb(Number(auction.winnerBidValue))}
+            {t("auctionDetail.winningBid", {
+              amount: formatCurrency(Number(auction.winnerBidValue)),
+            })}
           </p>
         ) : (
-          <p className="mt-2 text-sm text-slate-600">Results are in.</p>
+          <p className="mt-2 text-sm text-slate-600">
+            {dict.auctionDetail.resultsIn}
+          </p>
         )}
       </div>
     );
@@ -113,7 +112,7 @@ export function BidPanel({
   if (auction.status === "cancelled") {
     return (
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600">
-        This auction was cancelled.
+        {dict.auctionDetail.cancelled}
       </div>
     );
   }
@@ -121,7 +120,7 @@ export function BidPanel({
   if (auction.status === "closed") {
     return (
       <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 text-sm text-amber-900">
-        Bidding is closed. Winner resolution is in progress.
+        {dict.auctionDetail.biddingClosed}
       </div>
     );
   }
@@ -130,22 +129,22 @@ export function BidPanel({
     <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div>
         <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-          Entrance fee
+          {dict.auctionDetail.entranceFee}
         </p>
         <p className="text-2xl font-extrabold text-slate-900">
-          {formatEtb(auction.entranceFee)}
+          {formatCurrency(auction.entranceFee)}
         </p>
         <p className="mt-1 text-xs text-slate-500">
-          Bid range: {formatEtb(auction.minBidValue ?? 0.01)}
+          {dict.auctionDetail.bidRange}: {formatCurrency(auction.minBidValue ?? 0.01)}
           {auction.maxBidValue != null
-            ? ` – ${formatEtb(Number(auction.maxBidValue))}`
+            ? ` – ${formatCurrency(Number(auction.maxBidValue))}`
             : "+"}
         </p>
       </div>
 
       {!user ? (
         <Button className="w-full h-12 font-bold" onClick={requireLogin}>
-          Log in to join
+          {dict.auctionDetail.loginToJoin}
         </Button>
       ) : !participating ? (
         <Button
@@ -154,8 +153,8 @@ export function BidPanel({
           onClick={() => participateMutation.mutate()}
         >
           {participateMutation.isPending
-            ? "Processing…"
-            : "Pay entrance fee & join"}
+            ? dict.auctionDetail.processing
+            : dict.auctionDetail.payAndJoin}
         </Button>
       ) : (
         <>
@@ -165,14 +164,14 @@ export function BidPanel({
               e.preventDefault();
               const value = Number.parseFloat(bidValue);
               if (!Number.isFinite(value) || value <= 0) {
-                toast.error("Enter a valid bid amount");
+                toast.error(dict.auctionDetail.invalidBidError);
                 return;
               }
               placeMutation.mutate(value);
             }}
           >
             <label className="block text-sm font-semibold text-slate-800">
-              Your bid value
+              {dict.auctionDetail.yourBidValue}
             </label>
             <Input
               type="number"
@@ -181,7 +180,7 @@ export function BidPanel({
               max={auction.maxBidValue ?? undefined}
               value={bidValue}
               onChange={(e) => setBidValue(e.target.value)}
-              placeholder="e.g. 1.20"
+              placeholder={dict.auctionDetail.bidPlaceholder}
               disabled={!canBid || placeMutation.isPending}
             />
             <Button
@@ -189,14 +188,16 @@ export function BidPanel({
               className="w-full h-11 font-bold"
               disabled={!canBid || placeMutation.isPending}
             >
-              {placeMutation.isPending ? "Placing…" : "Place bid"}
+              {placeMutation.isPending
+                ? dict.auctionDetail.placing
+                : dict.auctionDetail.placeBid}
             </Button>
           </form>
 
           {myBids.length > 0 && (
             <div>
               <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">
-                Your bids
+                {dict.auctionDetail.yourBids}
               </p>
               <ul className="space-y-2">
                 {myBids.map((bid) => (
@@ -211,7 +212,7 @@ export function BidPanel({
                           e.preventDefault();
                           const value = Number.parseFloat(editValue);
                           if (!Number.isFinite(value) || value <= 0) {
-                            toast.error("Enter a valid amount");
+                            toast.error(dict.auctionDetail.enterValidAmount);
                             return;
                           }
                           updateMutation.mutate({ id: bid.id, value });
@@ -229,7 +230,7 @@ export function BidPanel({
                           size="sm"
                           disabled={updateMutation.isPending}
                         >
-                          Save
+                          {dict.common.save}
                         </Button>
                         <Button
                           type="button"
@@ -237,13 +238,13 @@ export function BidPanel({
                           variant="ghost"
                           onClick={() => setEditingId(null)}
                         >
-                          Cancel
+                          {dict.common.cancel}
                         </Button>
                       </form>
                     ) : (
                       <>
                         <span className="font-bold text-slate-900">
-                          {formatEtb(bid.bidValue)}
+                          {formatCurrency(bid.bidValue)}
                         </span>
                         {canBid && (
                           <button
@@ -254,7 +255,7 @@ export function BidPanel({
                               setEditValue(String(bid.bidValue));
                             }}
                           >
-                            Edit
+                            {dict.common.edit}
                           </button>
                         )}
                       </>

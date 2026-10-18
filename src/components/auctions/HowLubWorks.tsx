@@ -1,35 +1,40 @@
+"use client";
+
 import { CircleDollarSign, Target, Trophy } from "lucide-react";
 import { SectionTag } from "@/components/home/SectionTag";
-
-const steps = [
-  {
-    icon: CircleDollarSign,
-    title: "Pay the entrance fee",
-    body: "Join an auction with a one-time fee. That unlocks bidding on that product.",
-  },
-  {
-    icon: Target,
-    title: "Place your bid values",
-    body: "Submit one or more amounts (e.g. 1.20, 5.00). You can update a bid before the auction closes.",
-  },
-  {
-    icon: Trophy,
-    title: "Lowest unique wins",
-    body: "When bidding ends, the winner is the lowest value placed by exactly one person.",
-  },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function HowLubWorks() {
+  const { dict } = useLanguage();
+
+  const steps = [
+    {
+      icon: CircleDollarSign,
+      title: dict.howItWorks.step1Title,
+      body: dict.howItWorks.step1Desc,
+    },
+    {
+      icon: Target,
+      title: dict.howItWorks.step2Title,
+      body: dict.howItWorks.step2Desc,
+    },
+    {
+      icon: Trophy,
+      title: dict.howItWorks.step3Title,
+      body: dict.howItWorks.step3Desc,
+    },
+  ];
+
   return (
     <section id="how-it-works" className="scroll-mt-24 py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionTag>How it works</SectionTag>
+        <SectionTag>{dict.howItWorks.tag}</SectionTag>
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Lowest Unique Bid
+            {dict.howItWorks.title}
           </h2>
           <p className="mt-3 text-base text-slate-600">
-            CarraMarket runs the auctions. You bid smart   not highest.
+            {dict.howItWorks.subtitle}
           </p>
         </div>
         <div className="mt-12 grid gap-6 md:grid-cols-3">
@@ -43,7 +48,7 @@ export function HowLubWorks() {
                   <step.icon className="h-5 w-5" />
                 </span>
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Step {i + 1}
+                  {dict.common.step} {i + 1}
                 </span>
               </div>
               <h3 className="text-lg font-bold text-slate-900">{step.title}</h3>
@@ -57,3 +62,4 @@ export function HowLubWorks() {
     </section>
   );
 }
+

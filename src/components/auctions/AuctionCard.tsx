@@ -2,38 +2,32 @@
 
 import Link from "next/link";
 import { Clock, Gavel } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { Auction } from "@/services/auctions.service";
 
-function formatEtb(n: number) {
-  return `${n.toLocaleString(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  })} ETB`;
-}
-
-function statusLabel(status: string) {
-  switch (status) {
-    case "active":
-      return "Live";
-    case "postponed":
-      return "Extended";
-    case "closed":
-      return "Closed";
-    case "executed":
-      return "Winner drawn";
-    case "cancelled":
-      return "Cancelled";
-    default:
-      return status;
-  }
-}
-
 export function AuctionCard({ auction }: { auction: Auction }) {
+  const { dict, formatCurrency, formatDate } = useLanguage();
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "active":
+        return dict.auctions.filters.active;
+      case "postponed":
+        return dict.auctions.filters.postponed;
+      case "closed":
+        return dict.auctions.filters.closed;
+      case "executed":
+        return dict.auctions.filters.executed;
+      case "cancelled":
+        return dict.auctions.filters.cancelled;
+      default:
+        return status;
+    }
+  };
+
   const closes = auction.closeAt ? new Date(auction.closeAt) : null;
   const closesLabel =
-    closes && !Number.isNaN(closes.getTime())
-      ? closes.toLocaleString()
-      : null;
+    closes && !Number.isNaN(closes.getTime()) ? formatDate(closes) : null;
 
   return (
     <Link
@@ -54,7 +48,7 @@ export function AuctionCard({ auction }: { auction: Auction }) {
           </div>
         )}
         <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-800 shadow-sm">
-          {statusLabel(String(auction.status))}
+          {getStatusLabel(String(auction.status))}
         </span>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
@@ -62,15 +56,15 @@ export function AuctionCard({ auction }: { auction: Auction }) {
           {auction.title}
         </h3>
         <p className="line-clamp-2 text-sm text-slate-500">
-          {auction.description || "Lowest Unique Bid auction"}
+          {auction.description || dict.howItWorks.title}
         </p>
         <div className="mt-auto flex items-end justify-between gap-2 pt-2">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              Entrance fee
+              {dict.auctions.entranceFee}
             </p>
             <p className="text-sm font-bold text-slate-900">
-              {formatEtb(auction.entranceFee)}
+              {formatCurrency(auction.entranceFee)}
             </p>
           </div>
           {closesLabel && (
@@ -84,3 +78,4 @@ export function AuctionCard({ auction }: { auction: Auction }) {
     </Link>
   );
 }
+
