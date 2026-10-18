@@ -2,18 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Gavel, Lock, ShieldCheck, Target } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export function HeroSection() {
   const { dict } = useLanguage();
-
-  const features = [
-    { icon: Gavel, label: dict.home.features.platformAuctions },
-    { icon: Target, label: dict.home.features.lowestUniqueWins },
-    { icon: ShieldCheck, label: dict.home.features.securePayments },
-    { icon: Lock, label: dict.home.features.transparentResults },
-  ];
 
   return (
     <section className="relative overflow-hidden bg-[#2D9FF6] pt-20 sm:pt-24">
@@ -27,8 +20,8 @@ export function HeroSection() {
         aria-hidden
       />
 
-      <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-8 px-4 pb-10 pt-8 sm:px-6 lg:grid-cols-2 lg:gap-4 lg:px-8 lg:pb-0 lg:pt-6">
-        <div className="max-w-xl pb-6 lg:pb-16">
+      <div className="relative z-10 mx-auto grid max-w-7xl items-end gap-8 px-4 pb-0 pt-8 sm:px-6 lg:grid-cols-2 lg:gap-4 lg:px-8 lg:pt-6">
+        <div className="max-w-xl pb-10 pt-4 lg:pb-20">
           <div className="mb-5 flex items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-[0.18em] text-white/90">
               {dict.home.heroTag}
@@ -63,29 +56,16 @@ export function HeroSection() {
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-
-          <ul className="mt-10 grid max-w-md grid-cols-2 gap-x-6 gap-y-4">
-            {features.map((item) => (
-              <li key={item.label} className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/15 text-[#FFF307]">
-                  <item.icon className="h-4 w-4" />
-                </span>
-                <span className="text-xs font-semibold text-white sm:text-sm">
-                  {item.label}
-                </span>
-              </li>
-            ))}
-          </ul>
         </div>
 
-        <div className="relative mx-auto w-full max-w-lg lg:max-w-none lg:translate-x-4 lg:self-end">
+        <div className="relative mx-auto flex w-full max-w-lg items-end justify-center self-end lg:max-w-none lg:translate-x-4">
           <Image
             src="/hero.png"
             alt="Win CarraMarket auctions with the lowest unique bid"
             width={900}
             height={900}
             priority
-            className="h-auto w-full object-contain object-bottom"
+            className="block h-auto w-full object-contain object-bottom align-bottom"
           />
         </div>
       </div>
