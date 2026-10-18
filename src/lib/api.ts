@@ -4,11 +4,11 @@ export const getApiBase = (): string => {
     if (hostname === "localhost" || hostname === "127.0.0.1") {
       return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
     }
-    return process.env.NEXT_PUBLIC_API_URL || "https://adminbackend.carramarket.com";
+    return process.env.NEXT_PUBLIC_API_URL || "https://clientbackend.carramarket.com";
   }
   return (
     process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:8080"
+    "https://clientbackend.carramarket.com"
   );
 };
 
