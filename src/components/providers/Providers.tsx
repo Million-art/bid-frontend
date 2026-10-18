@@ -7,23 +7,30 @@ import { QueryProvider } from "@/components/providers/QueryProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { getCsrfToken } from "@/lib/api";
 
+const DEFAULT_GOOGLE_CLIENT_ID = "510278494876-bkmbkv9hfuelp0a5pv8lcqpd32ondgst.apps.googleusercontent.com";
+
 export function Providers({ children, googleClientId }: { children: React.ReactNode; googleClientId?: string }) {
   useEffect(() => {
     getCsrfToken().catch(() => {});
   }, []);
 
+  const clientId =
+    googleClientId ||
+    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+    DEFAULT_GOOGLE_CLIENT_ID;
+
   const content = (
     <QueryProvider>
       <LanguageProvider>
-        <AuthProvider googleClientId={googleClientId}>{children}</AuthProvider>
+        <AuthProvider googleClientId={clientId}>{children}</AuthProvider>
       </LanguageProvider>
     </QueryProvider>
   );
 
-  if (!googleClientId) {
+  if (!clientId) {
     return content;
   }
 
-  return <GoogleOAuthProvider clientId={googleClientId}>{content}</GoogleOAuthProvider>;
+  return <GoogleOAuthProvider clientId={clientId}>{content}</GoogleOAuthProvider>;
 }
 

@@ -122,7 +122,10 @@ export function AuthProvider({ children, googleClientId }: { children: React.Rea
     refreshUser,
     error,
     clearError,
-    googleClientId: googleClientId || null,
+    googleClientId:
+      googleClientId ||
+      process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+      "510278494876-bkmbkv9hfuelp0a5pv8lcqpd32ondgst.apps.googleusercontent.com",
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
