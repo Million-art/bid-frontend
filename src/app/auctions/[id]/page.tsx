@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { Suspense, use } from "react";
 import Link from "next/link";
 import { ArrowLeft, Clock } from "lucide-react";
 import { ProductMediaGallery } from "@/components/media/ProductMediaGallery";
@@ -96,11 +96,13 @@ export default function AuctionDetailPage({
               {dict.auctionDetail.lubRuleBody}
             </div>
 
-            <BidPanel
-              auction={auction}
-              participating={Boolean(participation?.participating)}
-              myBids={myBids}
-            />
+            <Suspense fallback={null}>
+              <BidPanel
+                auction={auction}
+                participating={Boolean(participation?.participating)}
+                myBids={myBids}
+              />
+            </Suspense>
           </div>
         </div>
       </div>

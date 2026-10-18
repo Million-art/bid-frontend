@@ -57,16 +57,31 @@ export async function getAuction(id: string): Promise<Auction> {
 
 export interface ParticipateResult {
   checkoutUrl?: string;
+  txRef?: string;
+  participating?: boolean;
   participation?: AuctionParticipation;
+  bid?: Bid;
   message?: string;
 }
 
-/** Pay entrance fee via Chapa checkout. */
+export interface VerifyPaymentResult {
+  verified: boolean;
+  status?: string;
+  txRef?: string;
+  auctionId?: string;
+  participating?: boolean;
+  participation?: AuctionParticipation;
+  bids?: Bid[];
+}
+
+/** Pay entrance fee & set initial bid via Chapa checkout. */
 export async function participateInAuction(
   auctionId: string,
-  options?: { checkoutUrl?: string }
+  options?: { bidValue?: number; returnUrl?: string; checkoutUrl?: string }
 ): Promise<ParticipateResult> {
   const body: Record<string, unknown> = {};
+  if (options?.bidValue && options.bidValue > 0) body.bidValue = options.bidValue;
+  if (options?.returnUrl) body.returnUrl = options.returnUrl;
   if (options?.checkoutUrl) body.checkoutUrl = options.checkoutUrl;
 
   const res = await apiFetch<ApiResponse<ParticipateResult>>(
@@ -77,6 +92,24 @@ export async function participateInAuction(
     }
   );
   return (res.data ?? res) as ParticipateResult;
+}
+
+/** Verify Chapa transaction after return from checkout. */
+export async function verifyChapaPayment(
+  txRef: string,
+  bidValue?: number
+): Promise<VerifyPaymentResult> {
+  const body: Record<string, unknown> = { txRef };
+  if (bidValue && bidValue > 0) body.bidValue = bidValue;
+
+  const res = await apiFetch<ApiResponse<VerifyPaymentResult>>(
+    `/api/public/payments/verify`,
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    }
+  );
+  return (res.data ?? res) as VerifyPaymentResult;
 }
 
 export async function placeBid(

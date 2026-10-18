@@ -51,6 +51,8 @@ export const BidSchema = z.object({
   isWinner: z.boolean().optional().default(false),
   placedAt: z.string().optional(),
   updatedAt: z.string().optional(),
+  updateCount: z.coerce.number().optional().default(0),
+  canUpdate: z.boolean().optional(),
 });
 
 export type Bid = z.infer<typeof BidSchema>;

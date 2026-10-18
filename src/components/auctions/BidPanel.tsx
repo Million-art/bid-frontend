@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,23 @@ import {
   participateInAuction,
   placeBid,
   updateBid,
+  verifyChapaPayment,
   type Auction,
   type Bid,
 } from "@/services/auctions.service";
+
+function isBidAlreadyUpdated(bid: Bid): boolean {
+  if (bid.canUpdate === false) return true;
+  if ((bid.updateCount ?? 0) >= 1) return true;
+  if (bid.placedAt && bid.updatedAt) {
+    const placed = new Date(bid.placedAt).getTime();
+    const updated = new Date(bid.updatedAt).getTime();
+    if (!Number.isNaN(placed) && !Number.isNaN(updated) && updated - placed > 100) {
+      return true;
+    }
+  }
+  return false;
+}
 
 export function BidPanel({
   auction,
@@ -30,13 +44,16 @@ export function BidPanel({
   const { user } = useAuth();
   const { dict, formatCurrency, t } = useLanguage();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const qc = useQueryClient();
   const [bidValue, setBidValue] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
-  const canBid =
-    participating &&
-    (auction.status === "active" || auction.status === "postponed");
+  const verifiedRef = useRef<string | null>(null);
+
+  const isOpen =
+    auction.status === "active" || auction.status === "postponed";
+  const canBid = participating && isOpen;
 
   const invalidate = () => {
     void qc.invalidateQueries({
@@ -50,14 +67,126 @@ export function BidPanel({
     });
   };
 
+  const verifyMutation = useMutation({
+    mutationFn: ({ txRef, bidVal }: { txRef: string; bidVal?: number }) =>
+      verifyChapaPayment(txRef, bidVal),
+    onSuccess: (res) => {
+      try {
+        sessionStorage.removeItem(`carramarket_pending_chapa_${auction.id}`);
+      } catch {
+        // ignore storage errors
+      }
+      if (res.verified) {
+        toast.success(dict.auctionDetail.paymentVerifiedSuccess);
+      }
+      invalidate();
+      router.replace(`/auctions/${auction.id}`);
+    },
+    onError: (err) => {
+      toastApiError(err, dict.auctionDetail.paymentVerifyError);
+    },
+  });
+
+  useEffect(() => {
+    const urlTxRef =
+      searchParams.get("tx_ref") ||
+      searchParams.get("trx_ref") ||
+      searchParams.get("txRef");
+    const urlBidRaw = searchParams.get("bid_value");
+    let txRefToVerify = urlTxRef || "";
+    let bidValToVerify = urlBidRaw ? Number.parseFloat(urlBidRaw) : undefined;
+
+    if (!txRefToVerify) {
+      try {
+        const stored = sessionStorage.getItem(
+          `carramarket_pending_chapa_${auction.id}`
+        );
+        if (stored) {
+          const parsed = JSON.parse(stored) as {
+            txRef?: string;
+            bidValue?: number;
+            ts?: number;
+          };
+          if (
+            parsed.txRef &&
+            (!parsed.ts || Date.now() - parsed.ts < 30 * 60 * 1000)
+          ) {
+            txRefToVerify = parsed.txRef;
+            if (!bidValToVerify && parsed.bidValue) {
+              bidValToVerify = parsed.bidValue;
+            }
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (txRefToVerify && verifiedRef.current !== txRefToVerify) {
+      verifiedRef.current = txRefToVerify;
+      verifyMutation.mutate({
+        txRef: txRefToVerify,
+        bidVal:
+          bidValToVerify && Number.isFinite(bidValToVerify) && bidValToVerify > 0
+            ? bidValToVerify
+            : undefined,
+      });
+    }
+  }, [auction.id, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const validateBidAmount = (value: number): boolean => {
+    if (!Number.isFinite(value) || value <= 0) {
+      toast.error(dict.auctionDetail.invalidBidError);
+      return false;
+    }
+    const min = auction.minBidValue ?? 0.01;
+    if (value < min) {
+      toast.error(`${dict.auctionDetail.bidRange}: ${formatCurrency(min)}+`);
+      return false;
+    }
+    if (auction.maxBidValue != null && value > Number(auction.maxBidValue)) {
+      toast.error(
+        `${dict.auctionDetail.bidRange}: ${formatCurrency(min)} – ${formatCurrency(
+          Number(auction.maxBidValue)
+        )}`
+      );
+      return false;
+    }
+    return true;
+  };
+
   const participateMutation = useMutation({
-    mutationFn: () => participateInAuction(auction.id),
-    onSuccess: (result) => {
+    mutationFn: (initialBid: number) => {
+      const returnUrl =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/auctions/${auction.id}`
+          : undefined;
+      return participateInAuction(auction.id, {
+        bidValue: initialBid,
+        returnUrl,
+      });
+    },
+    onSuccess: (result, initialBid) => {
       if (result.checkoutUrl) {
+        try {
+          if (result.txRef) {
+            sessionStorage.setItem(
+              `carramarket_pending_chapa_${auction.id}`,
+              JSON.stringify({
+                txRef: result.txRef,
+                bidValue: initialBid,
+                ts: Date.now(),
+              })
+            );
+          }
+        } catch {
+          // ignore storage errors
+        }
         window.location.href = result.checkoutUrl;
         return;
       }
       toast.success(dict.auctionDetail.joinSuccess);
+      setBidValue("");
       invalidate();
     },
     onError: (err) => toastApiError(err, dict.auctionDetail.joinError),
@@ -142,126 +271,172 @@ export function BidPanel({
         </p>
       </div>
 
+      {verifyMutation.isPending && (
+        <div className="flex items-center gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-medium text-sky-900">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--brand-blue)] border-t-transparent" />
+          {dict.auctionDetail.verifyingPayment}
+        </div>
+      )}
+
       {!user ? (
         <Button className="w-full h-12 font-bold" onClick={requireLogin}>
           {dict.auctionDetail.loginToJoin}
         </Button>
       ) : !participating ? (
-        <Button
-          className="w-full h-12 font-bold"
-          disabled={participateMutation.isPending}
-          onClick={() => participateMutation.mutate()}
+        <form
+          className="space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const value = Number.parseFloat(bidValue);
+            if (!validateBidAmount(value)) return;
+            participateMutation.mutate(value);
+          }}
         >
-          {participateMutation.isPending
-            ? dict.auctionDetail.processing
-            : dict.auctionDetail.payAndJoin}
-        </Button>
+          <label className="block text-sm font-semibold text-slate-800">
+            {dict.auctionDetail.yourBidValue}
+          </label>
+          <Input
+            type="number"
+            step="0.01"
+            min={auction.minBidValue ?? 0.01}
+            max={auction.maxBidValue ?? undefined}
+            value={bidValue}
+            onChange={(e) => setBidValue(e.target.value)}
+            placeholder={dict.auctionDetail.bidPlaceholder}
+            disabled={!isOpen || participateMutation.isPending}
+          />
+          <p className="text-xs text-slate-500">
+            {dict.auctionDetail.oneUpdateNotice}
+          </p>
+          <Button
+            type="submit"
+            className="w-full h-12 font-bold"
+            disabled={!isOpen || participateMutation.isPending}
+          >
+            {participateMutation.isPending
+              ? dict.auctionDetail.redirectingToChapa
+              : dict.auctionDetail.setBidAndPayChapa}
+          </Button>
+        </form>
       ) : (
         <>
-          <form
-            className="space-y-3"
-            onSubmit={(e) => {
-              e.preventDefault();
-              const value = Number.parseFloat(bidValue);
-              if (!Number.isFinite(value) || value <= 0) {
-                toast.error(dict.auctionDetail.invalidBidError);
-                return;
-              }
-              placeMutation.mutate(value);
-            }}
-          >
-            <label className="block text-sm font-semibold text-slate-800">
-              {dict.auctionDetail.yourBidValue}
-            </label>
-            <Input
-              type="number"
-              step="0.01"
-              min={auction.minBidValue ?? 0.01}
-              max={auction.maxBidValue ?? undefined}
-              value={bidValue}
-              onChange={(e) => setBidValue(e.target.value)}
-              placeholder={dict.auctionDetail.bidPlaceholder}
-              disabled={!canBid || placeMutation.isPending}
-            />
-            <Button
-              type="submit"
-              className="w-full h-11 font-bold"
-              disabled={!canBid || placeMutation.isPending}
+          {myBids.length === 0 ? (
+            <form
+              className="space-y-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const value = Number.parseFloat(bidValue);
+                if (!validateBidAmount(value)) return;
+                placeMutation.mutate(value);
+              }}
             >
-              {placeMutation.isPending
-                ? dict.auctionDetail.placing
-                : dict.auctionDetail.placeBid}
-            </Button>
-          </form>
-
-          {myBids.length > 0 && (
-            <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">
-                {dict.auctionDetail.yourBids}
+              <label className="block text-sm font-semibold text-slate-800">
+                {dict.auctionDetail.yourBidValue}
+              </label>
+              <Input
+                type="number"
+                step="0.01"
+                min={auction.minBidValue ?? 0.01}
+                max={auction.maxBidValue ?? undefined}
+                value={bidValue}
+                onChange={(e) => setBidValue(e.target.value)}
+                placeholder={dict.auctionDetail.bidPlaceholder}
+                disabled={!canBid || placeMutation.isPending}
+              />
+              <p className="text-xs text-slate-500">
+                {dict.auctionDetail.oneUpdateNotice}
               </p>
+              <Button
+                type="submit"
+                className="w-full h-11 font-bold"
+                disabled={!canBid || placeMutation.isPending}
+              >
+                {placeMutation.isPending
+                  ? dict.auctionDetail.placing
+                  : dict.auctionDetail.placeBid}
+              </Button>
+            </form>
+          ) : (
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  {dict.auctionDetail.yourBids}
+                </p>
+                <span className="text-[11px] text-slate-500">
+                  {dict.auctionDetail.oneUpdateNotice}
+                </span>
+              </div>
               <ul className="space-y-2">
-                {myBids.map((bid) => (
-                  <li
-                    key={bid.id}
-                    className="flex items-center justify-between gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm"
-                  >
-                    {editingId === bid.id ? (
-                      <form
-                        className="flex w-full items-center gap-2"
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          const value = Number.parseFloat(editValue);
-                          if (!Number.isFinite(value) || value <= 0) {
-                            toast.error(dict.auctionDetail.enterValidAmount);
-                            return;
-                          }
-                          updateMutation.mutate({ id: bid.id, value });
-                        }}
-                      >
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          className="h-9"
-                        />
-                        <Button
-                          type="submit"
-                          size="sm"
-                          disabled={updateMutation.isPending}
+                {myBids.map((bid) => {
+                  const alreadyUpdated = isBidAlreadyUpdated(bid);
+                  return (
+                    <li
+                      key={bid.id}
+                      className="flex items-center justify-between gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2.5 text-sm"
+                    >
+                      {editingId === bid.id ? (
+                        <form
+                          className="flex w-full items-center gap-2"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            const value = Number.parseFloat(editValue);
+                            if (!validateBidAmount(value)) return;
+                            updateMutation.mutate({ id: bid.id, value });
+                          }}
                         >
-                          {dict.common.save}
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setEditingId(null)}
-                        >
-                          {dict.common.cancel}
-                        </Button>
-                      </form>
-                    ) : (
-                      <>
-                        <span className="font-bold text-slate-900">
-                          {formatCurrency(bid.bidValue)}
-                        </span>
-                        {canBid && (
-                          <button
-                            type="button"
-                            className="text-xs font-semibold text-[var(--brand-blue)] hover:underline"
-                            onClick={() => {
-                              setEditingId(bid.id);
-                              setEditValue(String(bid.bidValue));
-                            }}
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min={auction.minBidValue ?? 0.01}
+                            max={auction.maxBidValue ?? undefined}
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            className="h-9"
+                          />
+                          <Button
+                            type="submit"
+                            size="sm"
+                            disabled={updateMutation.isPending}
                           >
-                            {dict.common.edit}
-                          </button>
-                        )}
-                      </>
-                    )}
-                  </li>
-                ))}
+                            {dict.common.save}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setEditingId(null)}
+                          >
+                            {dict.common.cancel}
+                          </Button>
+                        </form>
+                      ) : (
+                        <>
+                          <span className="font-bold text-slate-900">
+                            {formatCurrency(bid.bidValue)}
+                          </span>
+                          {alreadyUpdated ? (
+                            <span className="rounded-full bg-slate-200/80 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
+                              {dict.auctionDetail.bidUpdateUsedBadge}
+                            </span>
+                          ) : (
+                            canBid && (
+                              <button
+                                type="button"
+                                className="rounded-lg bg-[var(--brand-blue)]/10 px-2.5 py-1 text-xs font-semibold text-[var(--brand-blue)] transition hover:bg-[var(--brand-blue)]/20"
+                                onClick={() => {
+                                  setEditingId(bid.id);
+                                  setEditValue(String(bid.bidValue));
+                                }}
+                              >
+                                {dict.auctionDetail.updateBidOnceBtn}
+                              </button>
+                            )
+                          )}
+                        </>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
