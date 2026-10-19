@@ -190,6 +190,7 @@ export const en = {
     placeBid: "Place bid",
     placing: "Placing…",
     yourBids: "Your bids",
+    totalBids: "Total bids",
     invalidBidError: "Enter a valid bid amount",
     enterValidAmount: "Enter a valid amount",
     bidPlacedSuccess: "Bid placed",
@@ -271,6 +272,8 @@ export const en = {
     emptyDesc: "Join a live auction to place your bids.",
     browseAuctions: "Browse auctions",
     bidsPlaced: "{count} bids placed",
+    totalBidsCount: "{count} total bids",
+    totalBidsLabel: "Total bids",
     noBidsYet: "No bids placed yet",
   },
   account: {

@@ -85,6 +85,14 @@ function DashboardContent() {
                           : ` · ${dict.dashboard.noBidsYet}`}
                       </p>
                     </div>
+                    <div className="shrink-0 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-right">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        {dict.dashboard.totalBidsLabel}
+                      </p>
+                      <p className="text-base font-extrabold text-[var(--brand-blue)]">
+                        {(auction.totalBids ?? 0).toLocaleString()}
+                      </p>
+                    </div>
                   </Link>
                 </li>
               );

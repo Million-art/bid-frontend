@@ -52,7 +52,9 @@ export function BidPanel({
 
   const isOpen =
     auction.status === "active" || auction.status === "postponed";
-  const canBid = (participating || myBids.length > 0) && isOpen;
+  const hasJoined = Boolean(user) && (participating || myBids.length > 0);
+  const canBid = hasJoined && isOpen;
+  const totalBidsCount = auction.totalBids ?? 0;
 
   const invalidate = () => {
     void qc.invalidateQueries({
@@ -229,6 +231,16 @@ export function BidPanel({
             {dict.auctionDetail.resultsIn}
           </p>
         )}
+        {hasJoined && (
+          <div className="mt-3 flex items-center justify-between rounded-xl border border-emerald-200/80 bg-white/80 px-3.5 py-2.5 text-sm">
+            <span className="font-semibold text-slate-600">
+              {dict.auctionDetail.totalBids}
+            </span>
+            <span className="font-extrabold text-emerald-800">
+              {totalBidsCount.toLocaleString()}
+            </span>
+          </div>
+        )}
       </div>
     );
   }
@@ -243,27 +255,49 @@ export function BidPanel({
 
   if (auction.status === "closed") {
     return (
-      <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 text-sm text-amber-900">
-        {dict.auctionDetail.biddingClosed}
+      <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-5 text-sm text-amber-900">
+        <p>{dict.auctionDetail.biddingClosed}</p>
+        {hasJoined && (
+          <div className="flex items-center justify-between rounded-xl border border-amber-200/80 bg-white/80 px-3.5 py-2.5 text-sm">
+            <span className="font-semibold text-slate-600">
+              {dict.auctionDetail.totalBids}
+            </span>
+            <span className="font-extrabold text-amber-900">
+              {totalBidsCount.toLocaleString()}
+            </span>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
     <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div>
-        <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-          {dict.auctionDetail.entranceFee}
-        </p>
-        <p className="text-2xl font-extrabold text-slate-900">
-          {formatCurrency(auction.entranceFee)}
-        </p>
-        <p className="mt-1 text-xs text-slate-500">
-          {dict.auctionDetail.bidRange}: {formatCurrency(auction.minBidValue ?? 0.01)}
-          {auction.maxBidValue != null
-            ? ` – ${formatCurrency(Number(auction.maxBidValue))}`
-            : "+"}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            {dict.auctionDetail.entranceFee}
+          </p>
+          <p className="text-2xl font-extrabold text-slate-900">
+            {formatCurrency(auction.entranceFee)}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            {dict.auctionDetail.bidRange}: {formatCurrency(auction.minBidValue ?? 0.01)}
+            {auction.maxBidValue != null
+              ? ` – ${formatCurrency(Number(auction.maxBidValue))}`
+              : "+"}
+          </p>
+        </div>
+        {hasJoined && (
+          <div className="shrink-0 rounded-xl border border-sky-200 bg-sky-50/80 px-3.5 py-2 text-right">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-sky-700">
+              {dict.auctionDetail.totalBids}
+            </p>
+            <p className="text-xl font-extrabold text-[var(--brand-blue)]">
+              {totalBidsCount.toLocaleString()}
+            </p>
+          </div>
+        )}
       </div>
 
       {verifyMutation.isPending && (
@@ -321,6 +355,9 @@ export function BidPanel({
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   {dict.auctionDetail.yourBids}
                 </p>
+                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
+                  {dict.auctionDetail.totalBids}: {totalBidsCount.toLocaleString()}
+                </span>
               </div>
               <ul className="space-y-2">
                 {myBids.map((bid) => {
