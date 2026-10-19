@@ -35,20 +35,12 @@ export default function AuctionDetailPage({
 
   const recommendedAuctions = useMemo(() => {
     const all = listData?.items ?? [];
-    const others = all.filter((item) => item.id !== id);
-    return [...others]
+    const activeOthers = all.filter(
+      (item) =>
+        item.id !== id && String(item.status).toLowerCase() === "active"
+    );
+    return [...activeOthers]
       .sort((a, b) => {
-        const aOpen = ["active", "postponed"].includes(
-          String(a.status).toLowerCase()
-        )
-          ? 0
-          : 1;
-        const bOpen = ["active", "postponed"].includes(
-          String(b.status).toLowerCase()
-        )
-          ? 0
-          : 1;
-        if (aOpen !== bOpen) return aOpen - bOpen;
         const aTime = a.closeAt
           ? new Date(a.closeAt).getTime()
           : Number.POSITIVE_INFINITY;
