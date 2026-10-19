@@ -65,14 +65,28 @@ export function AuctionCard({ auction }: { auction: Auction }) {
               status={auction.status}
               variant="card"
             />
-          ) : auction.winnerBidValue != null ? (
-            <div className="flex items-center justify-between rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-xs">
-              <span className="font-bold text-emerald-800">
-                {dict.winners.winningBid}
-              </span>
-              <span className="font-extrabold text-emerald-950">
-                {formatCurrency(auction.winnerBidValue)}
-              </span>
+          ) : auction.winnerBidValue != null || auction.winnerName ? (
+            <div className="space-y-1 rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-xs">
+              {auction.winnerName && (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold text-emerald-800">
+                    {dict.winners.winner}
+                  </span>
+                  <span className="truncate font-extrabold text-emerald-950">
+                    {auction.winnerName}
+                  </span>
+                </div>
+              )}
+              {auction.winnerBidValue != null && (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold text-emerald-800">
+                    {dict.winners.winningBid}
+                  </span>
+                  <span className="font-extrabold text-emerald-950">
+                    {formatCurrency(auction.winnerBidValue)}
+                  </span>
+                </div>
+              )}
             </div>
           ) : null}
           <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-2.5">

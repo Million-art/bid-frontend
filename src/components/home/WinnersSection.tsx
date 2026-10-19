@@ -74,16 +74,16 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
                     {auction.title}
                   </h3>
                   <div className="mt-auto flex items-end justify-between gap-3">
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        {dict.common.status}
+                        {auction.winnerName ? dict.winners.winner : dict.common.status}
                       </p>
-                      <p className="text-sm font-bold text-slate-900">
-                        {dict.winners.won}
+                      <p className="truncate text-sm font-bold text-slate-900">
+                        {auction.winnerName || dict.winners.won}
                       </p>
                     </div>
                     {auction.winnerBidValue != null && (
-                      <div className="text-right">
+                      <div className="shrink-0 text-right">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                           {dict.winners.winningBid}
                         </p>

@@ -27,6 +27,7 @@ export const AuctionSchema = z.object({
   winnerBidId: z.string().optional().nullable(),
   winnerParticipantId: z.string().optional().nullable(),
   winnerBidValue: z.coerce.number().optional().nullable(),
+  winnerName: z.string().optional().nullable(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });

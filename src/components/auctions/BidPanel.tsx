@@ -212,8 +212,14 @@ export function BidPanel({
         <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">
           {dict.auctionDetail.auctionComplete}
         </p>
+        {auction.winnerName && (
+          <p className="mt-2 text-base font-bold text-slate-900">
+            {dict.winners.winner}:{" "}
+            <span className="text-emerald-800">{auction.winnerName}</span>
+          </p>
+        )}
         {auction.winnerBidValue != null ? (
-          <p className="mt-2 text-lg font-bold text-slate-900">
+          <p className="mt-1.5 text-lg font-bold text-slate-900">
             {t("auctionDetail.winningBid", {
               amount: formatCurrency(Number(auction.winnerBidValue)),
             })}
