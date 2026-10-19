@@ -1,4 +1,4 @@
-import { apiFetch, resetCsrfToken, syncCsrfToken, type ApiResponse } from "@/lib/api";
+import { apiFetch, resetCsrfToken, setAccessToken, syncCsrfToken, type ApiResponse } from "@/lib/api";
 
 export type UserRole =
   | "super_admin"
@@ -147,6 +147,7 @@ export async function logout(): Promise<void> {
   try {
     await apiFetch("/api/auth/logout", { method: "POST" });
   } finally {
+    setAccessToken(null);
     resetCsrfToken();
   }
 }

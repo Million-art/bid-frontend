@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, Gavel } from "lucide-react";
+import { Gavel } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { AuctionCountdown } from "@/components/auctions/AuctionCountdown";
 import type { Auction } from "@/services/auctions.service";
 
 export function AuctionCard({ auction }: { auction: Auction }) {
-  const { dict, formatCurrency, formatDate } = useLanguage();
+  const { dict, formatCurrency } = useLanguage();
+
+  const normalizedStatus = String(auction.status || "").toLowerCase();
+  const isOpen = ["active", "postponed"].includes(normalizedStatus);
 
   const getStatusLabel = (status: string) => {
     switch (status) {
@@ -24,10 +28,6 @@ export function AuctionCard({ auction }: { auction: Auction }) {
         return status;
     }
   };
-
-  const closes = auction.closeAt ? new Date(auction.closeAt) : null;
-  const closesLabel =
-    closes && !Number.isNaN(closes.getTime()) ? formatDate(closes) : null;
 
   return (
     <Link
@@ -51,28 +51,49 @@ export function AuctionCard({ auction }: { auction: Auction }) {
           {getStatusLabel(String(auction.status))}
         </span>
       </div>
-      <div className="flex flex-1 flex-col gap-2 p-4">
+      <div className="flex flex-1 flex-col gap-2.5 p-4">
         <h3 className="line-clamp-2 text-base font-bold text-slate-900 group-hover:text-[var(--brand-blue)]">
           {auction.title}
         </h3>
         <p className="line-clamp-2 text-sm text-slate-500">
           {auction.description || dict.howItWorks.title}
         </p>
-        <div className="mt-auto flex items-end justify-between gap-2 pt-2">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              {dict.auctions.entranceFee}
-            </p>
-            <p className="text-sm font-bold text-slate-900">
-              {formatCurrency(auction.entranceFee)}
-            </p>
-          </div>
-          {closesLabel && (
-            <div className="flex items-center gap-1 text-xs text-slate-500">
-              <Clock className="h-3.5 w-3.5" />
-              <span className="line-clamp-1">{closesLabel}</span>
+        <div className="mt-auto space-y-3 pt-2">
+          {isOpen ? (
+            <AuctionCountdown
+              closeAt={auction.closeAt}
+              status={auction.status}
+              variant="card"
+            />
+          ) : auction.winnerBidValue != null ? (
+            <div className="flex items-center justify-between rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-xs">
+              <span className="font-bold text-emerald-800">
+                {dict.winners.winningBid}
+              </span>
+              <span className="font-extrabold text-emerald-950">
+                {formatCurrency(auction.winnerBidValue)}
+              </span>
             </div>
-          )}
+          ) : null}
+          <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-2.5">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                {dict.auctions.entranceFee}
+              </p>
+              <p className="text-sm font-extrabold text-slate-900">
+                {formatCurrency(auction.entranceFee)}
+              </p>
+            </div>
+            {isOpen ? (
+              <span className="inline-flex items-center justify-center rounded-xl bg-[var(--brand-blue)] px-4 py-2 text-xs font-bold text-white shadow-sm transition group-hover:brightness-110">
+                {dict.auctions.setBid}
+              </span>
+            ) : (
+              <span className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 transition group-hover:border-slate-300 group-hover:bg-slate-100">
+                {dict.auctions.viewResults}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </Link>

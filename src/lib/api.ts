@@ -1,8 +1,11 @@
+const ACCESS_TOKEN_STORAGE_KEY = "carra_access_token";
+
 export const getApiBase = (): string => {
   if (typeof window !== "undefined") {
     const hostname = window.location.hostname;
     if (hostname === "localhost" || hostname === "127.0.0.1") {
-      return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      // Use same-origin Next.js /api proxy on localhost so cookies & CSRF work seamlessly
+      return "";
     }
     return process.env.NEXT_PUBLIC_API_URL || "https://clientbackend.carramarket.com";
   }
@@ -14,6 +17,39 @@ export const getApiBase = (): string => {
 
 let csrfToken: string | null = null;
 let csrfPromise: Promise<string> | null = null;
+let inMemoryAccessToken: string | null = null;
+
+export function getAccessToken(): string | null {
+  if (inMemoryAccessToken) return inMemoryAccessToken;
+  if (typeof window !== "undefined") {
+    try {
+      const stored = window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
+      if (stored && stored.trim()) {
+        inMemoryAccessToken = stored.trim();
+        return inMemoryAccessToken;
+      }
+    } catch {
+      /* ignore storage errors */
+    }
+  }
+  return null;
+}
+
+export function setAccessToken(token: string | null | undefined): void {
+  const t = typeof token === "string" ? token.trim() : "";
+  inMemoryAccessToken = t || null;
+  if (typeof window !== "undefined") {
+    try {
+      if (t) {
+        window.localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, t);
+      } else {
+        window.localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+      }
+    } catch {
+      /* ignore storage errors */
+    }
+  }
+}
 
 /** Clear cached CSRF (e.g. after CSRF_INVALID or cookie rotation). */
 export function resetCsrfToken(): void {
@@ -176,6 +212,10 @@ export async function apiFetch<T>(
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(fetchInit.headers as Record<string, string>),
   };
+  const bearerToken = getAccessToken();
+  if (bearerToken && !headers["Authorization"]) {
+    headers["Authorization"] = `Bearer ${bearerToken}`;
+  }
   if (isStateChange) {
     const token = await getCsrfToken();
     headers["X-CSRF-Token"] = token;
@@ -200,12 +240,26 @@ export async function apiFetch<T>(
       });
 
       if (refreshRes.ok) {
+        try {
+          const refreshJson = (await refreshRes.json()) as {
+            data?: { csrfToken?: unknown; accessToken?: unknown };
+          };
+          if (typeof refreshJson?.data?.csrfToken === "string") {
+            setCsrfToken(refreshJson.data.csrfToken);
+          }
+          if (typeof refreshJson?.data?.accessToken === "string") {
+            setAccessToken(refreshJson.data.accessToken);
+          }
+        } catch {
+          /* ignore json parse error */
+        }
         return apiFetch(path, options, true);
       }
     } catch (error) {
       console.error("Token refresh failed:", error);
     }
 
+    setAccessToken(null);
     if (!skipAuthRedirect && typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
       window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
     }
@@ -248,6 +302,10 @@ export async function apiFetch<T>(
   const fresh = (parsed as { data?: { csrfToken?: unknown } } | null)?.data?.csrfToken;
   if (typeof fresh === "string" && fresh) {
     setCsrfToken(fresh);
+  }
+  const freshAccess = (parsed as { data?: { accessToken?: unknown } } | null)?.data?.accessToken;
+  if (typeof freshAccess === "string" && freshAccess) {
+    setAccessToken(freshAccess);
   }
   return parsed;
 }
