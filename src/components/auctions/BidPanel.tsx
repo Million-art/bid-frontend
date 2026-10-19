@@ -12,7 +12,6 @@ import { queryKeys } from "@/lib/query-keys";
 import { toastApiError } from "@/lib/toast-api-error";
 import {
   participateInAuction,
-  placeBid,
   updateBid,
   verifyChapaPayment,
   type Auction,
@@ -53,7 +52,7 @@ export function BidPanel({
 
   const isOpen =
     auction.status === "active" || auction.status === "postponed";
-  const canBid = participating && isOpen;
+  const canBid = (participating || myBids.length > 0) && isOpen;
 
   const invalidate = () => {
     void qc.invalidateQueries({
@@ -192,16 +191,6 @@ export function BidPanel({
     onError: (err) => toastApiError(err, dict.auctionDetail.joinError),
   });
 
-  const placeMutation = useMutation({
-    mutationFn: (value: number) => placeBid(auction.id, value),
-    onSuccess: () => {
-      toast.success(dict.auctionDetail.bidPlacedSuccess);
-      setBidValue("");
-      invalidate();
-    },
-    onError: (err) => toastApiError(err, dict.auctionDetail.couldNotPlaceBid),
-  });
-
   const updateMutation = useMutation({
     mutationFn: ({ id, value }: { id: string; value: number }) =>
       updateBid(id, value),
@@ -282,89 +271,50 @@ export function BidPanel({
         <Button className="w-full h-12 font-bold" onClick={requireLogin}>
           {dict.auctionDetail.loginToJoin}
         </Button>
-      ) : !participating ? (
-        <form
-          className="space-y-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const value = Number.parseFloat(bidValue);
-            if (!validateBidAmount(value)) return;
-            participateMutation.mutate(value);
-          }}
-        >
-          <label className="block text-sm font-semibold text-slate-800">
-            {dict.auctionDetail.yourBidValue}
-          </label>
-          <Input
-            type="number"
-            step="0.01"
-            min={auction.minBidValue ?? 0.01}
-            max={auction.maxBidValue ?? undefined}
-            value={bidValue}
-            onChange={(e) => setBidValue(e.target.value)}
-            placeholder={dict.auctionDetail.bidPlaceholder}
-            disabled={!isOpen || participateMutation.isPending}
-          />
-          <p className="text-xs text-slate-500">
-            {dict.auctionDetail.oneUpdateNotice}
-          </p>
-          <Button
-            type="submit"
-            className="w-full h-12 font-bold"
-            disabled={!isOpen || participateMutation.isPending}
-          >
-            {participateMutation.isPending
-              ? dict.auctionDetail.redirectingToChapa
-              : dict.auctionDetail.setBidAndPayChapa}
-          </Button>
-        </form>
       ) : (
         <>
-          {myBids.length === 0 ? (
-            <form
-              className="space-y-3"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const value = Number.parseFloat(bidValue);
-                if (!validateBidAmount(value)) return;
-                placeMutation.mutate(value);
-              }}
+          <form
+            className="space-y-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const value = Number.parseFloat(bidValue);
+              if (!validateBidAmount(value)) return;
+              participateMutation.mutate(value);
+            }}
+          >
+            <label className="block text-sm font-semibold text-slate-800">
+              {dict.auctionDetail.yourBidValue}
+            </label>
+            <Input
+              type="number"
+              step="0.01"
+              min={auction.minBidValue ?? 0.01}
+              max={auction.maxBidValue ?? undefined}
+              value={bidValue}
+              onChange={(e) => setBidValue(e.target.value)}
+              placeholder={dict.auctionDetail.bidPlaceholder}
+              disabled={!isOpen || participateMutation.isPending}
+            />
+            <p className="text-xs text-slate-500">
+              {dict.auctionDetail.oneUpdateNotice}
+            </p>
+            <Button
+              type="submit"
+              className="w-full h-12 font-bold"
+              disabled={!isOpen || participateMutation.isPending}
             >
-              <label className="block text-sm font-semibold text-slate-800">
-                {dict.auctionDetail.yourBidValue}
-              </label>
-              <Input
-                type="number"
-                step="0.01"
-                min={auction.minBidValue ?? 0.01}
-                max={auction.maxBidValue ?? undefined}
-                value={bidValue}
-                onChange={(e) => setBidValue(e.target.value)}
-                placeholder={dict.auctionDetail.bidPlaceholder}
-                disabled={!canBid || placeMutation.isPending}
-              />
-              <p className="text-xs text-slate-500">
-                {dict.auctionDetail.oneUpdateNotice}
-              </p>
-              <Button
-                type="submit"
-                className="w-full h-11 font-bold"
-                disabled={!canBid || placeMutation.isPending}
-              >
-                {placeMutation.isPending
-                  ? dict.auctionDetail.placing
-                  : dict.auctionDetail.placeBid}
-              </Button>
-            </form>
-          ) : (
-            <div>
+              {participateMutation.isPending
+                ? dict.auctionDetail.redirectingToChapa
+                : dict.auctionDetail.setBidAndPayChapa}
+            </Button>
+          </form>
+
+          {myBids.length > 0 && (
+            <div className="pt-2 border-t border-slate-100">
               <div className="mb-2 flex items-center justify-between">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   {dict.auctionDetail.yourBids}
                 </p>
-                <span className="text-[11px] text-slate-500">
-                  {dict.auctionDetail.oneUpdateNotice}
-                </span>
               </div>
               <ul className="space-y-2">
                 {myBids.map((bid) => {
