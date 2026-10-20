@@ -38,7 +38,7 @@ export function HeroSection({
         aria-hidden
       />
 
-      <div className="relative z-10 mx-auto min-h-[560px] max-w-7xl px-4 sm:min-h-[620px] sm:px-6 lg:min-h-[700px] lg:px-8">
+      <div className="relative z-10 mx-auto min-h-[560px] max-w-7xl px-4 pb-[46%] sm:min-h-[620px] sm:px-6 sm:pb-[38%] lg:min-h-[700px] lg:px-8 lg:pb-0">
         <Image
           src="/watch-1.png"
           alt=""
@@ -77,36 +77,36 @@ export function HeroSection({
             </Link>
           </div>
         </div>
+      </div>
 
-        <div className="pointer-events-none relative z-10 mx-auto w-[min(100%,920px)] lg:absolute lg:bottom-0 lg:right-0 lg:mx-0 lg:w-[72%] lg:max-w-[880px]">
-          {winnerLabel ? (
-            <div className="pointer-events-auto absolute left-3 top-2 z-20 hidden w-[220px] sm:block lg:left-[26%] lg:top-[8%] lg:w-[240px]">
-              <div className="flex items-center gap-2.5 rounded-2xl bg-white px-3 py-2.5 shadow-[0_12px_30px_rgba(15,23,42,0.12)]">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FFF307] text-slate-900">
-                  <Trophy className="h-4 w-4" />
-                </span>
-                <div className="min-w-0 text-left">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                    {dict.home.recentWinner}
-                  </p>
-                  <p className="truncate text-xs font-bold text-slate-900">
-                    {winnerLabel}
-                  </p>
-                </div>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-end lg:inset-x-auto lg:right-0 lg:w-[72%] lg:max-w-[920px]">
+        {winnerLabel ? (
+          <div className="pointer-events-auto absolute left-3 top-2 z-20 hidden w-[220px] sm:block lg:left-[22%] lg:top-[8%] lg:w-[240px]">
+            <div className="flex items-center gap-2.5 rounded-2xl bg-white px-3 py-2.5 shadow-[0_12px_30px_rgba(15,23,42,0.12)]">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FFF307] text-slate-900">
+                <Trophy className="h-4 w-4" />
+              </span>
+              <div className="min-w-0 text-left">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                  {dict.home.recentWinner}
+                </p>
+                <p className="truncate text-xs font-bold text-slate-900">
+                  {winnerLabel}
+                </p>
               </div>
             </div>
-          ) : null}
+          </div>
+        ) : null}
 
-          <Image
-            src="/hero-products.png"
-            alt=""
-            width={932}
-            height={584}
-            priority
-            sizes="(max-width: 1024px) 100vw, 880px"
-            className="relative z-0 h-auto w-full object-contain object-bottom drop-shadow-[0_18px_28px_rgba(8,47,73,0.16)]"
-          />
-        </div>
+        <Image
+          src="/hero-products.png"
+          alt=""
+          width={1375}
+          height={841}
+          priority
+          sizes="(max-width: 1024px) 100vw, 920px"
+          className="block h-auto w-full object-contain object-bottom object-right drop-shadow-[0_18px_28px_rgba(8,47,73,0.16)]"
+        />
       </div>
     </section>
   );
