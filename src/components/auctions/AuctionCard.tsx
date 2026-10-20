@@ -57,9 +57,6 @@ export function AuctionCard({ auction }: { auction: Auction }) {
         <h3 className="line-clamp-2 text-base font-bold text-slate-900 group-hover:text-[var(--brand-blue)]">
           {auction.title}
         </h3>
-        <p className="line-clamp-2 text-sm text-slate-500">
-          {auction.description || dict.howItWorks.title}
-        </p>
         <div className="mt-auto space-y-3 pt-2">
           {isOpen ? (
             <AuctionCountdown
@@ -91,21 +88,22 @@ export function AuctionCard({ auction }: { auction: Auction }) {
               )}
             </div>
           ) : null}
-          <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-2.5">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <div className="space-y-3 border-t border-slate-100 pt-3">
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
                 {dict.auctions.entranceFee}
               </p>
-              <p className="text-sm font-extrabold text-slate-900">
+              <p className="text-lg font-extrabold tabular-nums text-slate-900">
                 {formatCurrency(auction.entranceFee)}
               </p>
             </div>
             {isOpen ? (
-              <span className="inline-flex items-center justify-center rounded-xl bg-[var(--brand-blue)] px-4 py-2 text-xs font-bold text-white shadow-sm transition group-hover:brightness-110">
+              <span className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--brand-blue)] text-sm font-bold text-white shadow-sm transition group-hover:brightness-110">
+                <Gavel className="h-4 w-4" />
                 {dict.auctions.setBid}
               </span>
             ) : (
-              <span className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 transition group-hover:border-slate-300 group-hover:bg-slate-100">
+              <span className="inline-flex h-12 w-full items-center justify-center rounded-full border-2 border-slate-200 bg-slate-50 text-sm font-bold text-slate-700 transition group-hover:border-slate-300 group-hover:bg-slate-100">
                 {dict.auctions.viewResults}
               </span>
             )}

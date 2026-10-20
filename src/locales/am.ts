@@ -170,9 +170,6 @@ export const am: Translations = {
     notFound: "ጨረታው አልተገኘም",
     backToAuctions: "ወደ ጨረታዎች ተመለስ",
     closes: "የሚዘጋው፦",
-    lubRuleTitle: "የልዩ ዝቅተኛ ጨረታ ህግ፦",
-    lubRuleBody:
-      "አሸናፊው በአንድ ሰው ብቻ የቀረበው ዝቅተኛው የጨረታ ዋጋ ነው።",
     auctionComplete: "ጨረታው ተጠናቋል",
     winningBid: "አሸናፊ ጨረታ፦ {amount}",
     resultsIn: "ውጤቶች ታውቀዋል።",

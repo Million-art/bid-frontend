@@ -168,9 +168,6 @@ export const en = {
     notFound: "Auction not found",
     backToAuctions: "Back to auctions",
     closes: "Closes",
-    lubRuleTitle: "LUB rule:",
-    lubRuleBody:
-      "the winner is the lowest bid value placed by exactly one person.",
     auctionComplete: "Auction complete",
     winningBid: "Winning bid: {amount}",
     resultsIn: "Results are in.",

@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Search,
-  SlidersHorizontal,
   ArrowUpDown,
   X,
   RefreshCw,
@@ -14,15 +13,13 @@ import { listAuctions, type Auction } from "@/services/auctions.service";
 import { queryKeys } from "@/lib/query-keys";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-type StatusFilter = "all" | "active" | "postponed" | "closed" | "executed";
-type FeeFilter = "all" | "under_100" | "100_to_500" | "over_500";
+type StatusFilter = "all" | "active" | "closed" | "executed";
 type SortOption = "newest" | "closing_soon" | "fee_asc" | "fee_desc";
 
 function normalizeStatus(status: string): StatusFilter {
   const s = String(status).toLowerCase();
   if (s === "completed" || s === "executed") return "executed";
   if (s === "active") return "active";
-  if (s === "postponed") return "postponed";
   if (s === "closed") return "closed";
   return "all";
 }
@@ -31,26 +28,14 @@ export default function AuctionsPage() {
   const { dict, t } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [feeFilter, setFeeFilter] = useState<FeeFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
 
   const statusOptions: { value: StatusFilter; label: string }[] = useMemo(
     () => [
       { value: "all", label: dict.auctions.filters.all },
       { value: "active", label: dict.auctions.filters.active },
-      { value: "postponed", label: dict.auctions.filters.postponed },
       { value: "closed", label: dict.auctions.filters.closed },
       { value: "executed", label: dict.auctions.filters.executed },
-    ],
-    [dict]
-  );
-
-  const feeOptions: { value: FeeFilter; label: string }[] = useMemo(
-    () => [
-      { value: "all", label: dict.auctions.feeFilters.all },
-      { value: "under_100", label: dict.auctions.feeFilters.under100 },
-      { value: "100_to_500", label: dict.auctions.feeFilters.from100To500 },
-      { value: "over_500", label: dict.auctions.feeFilters.over500 },
     ],
     [dict]
   );
@@ -82,7 +67,6 @@ export default function AuctionsPage() {
     const counts: Record<StatusFilter, number> = {
       all: items.length,
       active: 0,
-      postponed: 0,
       closed: 0,
       executed: 0,
     };
@@ -103,19 +87,6 @@ export default function AuctionsPage() {
         if (normalizeStatus(String(auction.status)) !== statusFilter) {
           return false;
         }
-      }
-
-      if (feeFilter === "under_100" && auction.entranceFee > 100) {
-        return false;
-      }
-      if (
-        feeFilter === "100_to_500" &&
-        (auction.entranceFee < 100 || auction.entranceFee > 500)
-      ) {
-        return false;
-      }
-      if (feeFilter === "over_500" && auction.entranceFee <= 500) {
-        return false;
       }
 
       if (q) {
@@ -145,18 +116,14 @@ export default function AuctionsPage() {
       const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return bCreated - aCreated;
     });
-  }, [items, search, statusFilter, feeFilter, sortBy]);
+  }, [items, search, statusFilter, sortBy]);
 
   const hasActiveFilters =
-    search.trim() !== "" ||
-    statusFilter !== "all" ||
-    feeFilter !== "all" ||
-    sortBy !== "newest";
+    search.trim() !== "" || statusFilter !== "all" || sortBy !== "newest";
 
   const clearFilters = () => {
     setSearch("");
     setStatusFilter("all");
-    setFeeFilter("all");
     setSortBy("newest");
   };
 
@@ -164,10 +131,7 @@ export default function AuctionsPage() {
     <div className="min-h-screen bg-slate-50 pb-20 pt-24 sm:pt-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <header className="mb-8 max-w-2xl">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--brand-blue)]">
-            {dict.auctions.tag}
-          </p>
-          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
             {dict.auctions.title}
           </h1>
           <p className="mt-3 text-base text-slate-600">
@@ -203,39 +167,20 @@ export default function AuctionsPage() {
               )}
             </div>
 
-            {/* Entrance fee & Sort selects */}
-            <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
-              <div className="relative min-w-[170px] flex-1 sm:flex-initial">
-                <SlidersHorizontal className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <select
-                  value={feeFilter}
-                  onChange={(e) => setFeeFilter(e.target.value as FeeFilter)}
-                  aria-label="Filter by entrance fee"
-                  className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/70 pl-10 pr-8 text-sm font-semibold text-slate-700 focus:border-[var(--brand-blue)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/20"
-                >
-                  {feeOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="relative min-w-[200px] flex-1 sm:flex-initial">
-                <ArrowUpDown className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  aria-label="Sort auctions"
-                  className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/70 pl-10 pr-8 text-sm font-semibold text-slate-700 focus:border-[var(--brand-blue)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/20"
-                >
-                  {sortOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div className="relative min-w-[200px] w-full sm:w-auto">
+              <ArrowUpDown className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                aria-label="Sort auctions"
+                className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/70 pl-10 pr-8 text-sm font-semibold text-slate-700 focus:border-[var(--brand-blue)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/20 sm:min-w-[200px]"
+              >
+                {sortOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

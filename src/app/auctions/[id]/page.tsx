@@ -116,11 +116,6 @@ export default function AuctionDetailPage({
               />
             </div>
 
-            <div className="rounded-xl border border-sky-100 bg-sky-50/80 px-4 py-3 text-sm text-sky-950">
-              <strong className="font-bold">{dict.auctionDetail.lubRuleTitle}</strong>{" "}
-              {dict.auctionDetail.lubRuleBody}
-            </div>
-
             <Suspense fallback={null}>
               <BidPanel
                 auction={auction}
