@@ -74,3 +74,28 @@ export const AuctionParticipationSchema = z.object({
 });
 
 export type AuctionParticipation = z.infer<typeof AuctionParticipationSchema>;
+
+export const AuctionAuditEntrySchema = z.object({
+  bidValue: z.coerce.number(),
+  count: z.coerce.number(),
+  isUnique: z.boolean(),
+  isWinner: z.boolean(),
+});
+
+export type AuctionAuditEntry = z.infer<typeof AuctionAuditEntrySchema>;
+
+export const AuctionAuditSchema = z.object({
+  auctionId: z.string(),
+  title: z.string(),
+  status: z.string(),
+  winnerBidValue: z.coerce.number().optional().nullable(),
+  winnerName: z.string().optional().nullable(),
+  totalBids: z.coerce.number(),
+  uniqueBidsCount: z.coerce.number(),
+  duplicatedBidsCount: z.coerce.number(),
+  minBidValue: z.coerce.number(),
+  maxBidValue: z.coerce.number().optional().nullable(),
+  entries: z.array(AuctionAuditEntrySchema),
+});
+
+export type AuctionAudit = z.infer<typeof AuctionAuditSchema>;

@@ -9,6 +9,7 @@ import { auctionMediaItems } from "@/lib/auction-media";
 import { AuctionCard } from "@/components/auctions/AuctionCard";
 import { AuctionCountdown } from "@/components/auctions/AuctionCountdown";
 import { BidPanel } from "@/components/auctions/BidPanel";
+import { CompletedAuctionAudit } from "@/components/auctions/CompletedAuctionAudit";
 import {
   useAuction,
   useMyBids,
@@ -125,6 +126,13 @@ export default function AuctionDetailPage({
             </Suspense>
           </div>
         </div>
+
+        {/* Public Audit Log & Verification for completed auctions */}
+        {["executed", "closed"].includes(statusKey) && (
+          <div className="mt-12">
+            <CompletedAuctionAudit auctionId={auction.id} />
+          </div>
+        )}
 
         {recommendedAuctions.length > 0 && (
           <section className="mt-16 border-t border-slate-200/80 pt-12">

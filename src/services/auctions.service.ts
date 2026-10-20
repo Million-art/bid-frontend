@@ -1,16 +1,19 @@
 import { apiFetch, type ApiResponse } from "@/lib/api";
 import {
+  AuctionAuditSchema,
   AuctionParticipationSchema,
   AuctionSchema,
   AuctionsListSchema,
   BidSchema,
   type Auction,
+  type AuctionAudit,
+  type AuctionAuditEntry,
   type AuctionParticipation,
   type AuctionsList,
   type Bid,
 } from "@/lib/schemas";
 
-export type { Auction, AuctionParticipation, AuctionsList, Bid };
+export type { Auction, AuctionAudit, AuctionAuditEntry, AuctionParticipation, AuctionsList, Bid };
 
 function unwrapData(payload: unknown): unknown {
   if (payload && typeof payload === "object" && "data" in payload) {
@@ -53,6 +56,14 @@ export async function getAuction(id: string): Promise<Auction> {
   const res = await apiFetch<ApiResponse<unknown>>(`/api/public/auctions/${id}`);
   const raw = unwrapData(res) ?? res.data ?? res;
   return AuctionSchema.parse(raw);
+}
+
+export async function getAuctionAudit(auctionId: string): Promise<AuctionAudit> {
+  const res = await apiFetch<ApiResponse<unknown>>(
+    `/api/public/auctions/${auctionId}/audit`
+  );
+  const raw = unwrapData(res) ?? res.data ?? res;
+  return AuctionAuditSchema.parse(raw);
 }
 
 export interface ParticipateResult {
