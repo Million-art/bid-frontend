@@ -63,7 +63,7 @@ export function HeroSection({
 
       <div className="relative z-20 mx-auto flex min-h-[calc(100svh-4rem)] max-w-7xl flex-col px-4 sm:min-h-[620px] sm:px-6 lg:min-h-[700px] lg:px-8">
         <motion.div
-          className="pointer-events-none absolute left-[-8px] top-8 z-0 hidden w-20 opacity-90 sm:block sm:left-2 sm:top-14 sm:w-28 lg:left-0 lg:top-20 lg:w-36"
+          className="pointer-events-none absolute left-[-4px] top-8 z-0 w-24 opacity-95 sm:block sm:left-2 sm:top-12 sm:w-36 md:w-44 lg:left-4 lg:top-16 lg:w-56 xl:left-8 xl:w-64"
           initial={reduceMotion ? false : { opacity: 0, x: -36, rotate: -28 }}
           animate={
             reduceMotion
@@ -97,7 +97,7 @@ export function HeroSection({
             width={420}
             height={420}
             priority
-            className="h-auto w-full object-contain"
+            className="h-auto w-full object-contain drop-shadow-[0_20px_35px_rgba(8,47,73,0.28)]"
           />
         </motion.div>
 
@@ -149,7 +149,7 @@ export function HeroSection({
         </motion.div>
 
         <motion.div
-          className="relative z-10 mt-auto flex w-full shrink-0 justify-center lg:absolute lg:inset-x-auto lg:bottom-0 lg:right-0 lg:z-10 lg:mt-0 lg:w-[58%] lg:max-w-[720px] lg:justify-end"
+          className="relative z-10 mt-auto flex w-full shrink-0 justify-center lg:absolute lg:inset-x-auto lg:bottom-0 lg:right-0 lg:z-10 lg:mt-0 lg:w-[48%] lg:max-w-[560px] lg:justify-end"
           initial={reduceMotion ? false : { opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
@@ -160,7 +160,7 @@ export function HeroSection({
         >
           {winnerLabel ? (
             <motion.div
-              className="pointer-events-auto absolute left-3 top-2 z-20 hidden w-[200px] sm:block lg:left-[18%] lg:top-[6%] lg:w-[220px]"
+              className="pointer-events-auto absolute left-3 top-2 z-20 hidden w-[200px] sm:block lg:left-[8%] lg:top-[4%] lg:w-[210px]"
               initial={reduceMotion ? false : { opacity: 0, scale: 0.9, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{
@@ -191,8 +191,8 @@ export function HeroSection({
             width={1375}
             height={841}
             priority
-            sizes="(max-width: 640px) 92vw, (max-width: 1024px) 70vw, 720px"
-            className="block h-auto w-full max-w-[420px] object-contain object-bottom drop-shadow-[0_18px_28px_rgba(8,47,73,0.16)] sm:max-w-[520px] lg:max-w-none lg:w-full"
+            sizes="(max-width: 640px) 85vw, (max-width: 1024px) 60vw, 540px"
+            className="block h-auto w-full max-w-[340px] object-contain object-bottom drop-shadow-[0_16px_24px_rgba(8,47,73,0.16)] sm:max-w-[440px] lg:max-w-[520px] max-h-[220px] sm:max-h-[280px] lg:max-h-[360px]"
           />
         </motion.div>
       </div>

@@ -39,7 +39,7 @@ export const en = {
     heroTag: "Lowest Unique Bid",
     heroTitlePrefix: "Win Big.",
     heroTitleHighlight: "Play Fair.",
-    heroKicker: "Experience Lowest Unique Bid",
+    heroKicker: "Pick the number nobody else will.",
     heroSubtitle:
       "A secure, transparent auction platform. Pay the entrance fee, place a unique low bid, and win the product.",
     browseAuctions: "Browse auctions",

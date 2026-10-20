@@ -41,7 +41,7 @@ export const am: Translations = {
     heroTag: "ልዩ ዝቅተኛ ጨረታ",
     heroTitlePrefix: "በትልቅ አሸንፉ።",
     heroTitleHighlight: "በፍትሕ ተጫወቱ።",
-    heroKicker: "ልዩ ዝቅተኛ ጨረታን ይለማመዱ",
+    heroKicker: "ማንም የማይመርጠውን ቁጥር ይምረጡ።",
     heroSubtitle:
       "ደህንነቱ የተጠበቀ እና ግልጽ የጨረታ መድረክ። የመግቢያ ክፍያ ይክፈሉ፣ ልዩ ዝቅተኛ ጨረታ ያስገቡ፣ እቃውን ያሸንፉ።",
     browseAuctions: "ጨረታዎችን ይመልከቱ",
