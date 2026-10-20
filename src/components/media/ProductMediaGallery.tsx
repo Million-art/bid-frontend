@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Film } from "lucide-react";
 
 export type MediaItem = { url: string; type: "image" | "video" };
@@ -39,7 +39,11 @@ export function ProductMediaGallery({
   );
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const selected = items[selectedIndex];
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [items[0]?.url]);
+
+  const selected = items[Math.min(selectedIndex, Math.max(items.length - 1, 0))];
   const isRetail = variant === "retail";
 
   if (items.length === 0) {

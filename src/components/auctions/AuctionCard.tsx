@@ -5,12 +5,14 @@ import { Gavel } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AuctionCountdown } from "@/components/auctions/AuctionCountdown";
 import type { Auction } from "@/services/auctions.service";
+import { auctionCoverImage } from "@/lib/auction-media";
 
 export function AuctionCard({ auction }: { auction: Auction }) {
   const { dict, formatCurrency } = useLanguage();
 
   const normalizedStatus = String(auction.status || "").toLowerCase();
   const isOpen = ["active", "postponed"].includes(normalizedStatus);
+  const cover = auctionCoverImage(auction);
 
   const getStatusLabel = (status: string) => {
     switch (status) {
@@ -35,10 +37,10 @@ export function AuctionCard({ auction }: { auction: Auction }) {
       className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-blue)]/40 hover:shadow-md"
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-        {auction.imageUrl ? (
+        {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={auction.imageUrl}
+            src={cover}
             alt={auction.title}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />

@@ -16,6 +16,10 @@ export const AuctionSchema = z.object({
   title: z.string(),
   description: z.string().optional().default(""),
   imageUrl: z.string().optional().nullable(),
+  imageUrls: z
+    .array(z.string())
+    .nullish()
+    .transform((v) => v ?? []),
   videoUrl: z.string().optional().nullable(),
   status: AuctionStatusSchema.or(z.string()),
   entranceFee: z.coerce.number(),

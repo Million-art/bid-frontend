@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { queryKeys } from "@/lib/query-keys";
 import { listMyParticipations } from "@/services/auctions.service";
+import { auctionCoverImage } from "@/lib/auction-media";
 
 function MyAuctionsContent() {
   const { dict, t } = useLanguage();
@@ -65,10 +66,10 @@ function MyAuctionsContent() {
                     className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-[var(--brand-blue)]/40"
                   >
                     <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                      {auction.imageUrl ? (
+                      {auctionCoverImage(auction) ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={auction.imageUrl}
+                          src={auctionCoverImage(auction) ?? ""}
                           alt=""
                           className="h-full w-full object-cover"
                         />

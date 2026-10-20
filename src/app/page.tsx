@@ -30,7 +30,16 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroSection />
+      <HeroSection
+        winner={
+          winners[0]
+            ? {
+                name: winners[0].winnerName,
+                product: winners[0].title,
+              }
+            : null
+        }
+      />
       <HomeAuctionsSection auctions={auctions} />
       <HowLubWorks />
       <WinnersSection winners={winners} />

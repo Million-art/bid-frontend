@@ -37,12 +37,16 @@ export const en = {
   },
   home: {
     heroTag: "Lowest Unique Bid",
-    heroTitlePrefix: "Win products with the",
-    heroTitleHighlight: "lowest unique bid.",
+    heroTitlePrefix: "Win Big.",
+    heroTitleHighlight: "Play Fair.",
+    heroKicker: "Experience Lowest Unique Bid",
     heroSubtitle:
-      "We post the auctions. You pay the entrance fee, place your bid values, and win when yours is the lowest unique one.",
+      "A secure, transparent auction platform. Pay the entrance fee, place a unique low bid, and win the product.",
     browseAuctions: "Browse auctions",
+    winProduct: "Win product",
     howItWorksBtn: "How it works",
+    recentWinner: "Recent winner",
+    justWon: "{name} just won {product}!",
     features: {
       platformAuctions: "Platform auctions",
       lowestUniqueWins: "Lowest unique wins",

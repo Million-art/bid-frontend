@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ProductMediaGallery } from "@/components/media/ProductMediaGallery";
+import { auctionMediaItems } from "@/lib/auction-media";
 import { AuctionCard } from "@/components/auctions/AuctionCard";
 import { AuctionCountdown } from "@/components/auctions/AuctionCountdown";
 import { BidPanel } from "@/components/auctions/BidPanel";
@@ -93,10 +94,7 @@ export default function AuctionDetailPage({
         </Link>
 
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-          <ProductMediaGallery
-            imageUrl={auction.imageUrl}
-            videoUrl={auction.videoUrl}
-          />
+          <ProductMediaGallery media={auctionMediaItems(auction)} />
 
           <div className="space-y-6">
             <div>

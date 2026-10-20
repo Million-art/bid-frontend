@@ -39,12 +39,16 @@ export const am: Translations = {
   },
   home: {
     heroTag: "ልዩ ዝቅተኛ ጨረታ",
-    heroTitlePrefix: "እቃዎችን በልዩ",
-    heroTitleHighlight: "ዝቅተኛ ጨረታ ያሸንፉ።",
+    heroTitlePrefix: "በትልቅ አሸንፉ።",
+    heroTitleHighlight: "በፍትሕ ተጫወቱ።",
+    heroKicker: "ልዩ ዝቅተኛ ጨረታን ይለማመዱ",
     heroSubtitle:
-      "እኛ ጨረታዎችን እናቀርባለን። እርስዎ የመግቢያ ክፍያ ከፍለው ጨረታዎችን ያስገቡ፣ የእርስዎ ብቻ የሆነው ዝቅተኛ ዋጋ ሲሆን ያሸንፋሉ።",
+      "ደህንነቱ የተጠበቀ እና ግልጽ የጨረታ መድረክ። የመግቢያ ክፍያ ይክፈሉ፣ ልዩ ዝቅተኛ ጨረታ ያስገቡ፣ እቃውን ያሸንፉ።",
     browseAuctions: "ጨረታዎችን ይመልከቱ",
+    winProduct: "እቃ ያሸንፉ",
     howItWorksBtn: "እንዴት ይሰራል",
+    recentWinner: "የቅርብ ጊዜ አሸናፊ",
+    justWon: "{name} {product} አሸንፏል!",
     features: {
       platformAuctions: "የመድረክ ጨረታዎች",
       lowestUniqueWins: "ልዩ ዝቅተኛው ያሸንፋል",

@@ -5,6 +5,7 @@ import { Gavel, Trophy } from "lucide-react";
 import { SectionTag } from "@/components/home/SectionTag";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { Auction } from "@/services/auctions.service";
+import { auctionCoverImage } from "@/lib/auction-media";
 
 export function WinnersSection({ winners }: { winners: Auction[] }) {
   const { dict, formatCurrency } = useLanguage();
@@ -45,17 +46,19 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {winners.map((auction) => (
+            {winners.map((auction) => {
+              const cover = auctionCoverImage(auction);
+              return (
               <Link
                 key={auction.id}
                 href={`/auctions/${auction.id}`}
                 className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:border-[var(--brand-blue)]/40 hover:shadow-md"
               >
                 <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-                  {auction.imageUrl ? (
+                  {cover ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={auction.imageUrl}
+                      src={cover}
                       alt={auction.title}
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
@@ -95,7 +98,8 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
                   </div>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
