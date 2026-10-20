@@ -23,13 +23,13 @@ export function auctionCoverImage(
 export function auctionMediaItems(
   auction: Pick<Auction, "imageUrl" | "imageUrls" | "videoUrl">
 ): MediaItem[] {
-  const images = auctionImageList(auction).map((url) => ({
+  const items: MediaItem[] = auctionImageList(auction).map((url) => ({
     url,
-    type: "image" as const,
+    type: "image",
   }));
   const video = auction.videoUrl?.trim();
   if (video) {
-    images.push({ url: video, type: "video" });
+    items.push({ url: video, type: "video" });
   }
-  return images;
+  return items;
 }
