@@ -257,25 +257,46 @@ export default function NotificationsPage() {
 
 function getIconForType(type: string) {
     switch (type) {
-        case 'winner_confirmation_request': return '🏆';
-        case 'payout_ready': return '💸';
-        case 'payout_completed': return '💰';
-        case 'prize_not_delivered': return '🚨';
-        case 'bid_approved':
-        case 'auction_approved':
-            return '🔨';
-        case 'bid_rejected':
-        case 'auction_rejected':
-            return '🛑';
+        case 'participation_confirmed':
+            return '✅';
+        case 'bid_placed':
+        case 'bid_updated':
         case 'bid_submitted':
         case 'auction_submitted':
             return '📝';
+        case 'auction_winner':
         case 'bid_drawn':
-        case 'auction_closed':
+        case 'winner_confirmation_request':
             return '🏆';
-        case 'winner_compensated': return '💵';
-        case 'legal_document_updated': return '📜';
-        default: return '✨';
+        case 'auction_no_winner':
+        case 'auction_closed':
+            return '🔒';
+        case 'auction_activated':
+            return '🟢';
+        case 'auction_postponed':
+            return '⏳';
+        case 'auction_cancelled':
+        case 'bid_rejected':
+        case 'auction_rejected':
+            return '🛑';
+        case 'payment_success':
+            return '💳';
+        case 'payment_failed':
+        case 'prize_not_delivered':
+            return '⚠️';
+        case 'refund_completed':
+        case 'payout_completed':
+        case 'winner_compensated':
+            return '💰';
+        case 'payout_ready':
+            return '💸';
+        case 'bid_approved':
+        case 'auction_approved':
+            return '🔨';
+        case 'legal_document_updated':
+            return '📜';
+        default:
+            return '✨';
     }
 }
 

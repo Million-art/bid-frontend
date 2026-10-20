@@ -16,18 +16,24 @@ export interface Notification {
 
 export interface NotificationsResponse {
     notifications: Notification[];
+    items?: Notification[];
     total: number;
     unreadCount: number;
 }
 
 export async function getNotifications(limit: number = 20, offset: number = 0): Promise<NotificationsResponse> {
     const response = await apiFetch<ApiResponse<NotificationsResponse>>(`/api/notifications?limit=${limit}&offset=${offset}`);
-    return response.data;
+    const data = response?.data;
+    return {
+        notifications: data?.notifications ?? data?.items ?? [],
+        total: data?.total ?? 0,
+        unreadCount: data?.unreadCount ?? 0,
+    };
 }
 
 export async function getUnreadCount(): Promise<number> {
     const response = await apiFetch<ApiResponse<{ count: number }>>('/api/notifications/unread/count');
-    return response.data.count;
+    return response?.data?.count ?? 0;
 }
 
 export async function markAsRead(notificationId: string): Promise<void> {
