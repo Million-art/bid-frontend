@@ -134,6 +134,25 @@ export async function googleLogin(credential: string, opts?: GoogleLoginOptions)
   return response.data;
 }
 
+export type TelegramAuthPayload = {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date: number;
+  hash: string;
+};
+
+export async function telegramLogin(payload: TelegramAuthPayload): Promise<AuthResponse> {
+  await syncCsrfToken();
+  const response = await apiFetch<ApiResponse<AuthResponse>>("/api/auth/telegram", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  return response.data;
+}
+
 export async function getMe(): Promise<{ user: User } | null> {
   try {
     const response = await apiFetch<ApiResponse<{ user: User }>>("/api/me", { skipAuthRedirect: true });

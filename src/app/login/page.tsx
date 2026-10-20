@@ -9,6 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
 import { AuthSplitShell } from "@/components/auth/AuthSplitShell";
 import { PhonePrefixInput } from "@/components/auth/PhonePrefixInput";
+import { TelegramLoginButton } from "@/components/auth/TelegramLoginButton";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,22 @@ function GoogleLoginSection() {
         text="continue_with"
       />
     </div>
+  );
+}
+
+function TelegramLoginSection() {
+  const { telegramLogin } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams?.get("redirect") || "/";
+
+  return (
+    <TelegramLoginButton
+      onAuth={async (payload) => {
+        await telegramLogin(payload);
+        router.push(redirect);
+      }}
+    />
   );
 }
 
@@ -155,11 +172,10 @@ function LoginForm() {
         </div>
       )}
 
-      {googleClientId && (
-        <div className="mb-6 mt-2 space-y-3">
-          <GoogleLoginSection />
-        </div>
-      )}
+      <div className="mb-6 mt-2 space-y-3">
+        {googleClientId ? <GoogleLoginSection /> : null}
+        <TelegramLoginSection />
+      </div>
 
       <div className="relative mb-6">
         <div className="absolute inset-0 flex items-center" aria-hidden>

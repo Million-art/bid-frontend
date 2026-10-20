@@ -118,6 +118,7 @@ function shouldSkipAuthRefreshOn401(path: string): boolean {
   return (
     path.includes("/auth/login") ||
     path.includes("/auth/google") ||
+    path.includes("/auth/telegram") ||
     path.includes("/auth/signup") ||
     path.includes("/auth/send-otp") ||
     path.includes("/auth/verify-otp") ||
