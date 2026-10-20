@@ -103,8 +103,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard" className={linkClass}>
-                  {dict.footer.myBids}
+                <Link href="/my-auctions" className={linkClass}>
+                  {dict.footer.myAuctions}
                 </Link>
               </li>
             </ul>

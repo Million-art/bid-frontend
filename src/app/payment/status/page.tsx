@@ -8,7 +8,7 @@ export default function PaymentStatusPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/dashboard");
+    router.replace("/my-auctions");
   }, [router]);
 
   return (

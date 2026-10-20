@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, LogOut, Settings, ShieldCheck, Menu, X } from "lucide-react";
+import { LogOut, Settings, ShieldCheck, Menu, X } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -34,6 +34,9 @@ export const Navbar = () => {
 
   const navLinks = [
     { label: dict.nav.auctions, href: "/auctions" },
+    ...(user
+      ? [{ label: dict.nav.myAuctions, href: "/my-auctions" }]
+      : []),
     { label: dict.nav.howItWorks, href: "/#how-it-works" },
     { label: dict.nav.winners, href: "/#winners" },
     { label: dict.nav.faq, href: "/#faq" },
@@ -69,7 +72,11 @@ export const Navbar = () => {
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-lg px-3 py-2 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+              className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors hover:bg-slate-50 hover:text-slate-900 ${
+                pathname === link.href || pathname.startsWith(`${link.href}/`)
+                  ? "text-[var(--brand-blue)]"
+                  : "text-slate-600"
+              }`}
             >
               {link.label}
             </Link>
@@ -119,13 +126,6 @@ export const Navbar = () => {
                             <ShieldCheck className="h-4 w-4" /> {dict.nav.staffPanel}
                           </Link>
                         )}
-                        <Link
-                          href="/dashboard"
-                          className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
-                          onClick={() => setAccountMenuOpen(false)}
-                        >
-                          <LayoutDashboard className="h-4 w-4" /> {dict.nav.dashboard}
-                        </Link>
                         <Link
                           href="/account"
                           className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
