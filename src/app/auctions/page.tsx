@@ -239,17 +239,17 @@ export default function AuctionsPage() {
 
         {/* Auctions Grid / States */}
         {isLoading ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, idx) => (
               <div
                 key={idx}
-                className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+                className="flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white p-2.5 sm:p-3.5 shadow-sm"
               >
-                <div className="aspect-[16/10] animate-pulse bg-slate-100" />
-                <div className="space-y-3 p-4">
-                  <div className="h-5 w-2/3 animate-pulse rounded bg-slate-100" />
-                  <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
-                  <div className="h-4 w-1/3 animate-pulse rounded bg-slate-100 pt-2" />
+                <div className="aspect-[4/3] w-full animate-pulse rounded-xl sm:rounded-2xl bg-slate-100" />
+                <div className="space-y-2 pt-3">
+                  <div className="h-4 w-2/3 animate-pulse rounded bg-slate-100" />
+                  <div className="hidden sm:block h-3 w-full animate-pulse rounded bg-slate-100" />
+                  <div className="h-4 w-1/3 animate-pulse rounded bg-slate-100 pt-1" />
                 </div>
               </div>
             ))}
@@ -289,7 +289,7 @@ export default function AuctionsPage() {
             </button>
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredItems.map((auction) => (
               <AuctionCard key={auction.id} auction={auction} />
             ))}

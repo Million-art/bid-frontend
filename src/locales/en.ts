@@ -142,6 +142,8 @@ export const en = {
     closes: "Closes",
     setBid: "Set bid",
     viewResults: "View results",
+    currentBid: "Current bid",
+    left: "left",
     countdown: {
       endsIn: "Ends in",
       ended: "Auction ended",

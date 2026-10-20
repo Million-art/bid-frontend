@@ -149,7 +149,7 @@ export default function AuctionDetailPage({
               </Link>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {recommendedAuctions.map((item) => (
                 <AuctionCard key={item.id} auction={item} />
               ))}

@@ -144,6 +144,8 @@ export const am: Translations = {
     closes: "ይዘጋል",
     setBid: "ዋጋ ይሙሉ",
     viewResults: "ውጤት ይመልከቱ",
+    currentBid: "የአሁን ዋጋ",
+    left: "ቀረው",
     countdown: {
       endsIn: "የቀረው ጊዜ",
       ended: "ጨረታው ተጠናቋል",
