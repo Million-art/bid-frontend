@@ -20,23 +20,9 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
   return (
     <section
       id="winners"
-      className="relative scroll-mt-24 overflow-hidden py-16 sm:py-20"
+      className="scroll-mt-24 py-16 sm:py-20 bg-slate-50/50"
     >
-      <div
-        className="pointer-events-none absolute inset-0 bg-[#f4f6f8]"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-0 opacity-70"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, #dbe3ea 1px, transparent 1px), linear-gradient(to bottom, #dbe3ea 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
-        }}
-        aria-hidden
-      />
-
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionTag>{dict.winners.tag}</SectionTag>
 
         {/* Section Header */}
@@ -58,50 +44,136 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
           </Link>
         </div>
 
-        {/* 3 Transparency & Audit Pillars */}
-        <div className="mb-10 grid grid-cols-1 gap-3.5 sm:grid-cols-3">
-          <div className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-xs">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[var(--brand-blue)]">
-              <FileText className="h-5 w-5" />
-            </div>
+        {/* 3 Transparency & Audit Pillars with Dedicated Concept Videos */}
+        <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-3">
+          {/* Concept 1: Public Bid Log */}
+          <div className="flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 p-4 sm:p-5 shadow-xs transition hover:border-slate-300 hover:shadow-sm">
             <div>
-              <h4 className="text-sm font-bold text-slate-900">
-                {dict.winners.trustPoints.logTitle}
-              </h4>
-              <p className="mt-1 text-xs leading-relaxed text-slate-500">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black text-white shadow-xs">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-sm font-bold text-slate-900 truncate">
+                    {dict.winners.trustPoints.logTitle}
+                  </h4>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-black">
+                    100% Transparent
+                  </span>
+                </div>
+              </div>
+              <p className="mt-2.5 text-xs leading-relaxed text-slate-500">
                 {dict.winners.trustPoints.logDesc}
               </p>
             </div>
+            <div className="mt-4 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-950 shadow-xs">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                poster="/bid_ledger_poster.avif"
+                width={820}
+                height={462}
+                className="aspect-video w-full object-cover"
+                aria-label="Public bid log animation"
+              >
+                <source
+                  src="/bid_ledger_av1.mp4"
+                  type='video/mp4; codecs="av01.0.05M.10"'
+                />
+                <source src="/bid_ledger_h264.mp4" type="video/mp4" />
+              </video>
+            </div>
           </div>
 
-          <div className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-xs">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-              <Search className="h-5 w-5" />
-            </div>
+          {/* Concept 2: Confirm Winner Yourself */}
+          <div className="flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 p-4 sm:p-5 shadow-xs transition hover:border-slate-300 hover:shadow-sm">
             <div>
-              <h4 className="text-sm font-bold text-slate-900">
-                {dict.winners.trustPoints.verifyTitle}
-              </h4>
-              <p className="mt-1 text-xs leading-relaxed text-slate-500">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black text-white shadow-xs">
+                  <Search className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-sm font-bold text-slate-900 truncate">
+                    {dict.winners.trustPoints.verifyTitle}
+                  </h4>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-black">
+                    Auditable by Anyone
+                  </span>
+                </div>
+              </div>
+              <p className="mt-2.5 text-xs leading-relaxed text-slate-500">
                 {dict.winners.trustPoints.verifyDesc}
               </p>
             </div>
+            <div className="mt-4 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-950 shadow-xs">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                poster="/bid_confirm_poster.avif"
+                width={820}
+                height={462}
+                className="aspect-video w-full object-cover"
+                aria-label="Confirm winner animation"
+              >
+                <source
+                  src="/bid_confirm_av1.mp4"
+                  type='video/mp4; codecs="av01.0.05M.10"'
+                />
+                <source src="/bid_confirm_h264.mp4" type="video/mp4" />
+              </video>
+            </div>
           </div>
 
-          <div className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-xs">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-              <Scale className="h-5 w-5" />
-            </div>
+          {/* Concept 3: Provably Fair Math */}
+          <div className="flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 p-4 sm:p-5 shadow-xs transition hover:border-slate-300 hover:shadow-sm">
             <div>
-              <h4 className="text-sm font-bold text-slate-900">
-                {dict.winners.trustPoints.fairTitle}
-              </h4>
-              <p className="mt-1 text-xs leading-relaxed text-slate-500">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black text-white shadow-xs">
+                  <Scale className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-sm font-bold text-slate-900 truncate">
+                    {dict.winners.trustPoints.fairTitle}
+                  </h4>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-black">
+                    Deterministic Math
+                  </span>
+                </div>
+              </div>
+              <p className="mt-2.5 text-xs leading-relaxed text-slate-500">
                 {dict.winners.trustPoints.fairDesc}
               </p>
             </div>
+            <div className="mt-4 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-950 shadow-xs">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                poster="/provably_fair_poster.avif"
+                width={820}
+                height={462}
+                className="aspect-video w-full object-cover"
+                aria-label="Provably fair math animation"
+              >
+                <source
+                  src="/provably_fair_av1.mp4"
+                  type='video/mp4; codecs="av01.0.05M.10"'
+                />
+                <source src="/provably_fair_h264.mp4" type="video/mp4" />
+              </video>
+            </div>
           </div>
         </div>
+
+
 
         {/* Audit Cards Grid */}
         {winners.length === 0 ? (

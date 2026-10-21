@@ -3,6 +3,8 @@
 @import "../styles/design-system.css";
 
 @theme {
+  --font-sans: var(--font-baloo), var(--font-ethiopic), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
   /* Color Palette Mappings */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -75,6 +77,17 @@ body {
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
+}
+
+/* Ensure Amharic (Ethiopic) text uses Noto Sans Ethiopic and natural syllable spacing */
+:lang(am), [lang="am"], [data-locale="am"] {
+  font-family: var(--font-ethiopic), var(--font-baloo), system-ui, -apple-system, sans-serif !important;
+}
+
+:lang(am) [class*="tracking-"],
+[lang="am"] [class*="tracking-"],
+[data-locale="am"] [class*="tracking-"] {
+  letter-spacing: 0 !important;
 }
 
 /* Hide scrollbar utility */

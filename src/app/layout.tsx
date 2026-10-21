@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`antialiased ${baloo.variable} ${notoSansEthiopic.variable}`}>
       <body
-        className={`${baloo.className} flex min-h-screen flex-col bg-white antialiased selection:bg-brand-blue/10 selection:text-brand-blue`}
+        className="font-sans flex min-h-screen flex-col bg-white antialiased selection:bg-brand-blue/10 selection:text-brand-blue"
       >
         <ErrorBoundary>
           <Providers googleClientId={googleClientId}>
