@@ -4,18 +4,17 @@ import Link from "next/link";
 import {
   Gavel,
   CheckCircle2,
-  FileText,
   Search,
-  Scale,
   ArrowRight,
 } from "lucide-react";
 import { SectionTag } from "@/components/home/SectionTag";
+import { ConceptDemoCard } from "@/components/home/ConceptDemoCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { Auction } from "@/services/auctions.service";
 import { auctionCoverImage } from "@/lib/auction-media";
 
 export function WinnersSection({ winners }: { winners: Auction[] }) {
-  const { dict, formatCurrency } = useLanguage();
+  const { dict, locale, formatCurrency } = useLanguage();
 
   return (
     <section
@@ -44,133 +43,37 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
           </Link>
         </div>
 
-        {/* 3 Transparency & Audit Pillars with Dedicated Concept Videos */}
+        {/* 3 Transparency & Audit Pillars with Interactive Demonstration Cards */}
         <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {/* Concept 1: Public Bid Log */}
-          <div className="flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 p-4 sm:p-5 shadow-xs transition hover:border-slate-300 hover:shadow-sm">
-            <div>
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black text-white shadow-xs">
-                  <FileText className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <h4 className="text-sm font-bold text-slate-900 truncate">
-                    {dict.winners.trustPoints.logTitle}
-                  </h4>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-black">
-                    100% Transparent
-                  </span>
-                </div>
-              </div>
-              <p className="mt-2.5 text-xs leading-relaxed text-slate-500">
-                {dict.winners.trustPoints.logDesc}
-              </p>
-            </div>
-            <div className="mt-4 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-950 shadow-xs">
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                poster="/bid_ledger_poster.avif"
-                width={820}
-                height={462}
-                className="aspect-video w-full object-cover"
-                aria-label="Public bid log animation"
-              >
-                <source
-                  src="/bid_ledger_av1.mp4"
-                  type='video/mp4; codecs="av01.0.05M.10"'
-                />
-                <source src="/bid_ledger_h264.mp4" type="video/mp4" />
-              </video>
-            </div>
-          </div>
+          <ConceptDemoCard
+            title={dict.winners.trustPoints.logTitle}
+            tag={locale === "am" ? "100% ይፋዊ" : "100% Transparent"}
+            description={dict.winners.trustPoints.logDesc}
+            featurePill={locale === "am" ? "ይፋዊ የጨረታ መዝገብ" : "Public Post-Round Ledger"}
+            posterSrc="/bid_ledger_poster.avif"
+            av1Src="/bid_ledger_av1.mp4"
+            h264Src="/bid_ledger_h264.mp4"
+          />
 
-          {/* Concept 2: Confirm Winner Yourself */}
-          <div className="flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 p-4 sm:p-5 shadow-xs transition hover:border-slate-300 hover:shadow-sm">
-            <div>
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black text-white shadow-xs">
-                  <Search className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <h4 className="text-sm font-bold text-slate-900 truncate">
-                    {dict.winners.trustPoints.verifyTitle}
-                  </h4>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-black">
-                    Auditable by Anyone
-                  </span>
-                </div>
-              </div>
-              <p className="mt-2.5 text-xs leading-relaxed text-slate-500">
-                {dict.winners.trustPoints.verifyDesc}
-              </p>
-            </div>
-            <div className="mt-4 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-950 shadow-xs">
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                poster="/bid_confirm_poster.avif"
-                width={820}
-                height={462}
-                className="aspect-video w-full object-cover"
-                aria-label="Confirm winner animation"
-              >
-                <source
-                  src="/bid_confirm_av1.mp4"
-                  type='video/mp4; codecs="av01.0.05M.10"'
-                />
-                <source src="/bid_confirm_h264.mp4" type="video/mp4" />
-              </video>
-            </div>
-          </div>
+          <ConceptDemoCard
+            title={dict.winners.trustPoints.verifyTitle}
+            tag={locale === "am" ? "በማንም ሊረጋገጥ የሚችል" : "Auditable by Anyone"}
+            description={dict.winners.trustPoints.verifyDesc}
+            featurePill={locale === "am" ? "የውጤት ማረጋገጫ" : "Self-Audit Verification"}
+            posterSrc="/bid_confirm_poster.avif"
+            av1Src="/bid_confirm_av1.mp4"
+            h264Src="/bid_confirm_h264.mp4"
+          />
 
-          {/* Concept 3: Provably Fair Math */}
-          <div className="flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 p-4 sm:p-5 shadow-xs transition hover:border-slate-300 hover:shadow-sm">
-            <div>
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black text-white shadow-xs">
-                  <Scale className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <h4 className="text-sm font-bold text-slate-900 truncate">
-                    {dict.winners.trustPoints.fairTitle}
-                  </h4>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-black">
-                    Deterministic Math
-                  </span>
-                </div>
-              </div>
-              <p className="mt-2.5 text-xs leading-relaxed text-slate-500">
-                {dict.winners.trustPoints.fairDesc}
-              </p>
-            </div>
-            <div className="mt-4 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-950 shadow-xs">
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                poster="/provably_fair_poster.avif"
-                width={820}
-                height={462}
-                className="aspect-video w-full object-cover"
-                aria-label="Provably fair math animation"
-              >
-                <source
-                  src="/provably_fair_av1.mp4"
-                  type='video/mp4; codecs="av01.0.05M.10"'
-                />
-                <source src="/provably_fair_h264.mp4" type="video/mp4" />
-              </video>
-            </div>
-          </div>
+          <ConceptDemoCard
+            title={dict.winners.trustPoints.fairTitle}
+            tag={locale === "am" ? "የሂሳብ ቀመር" : "Deterministic Math"}
+            description={dict.winners.trustPoints.fairDesc}
+            featurePill={locale === "am" ? "አውቶማቲክ ስሌት" : "Autonomous Algorithm"}
+            posterSrc="/provably_fair_poster.avif"
+            av1Src="/provably_fair_av1.mp4"
+            h264Src="/provably_fair_h264.mp4"
+          />
         </div>
 
 
@@ -188,7 +91,7 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
                 <Link
                   key={auction.id}
                   href={`/auctions/${auction.id}`}
-                  className="group flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white p-3 sm:p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
+                  className="group flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white p-3 sm:p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[var(--brand-blue)]/40 hover:shadow-md"
                 >
                   {/* Product Cover with Verification Badges */}
                   <div className="relative aspect-[16/10] overflow-hidden rounded-xl sm:rounded-2xl bg-neutral-100 flex items-center justify-center">
@@ -204,13 +107,13 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
                         <Gavel className="h-10 w-10" />
                       </div>
                     )}
-                    {/* Audited Pill Badge */}
-                    <span className="absolute left-2.5 top-2.5 z-10 inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-xs">
+                    {/* Audited Pill Badge - Brand Blue */}
+                    <span className="absolute left-2.5 top-2.5 z-10 inline-flex items-center gap-1.5 rounded-full bg-[var(--brand-blue)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-xs">
                       <CheckCircle2 className="h-3 w-3" />
                       <span>{dict.winners.auditedAndVerified}</span>
                     </span>
 
-                    {/* Winning Unique Value Badge */}
+                    {/* Winning Unique Value Badge - Brand Yellow */}
                     {auction.winnerBidValue != null && (
                       <span className="absolute right-2.5 top-2.5 z-10 inline-flex items-center gap-1 rounded-full bg-[var(--brand-yellow)] px-2.5 py-1 text-[11px] font-extrabold text-black shadow-xs">
                         {formatCurrency(Number(auction.winnerBidValue))}
@@ -239,7 +142,7 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
                           <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                             {dict.winners.winningBid}
                           </p>
-                          <p className="text-xs sm:text-sm font-black text-emerald-600 tabular-nums">
+                          <p className="text-xs sm:text-sm font-black text-slate-900 tabular-nums">
                             {formatCurrency(Number(auction.winnerBidValue))}
                           </p>
                         </div>
