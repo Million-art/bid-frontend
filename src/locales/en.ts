@@ -77,7 +77,7 @@ export const en = {
       "When bidding ends, the winner is the lowest value placed by exactly one person.",
   },
   winners: {
-    tag: "100% Transparent · Provably Fair",
+    tag: "Verification",
     title: "Every bid is public. Every result is checkable.",
     subtitle:
       "When a round closes, the full list of bids is published. Find your number and confirm the winner yourself.",

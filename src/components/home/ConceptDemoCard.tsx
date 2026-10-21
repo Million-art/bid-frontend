@@ -77,8 +77,8 @@ export function ConceptDemoCard({
         </span>
       </div>
 
-      {/* Description: 2 lines with balanced vertical rhythm */}
-      <p className="mt-2.5 min-h-[2.5rem] text-xs leading-relaxed text-slate-600">
+      {/* Description: responsive spacing */}
+      <p className="mt-2 text-xs leading-relaxed text-slate-600 sm:mt-2.5 sm:min-h-[2.5rem]">
         {description}
       </p>
 
