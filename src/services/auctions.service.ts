@@ -85,13 +85,22 @@ export interface VerifyPaymentResult {
   bids?: Bid[];
 }
 
-/** Pay entrance fee & set initial bid via Chapa checkout. */
+/** Pay entrance fee × ticket count & place bid pack via Chapa checkout. */
 export async function participateInAuction(
   auctionId: string,
-  options?: { bidValue?: number; returnUrl?: string; checkoutUrl?: string }
+  options?: {
+    bidValue?: number;
+    bidValues?: number[];
+    returnUrl?: string;
+    checkoutUrl?: string;
+  }
 ): Promise<ParticipateResult> {
   const body: Record<string, unknown> = {};
-  if (options?.bidValue && options.bidValue > 0) body.bidValue = options.bidValue;
+  if (options?.bidValues && options.bidValues.length > 0) {
+    body.bidValues = options.bidValues;
+  } else if (options?.bidValue && options.bidValue > 0) {
+    body.bidValue = options.bidValue;
+  }
   if (options?.returnUrl) body.returnUrl = options.returnUrl;
   if (options?.checkoutUrl) body.checkoutUrl = options.checkoutUrl;
 
@@ -108,10 +117,14 @@ export async function participateInAuction(
 /** Verify Chapa transaction after return from checkout. */
 export async function verifyChapaPayment(
   txRef: string,
-  bidValue?: number
+  bidValueOrValues?: number | number[]
 ): Promise<VerifyPaymentResult> {
   const body: Record<string, unknown> = { txRef };
-  if (bidValue && bidValue > 0) body.bidValue = bidValue;
+  if (Array.isArray(bidValueOrValues) && bidValueOrValues.length > 0) {
+    body.bidValues = bidValueOrValues;
+  } else if (typeof bidValueOrValues === "number" && bidValueOrValues > 0) {
+    body.bidValue = bidValueOrValues;
+  }
 
   const res = await apiFetch<ApiResponse<VerifyPaymentResult>>(
     `/api/public/payments/verify`,

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +19,8 @@ import {
   type Bid,
 } from "@/services/auctions.service";
 
+const MAX_PACK = 10;
+
 function isBidAlreadyUpdated(bid: Bid): boolean {
   if (bid.canUpdate === false) return true;
   if ((bid.updateCount ?? 0) >= 1) return true;
@@ -29,6 +32,10 @@ function isBidAlreadyUpdated(bid: Bid): boolean {
     }
   }
   return false;
+}
+
+function roundMoney(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
 export function BidPanel({
@@ -45,16 +52,23 @@ export function BidPanel({
   const router = useRouter();
   const searchParams = useSearchParams();
   const qc = useQueryClient();
-  const [bidValue, setBidValue] = useState("");
+  const [draftValue, setDraftValue] = useState("");
+  const [packTags, setPackTags] = useState<number[]>([]);
+  const [packError, setPackError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const verifiedRef = useRef<string | null>(null);
+  const draftRef = useRef<HTMLInputElement>(null);
 
   const isOpen =
     auction.status === "active" || auction.status === "postponed";
   const hasJoined = Boolean(user) && (participating || myBids.length > 0);
   const canBid = hasJoined && isOpen;
   const totalBidsCount = auction.totalBids ?? 0;
+  const packTotal = roundMoney(packTags.length * Number(auction.entranceFee || 0));
+  const existingValues = new Set(
+    myBids.map((b) => roundMoney(Number(b.bidValue)).toFixed(2))
+  );
 
   const invalidate = () => {
     void qc.invalidateQueries({
@@ -69,8 +83,13 @@ export function BidPanel({
   };
 
   const verifyMutation = useMutation({
-    mutationFn: ({ txRef, bidVal }: { txRef: string; bidVal?: number }) =>
-      verifyChapaPayment(txRef, bidVal),
+    mutationFn: ({
+      txRef,
+      bidValues,
+    }: {
+      txRef: string;
+      bidValues?: number[];
+    }) => verifyChapaPayment(txRef, bidValues),
     onSuccess: (res) => {
       try {
         sessionStorage.removeItem(`carramarket_pending_chapa_${auction.id}`);
@@ -80,6 +99,7 @@ export function BidPanel({
       if (res.verified) {
         toast.success(dict.auctionDetail.paymentVerifiedSuccess);
       }
+      setPackTags([]);
       invalidate();
       router.replace(`/auctions/${auction.id}`);
     },
@@ -94,8 +114,21 @@ export function BidPanel({
       searchParams.get("trx_ref") ||
       searchParams.get("txRef");
     const urlBidRaw = searchParams.get("bid_value");
+    const urlBidsRaw = searchParams.get("bid_values");
     let txRefToVerify = urlTxRef || "";
-    let bidValToVerify = urlBidRaw ? Number.parseFloat(urlBidRaw) : undefined;
+    let bidValuesToVerify: number[] | undefined;
+
+    if (urlBidsRaw) {
+      const parsed = urlBidsRaw
+        .split(",")
+        .map((p) => Number.parseFloat(p.trim()))
+        .filter((n) => Number.isFinite(n) && n > 0)
+        .map(roundMoney);
+      if (parsed.length > 0) bidValuesToVerify = parsed;
+    } else if (urlBidRaw) {
+      const one = Number.parseFloat(urlBidRaw);
+      if (Number.isFinite(one) && one > 0) bidValuesToVerify = [roundMoney(one)];
+    }
 
     if (!txRefToVerify) {
       try {
@@ -106,6 +139,7 @@ export function BidPanel({
           const parsed = JSON.parse(stored) as {
             txRef?: string;
             bidValue?: number;
+            bidValues?: number[];
             ts?: number;
           };
           if (
@@ -113,8 +147,12 @@ export function BidPanel({
             (!parsed.ts || Date.now() - parsed.ts < 30 * 60 * 1000)
           ) {
             txRefToVerify = parsed.txRef;
-            if (!bidValToVerify && parsed.bidValue) {
-              bidValToVerify = parsed.bidValue;
+            if (!bidValuesToVerify?.length) {
+              if (parsed.bidValues?.length) {
+                bidValuesToVerify = parsed.bidValues.map(roundMoney);
+              } else if (parsed.bidValue) {
+                bidValuesToVerify = [roundMoney(parsed.bidValue)];
+              }
             }
           }
         }
@@ -127,47 +165,77 @@ export function BidPanel({
       verifiedRef.current = txRefToVerify;
       verifyMutation.mutate({
         txRef: txRefToVerify,
-        bidVal:
-          bidValToVerify && Number.isFinite(bidValToVerify) && bidValToVerify > 0
-            ? bidValToVerify
-            : undefined,
+        bidValues: bidValuesToVerify,
       });
     }
   }, [auction.id, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const validateBidAmount = (value: number): boolean => {
+  const validateBidAmount = (value: number, silent = false): boolean => {
     if (!Number.isFinite(value) || value <= 0) {
-      toast.error(dict.auctionDetail.invalidBidError);
+      if (!silent) setPackError(dict.auctionDetail.invalidBidError);
       return false;
     }
     const min = auction.minBidValue ?? 0.01;
     if (value < min) {
-      toast.error(`${dict.auctionDetail.bidRange}: ${formatCurrency(min)}+`);
+      if (!silent) {
+        setPackError(`${dict.auctionDetail.bidRange}: ${formatCurrency(min)}+`);
+      }
       return false;
     }
     if (auction.maxBidValue != null && value > Number(auction.maxBidValue)) {
-      toast.error(
-        `${dict.auctionDetail.bidRange}: ${formatCurrency(min)} – ${formatCurrency(
-          Number(auction.maxBidValue)
-        )}`
-      );
+      if (!silent) {
+        setPackError(
+          `${dict.auctionDetail.bidRange}: ${formatCurrency(min)} – ${formatCurrency(
+            Number(auction.maxBidValue)
+          )}`
+        );
+      }
       return false;
     }
     return true;
   };
 
+  const addTag = () => {
+    setPackError(null);
+    if (packTags.length >= MAX_PACK) {
+      setPackError(dict.auctionDetail.maxPackReached);
+      return;
+    }
+    const value = roundMoney(Number.parseFloat(draftValue));
+    if (!validateBidAmount(value)) return;
+
+    const key = value.toFixed(2);
+    if (packTags.some((t) => t.toFixed(2) === key)) {
+      setPackError(dict.auctionDetail.duplicatePackBid);
+      return;
+    }
+    if (existingValues.has(key)) {
+      setPackError(dict.auctionDetail.duplicateExistingBid);
+      return;
+    }
+
+    setPackTags((prev) => [...prev, value]);
+    setDraftValue("");
+    draftRef.current?.focus();
+  };
+
+  const removeTag = (index: number) => {
+    setPackError(null);
+    setPackTags((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const participateMutation = useMutation({
-    mutationFn: (initialBid: number) => {
+    mutationFn: (bidValues: number[]) => {
       const returnUrl =
         typeof window !== "undefined"
           ? `${window.location.origin}/auctions/${auction.id}`
           : undefined;
       return participateInAuction(auction.id, {
-        bidValue: initialBid,
+        bidValues,
         returnUrl,
       });
     },
-    onSuccess: (result, initialBid) => {
+    onSuccess: (result, bidValues) => {
       if (result.checkoutUrl) {
         try {
           if (result.txRef) {
@@ -175,7 +243,7 @@ export function BidPanel({
               `carramarket_pending_chapa_${auction.id}`,
               JSON.stringify({
                 txRef: result.txRef,
-                bidValue: initialBid,
+                bidValues,
                 ts: Date.now(),
               })
             );
@@ -187,7 +255,7 @@ export function BidPanel({
         return;
       }
       toast.success(dict.auctionDetail.joinSuccess);
-      setBidValue("");
+      setPackTags([]);
       invalidate();
     },
     onError: (err) => toastApiError(err, dict.auctionDetail.joinError),
@@ -206,6 +274,15 @@ export function BidPanel({
 
   const requireLogin = () => {
     router.push(`/login?redirect=${encodeURIComponent(`/auctions/${auction.id}`)}`);
+  };
+
+  const submitPack = () => {
+    setPackError(null);
+    if (packTags.length === 0) {
+      setPackError(dict.auctionDetail.addAtLeastOneBid);
+      return;
+    }
+    participateMutation.mutate(packTags);
   };
 
   if (auction.status === "executed") {
@@ -280,6 +357,9 @@ export function BidPanel({
           </p>
           <p className="text-2xl font-extrabold text-slate-900">
             {formatCurrency(auction.entranceFee)}
+            <span className="ml-1 text-sm font-semibold text-slate-500">
+              {dict.auctionDetail.perBid}
+            </span>
           </p>
           <p className="mt-1 text-xs text-slate-500">
             {dict.auctionDetail.bidRange}: {formatCurrency(auction.minBidValue ?? 0.01)}
@@ -313,44 +393,112 @@ export function BidPanel({
         </Button>
       ) : (
         <>
-          <form
-            className="space-y-3"
-            onSubmit={(e) => {
-              e.preventDefault();
-              const value = Number.parseFloat(bidValue);
-              if (!validateBidAmount(value)) return;
-              participateMutation.mutate(value);
-            }}
-          >
+          <div className="space-y-3">
             <label className="block text-sm font-semibold text-slate-800">
               {dict.auctionDetail.yourBidValue}
             </label>
-            <Input
-              type="number"
-              step="0.01"
-              min={auction.minBidValue ?? 0.01}
-              max={auction.maxBidValue ?? undefined}
-              value={bidValue}
-              onChange={(e) => setBidValue(e.target.value)}
-              placeholder={dict.auctionDetail.bidPlaceholder}
-              disabled={!isOpen || participateMutation.isPending}
-            />
+            <div className="flex gap-2">
+              <Input
+                ref={draftRef}
+                type="number"
+                step="0.01"
+                min={auction.minBidValue ?? 0.01}
+                max={auction.maxBidValue ?? undefined}
+                value={draftValue}
+                onChange={(e) => {
+                  setPackError(null);
+                  setDraftValue(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addTag();
+                  }
+                }}
+                placeholder={dict.auctionDetail.bidPlaceholder}
+                disabled={!isOpen || participateMutation.isPending}
+                className="h-11"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 shrink-0 gap-1 px-3 font-semibold"
+                onClick={addTag}
+                disabled={
+                  !isOpen ||
+                  participateMutation.isPending ||
+                  packTags.length >= MAX_PACK
+                }
+              >
+                <Plus className="h-4 w-4" />
+                {dict.auctionDetail.addBidBtn}
+              </Button>
+            </div>
+            <p className="text-xs text-slate-500">{dict.auctionDetail.addBidHint}</p>
+
+            {packTags.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    {dict.auctionDetail.yourPack}
+                  </p>
+                  <span className="text-xs font-semibold text-slate-500">
+                    {t("auctionDetail.packCount", {
+                      count: String(packTags.length),
+                    })}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {packTags.map((value, index) => (
+                    <span
+                      key={`${value.toFixed(2)}-${index}`}
+                      className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 py-1 pl-3 pr-1.5 text-sm font-semibold text-slate-900"
+                    >
+                      {formatCurrency(value)}
+                      <button
+                        type="button"
+                        aria-label={dict.auctionDetail.removeBidAria}
+                        className="rounded-full p-0.5 text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+                        onClick={() => removeTag(index)}
+                        disabled={participateMutation.isPending}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {packError && (
+              <p className="text-xs font-medium text-red-600">{packError}</p>
+            )}
+
             <p className="text-xs text-slate-500">
               {dict.auctionDetail.oneUpdateNotice}
             </p>
+
             <Button
-              type="submit"
-              className="w-full h-12 font-bold"
-              disabled={!isOpen || participateMutation.isPending}
+              type="button"
+              className="h-12 w-full font-bold"
+              disabled={
+                !isOpen ||
+                participateMutation.isPending ||
+                packTags.length === 0
+              }
+              onClick={submitPack}
             >
               {participateMutation.isPending
                 ? dict.auctionDetail.redirectingToChapa
-                : dict.auctionDetail.setBidAndPayChapa}
+                : t("auctionDetail.placePackAndPayChapa", {
+                    count: String(Math.max(packTags.length, 1)),
+                    amount: formatCurrency(packTotal || auction.entranceFee),
+                  })}
             </Button>
-          </form>
+          </div>
 
           {myBids.length > 0 && (
-            <div className="pt-2 border-t border-slate-100">
+            <div className="border-t border-slate-100 pt-2">
               <div className="mb-2 flex items-center justify-between">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   {dict.auctionDetail.yourBids}
