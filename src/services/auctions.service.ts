@@ -32,7 +32,7 @@ function unwrapData(payload: unknown): unknown {
   return payload;
 }
 
-/** Public list — strips any bid fields that may appear in the payload. */
+/** Public list  strips any bid fields that may appear in the payload. */
 export async function listAuctions(params?: {
   page?: number;
   limit?: number;

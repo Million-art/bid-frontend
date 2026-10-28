@@ -139,7 +139,7 @@ export function TelegramPrompts() {
         /* ignore */
       }
     } catch {
-      /* user cancelled or network error — keep prompt */
+      /* user cancelled or network error  keep prompt */
     } finally {
       setContactBusy(false);
     }

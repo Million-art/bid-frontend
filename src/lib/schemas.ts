@@ -13,7 +13,7 @@ export type AuctionStatus = z.infer<typeof AuctionStatusSchema>;
 
 export const AuctionCardTagSchema = z.enum(["hot", "new", "almost_unlocked"]);
 
-/** Public list/card payload — deliberately excludes bid values. */
+/** Public list/card payload  deliberately excludes bid values. */
 export const PublicAuctionCardSchema = z.object({
   id: z.string(),
   title: z.string(),

@@ -241,7 +241,7 @@ export const am: Translations = {
     loginToJoin: "ለመቀላቀል ይግቡ",
     payAndJoin: "የመግቢያ ክፍያ ከፍለው ይቀላቀሉ",
     setBidAndPayChapa: "ዋጋ ይሙሉ እና በቻፓ (Chapa) ይክፈሉ",
-    placePackAndPayChapa: "{count} ጨረታ ይጫኑ — {amount}",
+    placePackAndPayChapa: "{count} ጨረታ ይጫኑ  {amount}",
     redirectingToChapa: "ወደ ቻፓ በመሄድ ላይ…",
     verifyingPayment: "የቻፓ ክፍያ በማረጋገጥ ላይ…",
     paymentVerifiedSuccess: "ክፍያዎ ተረጋግጧል እና ጨረታዎ ተመዝግቧል!",

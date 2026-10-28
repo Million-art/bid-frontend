@@ -77,7 +77,7 @@ function InviteStaffModal({
         phone: phone.trim() || undefined,
         role,
       });
-      toast.success("Invite sent — they will set a password via email");
+      toast.success("Invite sent  they will set a password via email");
       onCreated();
       onClose();
     } catch (err) {

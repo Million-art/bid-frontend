@@ -239,7 +239,7 @@ export const en = {
     loginToJoin: "Log in to join",
     payAndJoin: "Pay entrance fee & join",
     setBidAndPayChapa: "Set bid & Pay via Chapa",
-    placePackAndPayChapa: "Place {count} bids — {amount}",
+    placePackAndPayChapa: "Place {count} bids  {amount}",
     redirectingToChapa: "Redirecting to Chapa…",
     verifyingPayment: "Verifying Chapa payment…",
     paymentVerifiedSuccess: "Payment verified & bid placed!",
@@ -270,7 +270,7 @@ export const en = {
     bidUpdatedSuccess: "Bid updated",
     couldNotPlaceBid: "Could not place bid",
     couldNotUpdateBid: "Could not update bid",
-    joinSuccess: "You're in — place your bid",
+    joinSuccess: "You're in  place your bid",
     joinError: "Could not join this auction",
     recommendedTag: "More to explore",
     recommendedTitle: "Recommended Auctions",
@@ -400,7 +400,7 @@ export const en = {
   telegram: {
     channelTitle: "Join our Telegram",
     channelBody:
-      "Get new auctions and winners first — follow CarraMarket on Telegram.",
+      "Get new auctions and winners first  follow CarraMarket on Telegram.",
     joinChannel: "Join Telegram",
     maybeLater: "Maybe later",
     contactTitle: "Share your phone",
