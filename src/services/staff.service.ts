@@ -388,6 +388,68 @@ export async function deleteParticipant(id: string): Promise<void> {
   });
 }
 
+export type TelegramBroadcastTarget = "channel" | "bot";
+export type TelegramMediaType = "none" | "photo" | "video" | "animation";
+
+export interface TelegramBroadcastPayload {
+  target: TelegramBroadcastTarget;
+  text?: string;
+  mediaType?: TelegramMediaType;
+  fileId?: string;
+  buttonText?: string;
+  buttonUrl?: string;
+}
+
+export interface TelegramBroadcastStats {
+  botAudience: number;
+  fromUsers: number;
+  fromSubscribers: number;
+  channelConfigured: boolean;
+  botConfigured: boolean;
+}
+
+export interface TelegramBroadcastResult {
+  target: string;
+  sent: number;
+  failed: number;
+  skipped: number;
+  audience: number;
+}
+
+export async function getTelegramBroadcastStats(): Promise<TelegramBroadcastStats> {
+  const res = await apiFetch<ApiResponse<TelegramBroadcastStats>>(
+    "/api/telegram/broadcast/stats"
+  );
+  const raw = (unwrapData(res) ?? res.data ?? {}) as Partial<TelegramBroadcastStats>;
+  return {
+    botAudience: Number(raw.botAudience ?? 0),
+    fromUsers: Number(raw.fromUsers ?? 0),
+    fromSubscribers: Number(raw.fromSubscribers ?? 0),
+    channelConfigured: Boolean(raw.channelConfigured),
+    botConfigured: Boolean(raw.botConfigured),
+  };
+}
+
+export async function sendTelegramBroadcast(
+  payload: TelegramBroadcastPayload
+): Promise<TelegramBroadcastResult> {
+  const res = await apiFetch<ApiResponse<TelegramBroadcastResult>>(
+    "/api/telegram/broadcast",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+  const raw = (unwrapData(res) ?? res.data ?? {}) as Partial<TelegramBroadcastResult>;
+  return {
+    target: String(raw.target ?? payload.target),
+    sent: Number(raw.sent ?? 0),
+    failed: Number(raw.failed ?? 0),
+    skipped: Number(raw.skipped ?? 0),
+    audience: Number(raw.audience ?? 0),
+  };
+}
+
 export async function uploadStaffMedia(file: File): Promise<{ url: string }> {
   const token = await getCsrfToken();
   const formData = new FormData();

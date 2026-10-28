@@ -26,6 +26,7 @@ import {
   ArrowUpRight,
   UserCog,
   Contact,
+  Megaphone,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { isStaffRole } from "@/services/auth.service";
@@ -36,6 +37,7 @@ import { PhonePrefixInput } from "@/components/auth/PhonePrefixInput";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { StaffUsersPanel } from "@/components/staff/StaffUsersPanel";
 import { ParticipantsPanel } from "@/components/staff/ParticipantsPanel";
+import { BroadcastPanel } from "@/components/staff/BroadcastPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -55,7 +57,7 @@ import {
 import { auctionCoverImage, auctionImageList } from "@/lib/auction-media";
 import type { Auction } from "@/lib/schemas";
 
-type StaffSection = "auctions" | "users" | "customers";
+type StaffSection = "auctions" | "users" | "customers" | "broadcast";
 
 const STATUS_BADGE: Record<string, string> = {
   draft: "bg-slate-100 text-slate-700 border-slate-200",
@@ -924,6 +926,7 @@ export default function StaffPanelPage() {
               { id: "auctions", label: "Auctions", icon: Gavel },
               { id: "users", label: "Staff users", icon: UserCog },
               { id: "customers", label: "Customers", icon: Contact },
+              { id: "broadcast", label: "Broadcast", icon: Megaphone },
             ] as const
           ).map(({ id, label, icon: Icon }) => (
             <button
@@ -951,6 +954,10 @@ export default function StaffPanelPage() {
 
         {section === "customers" && (
           <ParticipantsPanel actorRole={String(user.role || "")} />
+        )}
+
+        {section === "broadcast" && (
+          <BroadcastPanel actorRole={String(user.role || "")} />
         )}
 
         {section === "auctions" && (
