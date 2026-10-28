@@ -200,10 +200,10 @@ export function TelegramPrompts() {
           />
 
           <div className="relative px-4 pb-4 pt-5 text-center">
-            <div className="mx-auto h-[76px] w-[76px] overflow-hidden rounded-full shadow-[0_12px_30px_-10px_rgba(34,158,217,0.75)] ring-[3px] ring-white/95">
+            <div className="mx-auto flex h-[76px] w-[76px] items-center justify-center overflow-hidden rounded-full bg-black shadow-[0_12px_30px_-10px_rgba(15,23,42,0.45)] ring-[3px] ring-white/95">
               <Image
-                src="/telegram/app-icon.webp"
-                alt="Telegram"
+                src="/logo.png"
+                alt="CarraMarket"
                 width={76}
                 height={76}
                 className="h-full w-full object-cover object-center"
