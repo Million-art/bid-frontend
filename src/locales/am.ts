@@ -399,4 +399,16 @@ export const am: Translations = {
     terms: "ውሎች እና ሁኔታዎች",
     privacy: "የግላዊነት ፖሊሲ",
   },
+  telegram: {
+    channelTitle: "ቴሌግራም ይቀላቀሉ",
+    channelBody:
+      "አዲስ ጨረታዎችን እና አሸናፊዎችን በፍጥነት ለማየት የCarraMarket ቴሌግራም ቻናል ይቀላቀሉ።",
+    joinChannel: "ቴሌግራም ይቀላቀሉ",
+    maybeLater: "ምናልባት በኋላ",
+    contactTitle: "ስልክ ቁጥርዎን ያጋሩ",
+    contactBody:
+      "መለያዎን ለማረጋገጥ እና ስለ አሸናፊነት ለማሳወቅ የቴሌግራም እውቂያዎን ያጋሩ።",
+    shareContact: "እውቂያ ያጋሩ",
+    contactSharing: "በመጋራት ላይ…",
+  },
 };

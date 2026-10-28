@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Baloo_2, Noto_Sans_Ethiopic } from "next/font/google";
 import { AppFrame } from "@/components/layout/AppFrame";
 import { Providers } from "@/components/providers/Providers";
@@ -36,6 +37,10 @@ export default function RootLayout({
       <body
         className="font-sans flex min-h-screen flex-col bg-white antialiased selection:bg-brand-blue/10 selection:text-brand-blue"
       >
+        <Script
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="beforeInteractive"
+        />
         <ErrorBoundary>
           <Providers googleClientId={googleClientId}>
             <AppFrame>{children}</AppFrame>

@@ -397,6 +397,18 @@ export const en = {
     terms: "Terms",
     privacy: "Privacy",
   },
+  telegram: {
+    channelTitle: "Join our Telegram",
+    channelBody:
+      "Get new auctions and winners first — follow CarraMarket on Telegram.",
+    joinChannel: "Join Telegram",
+    maybeLater: "Maybe later",
+    contactTitle: "Share your phone",
+    contactBody:
+      "Share your Telegram contact so we can verify your account and reach you about wins.",
+    shareContact: "Share contact",
+    contactSharing: "Sharing…",
+  },
 };
 
 export type Translations = typeof en;

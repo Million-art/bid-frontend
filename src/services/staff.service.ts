@@ -403,7 +403,6 @@ export interface TelegramBroadcastPayload {
 export interface TelegramBroadcastStats {
   botAudience: number;
   fromUsers: number;
-  fromSubscribers: number;
   channelConfigured: boolean;
   botConfigured: boolean;
 }
@@ -423,8 +422,7 @@ export async function getTelegramBroadcastStats(): Promise<TelegramBroadcastStat
   const raw = (unwrapData(res) ?? res.data ?? {}) as Partial<TelegramBroadcastStats>;
   return {
     botAudience: Number(raw.botAudience ?? 0),
-    fromUsers: Number(raw.fromUsers ?? 0),
-    fromSubscribers: Number(raw.fromSubscribers ?? 0),
+    fromUsers: Number(raw.fromUsers ?? raw.botAudience ?? 0),
     channelConfigured: Boolean(raw.channelConfigured),
     botConfigured: Boolean(raw.botConfigured),
   };

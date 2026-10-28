@@ -71,7 +71,7 @@ export function BroadcastPanel({ actorRole }: { actorRole: string }) {
       statsQuery.data &&
       statsQuery.data.botAudience === 0
     ) {
-      toast.error("No bot subscribers with Telegram IDs yet");
+      toast.error("No users with Telegram IDs yet");
       return;
     }
 
@@ -136,7 +136,7 @@ export function BroadcastPanel({ actorRole }: { actorRole: string }) {
             {statsQuery.isLoading ? "…" : (stats?.botAudience ?? 0)}
           </p>
           <p className="mt-1 text-xs text-slate-500">
-            users + /start subscribers
+            users with telegram_id
           </p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
