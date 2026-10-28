@@ -408,6 +408,7 @@ export const en = {
       "Share your Telegram contact so we can verify your account and reach you about wins.",
     shareContact: "Share contact",
     contactSharing: "Sharing…",
+    contactThanks: "Thanks — phone saved.",
   },
 };
 

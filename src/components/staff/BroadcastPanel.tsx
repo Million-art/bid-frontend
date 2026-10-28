@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Megaphone, Send } from "lucide-react";
+import { Eye, FlaskConical, Megaphone, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toastApiError } from "@/lib/toast-api-error";
@@ -22,11 +22,28 @@ const MEDIA_OPTIONS: { value: TelegramMediaType; label: string }[] = [
   { value: "animation", label: "GIF / animation (file_id)" },
 ];
 
+/** Escape then restore Telegram-safe HTML tags for a live preview. */
+function telegramHtmlToPreview(raw: string): string {
+  const escaped = raw
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  return escaped
+    .replace(/&lt;(\/?(?:b|strong|i|em|u|ins|s|strike|del|code|pre))&gt;/gi, "<$1>")
+    .replace(
+      /&lt;a\s+href=(["'])(https?:\/\/[^"']+)\1&gt;/gi,
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[#2AABEE] underline">'
+    )
+    .replace(/&lt;\/a&gt;/gi, "</a>")
+    .replace(/\n/g, "<br />");
+}
+
 export function BroadcastPanel({ actorRole }: { actorRole: string }) {
   const role = actorRole.toLowerCase();
   const canSend = ["super_admin", "admin"].includes(role);
 
-  const [target, setTarget] = useState<TelegramBroadcastTarget>("channel");
+  const [target, setTarget] = useState<TelegramBroadcastTarget>("bot");
   const [text, setText] = useState("");
   const [mediaType, setMediaType] = useState<TelegramMediaType>("none");
   const [fileId, setFileId] = useState("");
@@ -50,22 +67,37 @@ export function BroadcastPanel({ actorRole }: { actorRole: string }) {
     onError: (err) => toastApiError(err, "Broadcast failed"),
   });
 
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!canSend) return;
+  const previewHtml = useMemo(() => telegramHtmlToPreview(text), [text]);
+
+  const buildPayload = (
+    sendTarget: TelegramBroadcastTarget
+  ): TelegramBroadcastPayload | null => {
     if (!text.trim() && !fileId.trim()) {
       toast.error("Add message text and/or a Telegram file_id");
-      return;
+      return null;
     }
     if (mediaType !== "none" && !fileId.trim()) {
       toast.error("Paste the Telegram file_id for this media type");
-      return;
+      return null;
     }
     const hasBtn = Boolean(buttonText.trim() || buttonUrl.trim());
     if (hasBtn && (!buttonText.trim() || !buttonUrl.trim())) {
       toast.error("Button needs both label and URL");
-      return;
+      return null;
     }
+    return {
+      target: sendTarget,
+      text: text.trim(),
+      mediaType,
+      fileId: fileId.trim() || undefined,
+      buttonText: buttonText.trim() || undefined,
+      buttonUrl: buttonUrl.trim() || undefined,
+    };
+  };
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSend) return;
     if (
       target === "bot" &&
       statsQuery.data &&
@@ -74,15 +106,8 @@ export function BroadcastPanel({ actorRole }: { actorRole: string }) {
       toast.error("No users with Telegram IDs yet");
       return;
     }
-
-    const payload: TelegramBroadcastPayload = {
-      target,
-      text: text.trim(),
-      mediaType,
-      fileId: fileId.trim() || undefined,
-      buttonText: buttonText.trim() || undefined,
-      buttonUrl: buttonUrl.trim() || undefined,
-    };
+    const payload = buildPayload(target);
+    if (!payload) return;
 
     const audienceLabel =
       target === "channel"
@@ -96,6 +121,18 @@ export function BroadcastPanel({ actorRole }: { actorRole: string }) {
     ) {
       return;
     }
+    sendMutation.mutate(payload);
+  };
+
+  const handleTestAdmin = () => {
+    if (!canSend) return;
+    if (!statsQuery.data?.adminConfigured) {
+      toast.error("ADMIN_ID is not set in backend .env");
+      return;
+    }
+    const payload = buildPayload("admin");
+    if (!payload) return;
+    if (!window.confirm("Send a test DM to ADMIN_ID?")) return;
     sendMutation.mutate(payload);
   };
 
@@ -120,43 +157,20 @@ export function BroadcastPanel({ actorRole }: { actorRole: string }) {
             Broadcast
           </h1>
           <p className="mt-2 max-w-2xl text-base text-slate-600">
-            Post to the channel or DM everyone who started the bot. Use Telegram
-            HTML for rich text, and paste a <code>file_id</code> from your file
-            detector bot for photo / video / GIF.
+            Post to the channel or DM everyone with a Telegram ID. Preview below,
+            or send a test to ADMIN_ID first.
           </p>
         </div>
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Bot audience
-          </p>
-          <p className="mt-1 text-2xl font-black tabular-nums text-slate-900">
-            {statsQuery.isLoading ? "…" : (stats?.botAudience ?? 0)}
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
-            users with telegram_id
-          </p>
-        </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Channel
-          </p>
-          <p className="mt-1 text-2xl font-black text-slate-900">
-            {stats?.channelConfigured ? "Ready" : "Not set"}
-          </p>
-          <p className="mt-1 text-xs text-slate-500">CHANNEL_ID in backend .env</p>
-        </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Bot token
-          </p>
-          <p className="mt-1 text-2xl font-black text-slate-900">
-            {stats?.botConfigured ? "Ready" : "Not set"}
-          </p>
-          <p className="mt-1 text-xs text-slate-500">BOT_TOKEN in backend .env</p>
-        </div>
+      <div className="mt-6 max-w-xs rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          Bot audience
+        </p>
+        <p className="mt-1 text-2xl font-black tabular-nums text-slate-900">
+          {statsQuery.isLoading ? "…" : (stats?.botAudience ?? 0)}
+        </p>
+        <p className="mt-1 text-xs text-slate-500">users with telegram_id</p>
       </div>
 
       <form
@@ -188,23 +202,65 @@ export function BroadcastPanel({ actorRole }: { actorRole: string }) {
           </div>
         </div>
 
-        <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-800">
-            Message (Telegram HTML)
-          </label>
-          <textarea
-            rows={8}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder={'<b>Title</b>\nLine two\n<a href="https://…">Link</a>'}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 font-mono text-sm text-slate-900 focus:border-[var(--brand-blue)] focus:outline-hidden"
-          />
-          <p className="mt-1.5 text-xs text-slate-500">
-            Supported tags:{" "}
-            <code>&lt;b&gt;</code> <code>&lt;i&gt;</code> <code>&lt;u&gt;</code>{" "}
-            <code>&lt;s&gt;</code> <code>&lt;code&gt;</code>{" "}
-            <code>&lt;a href=&quot;…&quot;&gt;</code>
-          </p>
+        <div className="grid gap-5 lg:grid-cols-2">
+          <div>
+            <label className="mb-1.5 block text-sm font-semibold text-slate-800">
+              Message (Telegram HTML)
+            </label>
+            <textarea
+              rows={10}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder={'<b>Title</b>\nLine two\n<a href="https://…">Link</a>'}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 font-mono text-sm text-slate-900 focus:border-[var(--brand-blue)] focus:outline-hidden"
+            />
+            <p className="mt-1.5 text-xs text-slate-500">
+              Supported tags:{" "}
+              <code>&lt;b&gt;</code> <code>&lt;i&gt;</code> <code>&lt;u&gt;</code>{" "}
+              <code>&lt;s&gt;</code> <code>&lt;code&gt;</code>{" "}
+              <code>&lt;a href=&quot;…&quot;&gt;</code>
+            </p>
+          </div>
+
+          <div>
+            <p className="mb-1.5 flex items-center gap-1.5 text-sm font-semibold text-slate-800">
+              <Eye className="h-4 w-4 text-slate-400" />
+              Preview
+            </p>
+            <div className="min-h-[220px] rounded-xl border border-slate-200 bg-[#e7f0e4] p-3 shadow-inner">
+              <div className="ml-auto max-w-[92%] rounded-2xl rounded-br-md bg-white px-3.5 py-2.5 text-[14px] leading-snug text-slate-900 shadow-sm">
+                {text.trim() ? (
+                  <div
+                    className="break-words [&_code]:rounded [&_code]:bg-slate-100 [&_code]:px-1 [&_code]:font-mono [&_code]:text-[13px] [&_pre]:whitespace-pre-wrap"
+                    dangerouslySetInnerHTML={{ __html: previewHtml }}
+                  />
+                ) : (
+                  <p className="text-sm text-slate-400">
+                    Message preview appears here…
+                  </p>
+                )}
+                {buttonText.trim() && buttonUrl.trim() ? (
+                  <a
+                    href={buttonUrl.trim()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2.5 block rounded-lg bg-[#2AABEE]/10 px-3 py-2 text-center text-sm font-semibold text-[#229ED9]"
+                  >
+                    {buttonText.trim()}
+                  </a>
+                ) : null}
+                {mediaType !== "none" && fileId.trim() ? (
+                  <p className="mt-2 border-t border-slate-100 pt-2 text-[11px] text-slate-400">
+                    Media: {mediaType} ·{" "}
+                    <span className="font-mono">
+                      {fileId.trim().slice(0, 28)}
+                      {fileId.trim().length > 28 ? "…" : ""}
+                    </span>
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -274,14 +330,30 @@ export function BroadcastPanel({ actorRole }: { actorRole: string }) {
               ? "Posts once to CHANNEL_ID"
               : `DMs ~${stats?.botAudience ?? 0} chats (rate-limited)`}
           </p>
-          <Button
-            type="submit"
-            disabled={sendMutation.isPending || !stats?.botConfigured}
-            className="rounded-xl bg-[var(--brand-blue)] font-bold text-white"
-          >
-            <Send className="mr-1.5 h-4 w-4" />
-            {sendMutation.isPending ? "Sending…" : "Send broadcast"}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={
+                sendMutation.isPending ||
+                !stats?.botConfigured ||
+                !stats?.adminConfigured
+              }
+              onClick={handleTestAdmin}
+              className="rounded-xl font-bold"
+            >
+              <FlaskConical className="mr-1.5 h-4 w-4" />
+              {sendMutation.isPending ? "Sending…" : "Test to admin"}
+            </Button>
+            <Button
+              type="submit"
+              disabled={sendMutation.isPending || !stats?.botConfigured}
+              className="rounded-xl bg-[var(--brand-blue)] font-bold text-white"
+            >
+              <Send className="mr-1.5 h-4 w-4" />
+              {sendMutation.isPending ? "Sending…" : "Send broadcast"}
+            </Button>
+          </div>
         </div>
       </form>
     </div>

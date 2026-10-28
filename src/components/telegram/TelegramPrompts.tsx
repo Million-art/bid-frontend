@@ -113,6 +113,11 @@ export function TelegramPrompts() {
     setShowContact(false);
   }, []);
 
+  const markContactDone = useCallback(() => {
+    writeFlag(CONTACT_DONE_KEY);
+    setShowContact(false);
+  }, []);
+
   const shareContact = useCallback(async () => {
     setContactBusy(true);
     try {
@@ -124,40 +129,42 @@ export function TelegramPrompts() {
         return;
       }
       const result = await requestTelegramContact();
-      if (!result.shared || !result.phone) {
+      if (!result.shared) {
         return;
       }
+
+      // Telegram often delivers the phone only to the bot webhook (not the JS callback).
+      // Always dismiss after the user allows sharing so the prompt does not return.
+      markContactDone();
+
       const tgUser = getTelegramWebAppUser();
       const telegramId = result.userId || tgUser?.id;
-      if (!telegramId) {
-        return;
-      }
-      const fullName = [
-        result.firstName ?? tgUser?.first_name,
-        result.lastName ?? tgUser?.last_name,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .trim();
-      await shareTelegramContact({
-        telegramId,
-        phone: result.phone,
-        fullName: fullName || undefined,
-        username: tgUser?.username,
-      });
-      writeFlag(CONTACT_DONE_KEY);
-      setShowContact(false);
-      try {
-        await refreshUser();
-      } catch {
-        /* ignore */
+      if (result.phone && telegramId) {
+        const fullName = [
+          result.firstName ?? tgUser?.first_name,
+          result.lastName ?? tgUser?.last_name,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .trim();
+        try {
+          await shareTelegramContact({
+            telegramId,
+            phone: result.phone,
+            fullName: fullName || undefined,
+            username: tgUser?.username,
+          });
+          await refreshUser();
+        } catch {
+          /* webhook will still persist the contact */
+        }
       }
     } catch {
-      /* keep prompt */
+      /* keep prompt only if share never completed */
     } finally {
       setContactBusy(false);
     }
-  }, [refreshUser]);
+  }, [markContactDone, refreshUser]);
 
   if (STAFF_PATH.test(pathname)) return null;
   if (!showChannel && !showContact) return null;

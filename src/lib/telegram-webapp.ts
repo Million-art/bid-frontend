@@ -9,11 +9,19 @@ export type TelegramWebAppUser = {
 };
 
 export type TelegramWebAppContact = {
-  contact: {
-    phone_number: string;
+  contact?: {
+    phone_number?: string;
     first_name?: string;
     last_name?: string;
     user_id?: number;
+  };
+  responseUnsafe?: {
+    contact?: {
+      phone_number?: string;
+      first_name?: string;
+      last_name?: string;
+      user_id?: number;
+    };
   };
 };
 
@@ -29,8 +37,13 @@ type TelegramWebApp = {
   ready?: () => void;
   expand?: () => void;
   requestContact?: (
-    callback?: (shared: boolean, response?: TelegramWebAppContact) => void
+    callback?: (
+      shared: boolean | string,
+      response?: TelegramWebAppContact
+    ) => void
   ) => void;
+  onEvent?: (eventType: string, callback: (...args: unknown[]) => void) => void;
+  offEvent?: (eventType: string, callback: (...args: unknown[]) => void) => void;
   openTelegramLink?: (url: string) => void;
   openLink?: (url: string, options?: { try_instant_view?: boolean }) => void;
 };
@@ -65,14 +78,12 @@ export function isInsideTelegram(): boolean {
 
   const wa = getTelegramWebApp();
   if (wa?.platform && wa.platform !== "unknown" && wa.platform !== "") {
-    // Script is present and Telegram filled platform (Mini App / TG browser).
     return true;
   }
 
   const ua = navigator.userAgent || "";
   if (/Telegram/i.test(ua)) return true;
   if (/\bTG\//i.test(ua)) return true;
-  // Some Android Telegram WebViews
   if (/TelegramBot/i.test(ua)) return true;
 
   return false;
@@ -118,9 +129,27 @@ export function openTelegramUrl(url: string): void {
   }
 }
 
+function extractContact(response?: TelegramWebAppContact): {
+  phone?: string;
+  firstName?: string;
+  lastName?: string;
+  userId?: number;
+} {
+  const c = response?.contact ?? response?.responseUnsafe?.contact;
+  if (!c?.phone_number) return {};
+  return {
+    phone: c.phone_number,
+    firstName: c.first_name,
+    lastName: c.last_name,
+    userId: c.user_id,
+  };
+}
+
 /**
  * Ask the user to share their phone via Telegram's native contact sheet.
- * Only works inside a real Mini App session.
+ *
+ * Note: older Telegram clients only send the contact to the bot webhook and
+ * call the Mini App callback with `true` (no phone payload). Treat that as success.
  */
 export function requestTelegramContact(): Promise<{
   shared: boolean;
@@ -133,23 +162,55 @@ export function requestTelegramContact(): Promise<{
   if (!wa?.requestContact) {
     return Promise.resolve({ shared: false });
   }
+
   return new Promise((resolve) => {
-    try {
-      wa.requestContact?.((shared, response) => {
-        if (!shared || !response?.contact?.phone_number) {
-          resolve({ shared: false });
-          return;
+    let settled = false;
+    const finish = (shared: boolean, response?: TelegramWebAppContact) => {
+      if (settled) return;
+      settled = true;
+      if (wa.offEvent && onContactRequested) {
+        try {
+          wa.offEvent("contactRequested", onContactRequested);
+        } catch {
+          /* ignore */
         }
-        resolve({
-          shared: true,
-          phone: response.contact.phone_number,
-          firstName: response.contact.first_name,
-          lastName: response.contact.last_name,
-          userId: response.contact.user_id,
-        });
+      }
+      if (!shared) {
+        resolve({ shared: false });
+        return;
+      }
+      resolve({ shared: true, ...extractContact(response) });
+    };
+
+    const onContactRequested = (...args: unknown[]) => {
+      const event = args[0] as
+        | { status?: string; response?: TelegramWebAppContact }
+        | undefined;
+      const status = String(event?.status || "").toLowerCase();
+      if (status === "sent" || status === "shared") {
+        finish(true, event?.response);
+      } else if (status === "cancelled" || status === "canceled") {
+        finish(false);
+      }
+    };
+
+    try {
+      wa.onEvent?.("contactRequested", onContactRequested);
+      wa.requestContact?.((shared, response) => {
+        const ok =
+          shared === true ||
+          shared === "sent" ||
+          shared === "shared" ||
+          String(shared).toLowerCase() === "true";
+        finish(ok, response);
       });
     } catch {
-      resolve({ shared: false });
+      finish(false);
     }
+
+    // Safety timeout so the UI never spins forever.
+    window.setTimeout(() => {
+      if (!settled) finish(false);
+    }, 60_000);
   });
 }

@@ -410,5 +410,6 @@ export const am: Translations = {
       "መለያዎን ለማረጋገጥ እና ስለ አሸናፊነት ለማሳወቅ የቴሌግራም እውቂያዎን ያጋሩ።",
     shareContact: "እውቂያ ያጋሩ",
     contactSharing: "በመጋራት ላይ…",
+    contactThanks: "አመሰግናለን — ስልክ ቁጥርዎ ተቀብለናል።",
   },
 };

@@ -388,7 +388,7 @@ export async function deleteParticipant(id: string): Promise<void> {
   });
 }
 
-export type TelegramBroadcastTarget = "channel" | "bot";
+export type TelegramBroadcastTarget = "channel" | "bot" | "admin";
 export type TelegramMediaType = "none" | "photo" | "video" | "animation";
 
 export interface TelegramBroadcastPayload {
@@ -402,9 +402,8 @@ export interface TelegramBroadcastPayload {
 
 export interface TelegramBroadcastStats {
   botAudience: number;
-  fromUsers: number;
-  channelConfigured: boolean;
   botConfigured: boolean;
+  adminConfigured: boolean;
 }
 
 export interface TelegramBroadcastResult {
@@ -422,9 +421,8 @@ export async function getTelegramBroadcastStats(): Promise<TelegramBroadcastStat
   const raw = (unwrapData(res) ?? res.data ?? {}) as Partial<TelegramBroadcastStats>;
   return {
     botAudience: Number(raw.botAudience ?? 0),
-    fromUsers: Number(raw.fromUsers ?? raw.botAudience ?? 0),
-    channelConfigured: Boolean(raw.channelConfigured),
     botConfigured: Boolean(raw.botConfigured),
+    adminConfigured: Boolean(raw.adminConfigured),
   };
 }
 
