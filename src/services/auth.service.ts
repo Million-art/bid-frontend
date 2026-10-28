@@ -110,6 +110,17 @@ export async function forgotPasswordReset(payload: {
   return response.data;
 }
 
+/** Complete staff invite / set-password token flow. */
+export async function setPasswordWithToken(
+  token: string,
+  password: string
+): Promise<void> {
+  await apiFetch("/api/auth/set-password", {
+    method: "POST",
+    body: JSON.stringify({ token, password }),
+  });
+}
+
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
   const response = await apiFetch<ApiResponse<AuthResponse>>("/api/auth/login", {
     method: "POST",

@@ -24,6 +24,8 @@ import {
   Upload,
   X,
   ArrowUpRight,
+  UserCog,
+  Contact,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { isStaffRole } from "@/services/auth.service";
@@ -32,6 +34,8 @@ import { toastApiError } from "@/lib/toast-api-error";
 import { AuthSplitShell } from "@/components/auth/AuthSplitShell";
 import { PhonePrefixInput } from "@/components/auth/PhonePrefixInput";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { StaffUsersPanel } from "@/components/staff/StaffUsersPanel";
+import { ParticipantsPanel } from "@/components/staff/ParticipantsPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -50,6 +54,8 @@ import {
 } from "@/services/staff.service";
 import { auctionCoverImage, auctionImageList } from "@/lib/auction-media";
 import type { Auction } from "@/lib/schemas";
+
+type StaffSection = "auctions" | "users" | "customers";
 
 const STATUS_BADGE: Record<string, string> = {
   draft: "bg-slate-100 text-slate-700 border-slate-200",
@@ -799,6 +805,7 @@ export default function StaffPanelPage() {
   const { user, loading, logout } = useAuth();
   const qc = useQueryClient();
 
+  const [section, setSection] = useState<StaffSection>("auctions");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [search, setSearch] = useState<string>("");
   const [modalAuction, setModalAuction] = useState<Auction | null | undefined>(
@@ -822,7 +829,9 @@ export default function StaffPanelPage() {
         status: statusFilter || undefined,
         search: search.trim() || undefined,
       }),
-    enabled: Boolean(user && isStaff && canMutateAuctions),
+    enabled: Boolean(
+      user && isStaff && canMutateAuctions && section === "auctions"
+    ),
   });
 
   const refreshAuctions = () => {
@@ -909,6 +918,43 @@ export default function StaffPanelPage() {
       </nav>
 
       <main className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+        <div className="mb-6 flex flex-wrap gap-1.5 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+          {(
+            [
+              { id: "auctions", label: "Auctions", icon: Gavel },
+              { id: "users", label: "Staff users", icon: UserCog },
+              { id: "customers", label: "Customers", icon: Contact },
+            ] as const
+          ).map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setSection(id)}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-bold transition ${
+                section === id
+                  ? "bg-[var(--brand-blue)] text-white shadow-xs"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {section === "users" && (
+          <StaffUsersPanel
+            actorRole={String(user.role || "")}
+            actorId={user.id}
+          />
+        )}
+
+        {section === "customers" && (
+          <ParticipantsPanel actorRole={String(user.role || "")} />
+        )}
+
+        {section === "auctions" && (
+          <>
         {/* Header & Primary Actions */}
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
@@ -1224,6 +1270,8 @@ export default function StaffPanelPage() {
             </div>
           )}
         </div>
+          </>
+        )}
       </main>
 
       {/* Create / Edit Modal */}

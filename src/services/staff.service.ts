@@ -201,6 +201,193 @@ export async function listStaffAuctionBids(
   return { items, total: Number(raw.total ?? items.length) };
 }
 
+export type StaffUserRole = "super_admin" | "admin" | "compliance";
+export type StaffUserStatus = "active" | "suspended" | "pending";
+
+export interface StaffUser {
+  id: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  role: string;
+  status: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ParticipantCustomer {
+  id: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  status: string;
+  role?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PaginatedList<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+function parsePaginatedList<T>(
+  raw: unknown,
+  page: number,
+  limit: number,
+  mapItem: (item: unknown) => T | null
+): PaginatedList<T> {
+  const obj =
+    raw && typeof raw === "object"
+      ? (raw as { items?: unknown[]; total?: number; page?: number; limit?: number })
+      : {};
+  const items = Array.isArray(obj.items)
+    ? obj.items.map(mapItem).filter((x): x is T => x != null)
+    : [];
+  return {
+    items,
+    total: Number(obj.total ?? items.length),
+    page: Number(obj.page ?? page),
+    limit: Number(obj.limit ?? limit),
+  };
+}
+
+function mapStaffUser(raw: unknown): StaffUser | null {
+  if (!raw || typeof raw !== "object") return null;
+  const u = raw as Record<string, unknown>;
+  if (!u.id || !u.email) return null;
+  return {
+    id: String(u.id),
+    fullName: String(u.fullName ?? ""),
+    email: String(u.email),
+    phone: u.phone != null ? String(u.phone) : undefined,
+    role: String(u.role ?? ""),
+    status: String(u.status ?? "active"),
+    createdAt: u.createdAt != null ? String(u.createdAt) : undefined,
+    updatedAt: u.updatedAt != null ? String(u.updatedAt) : undefined,
+  };
+}
+
+function mapParticipant(raw: unknown): ParticipantCustomer | null {
+  if (!raw || typeof raw !== "object") return null;
+  const u = raw as Record<string, unknown>;
+  if (!u.id) return null;
+  return {
+    id: String(u.id),
+    fullName: String(u.fullName ?? ""),
+    email: String(u.email ?? ""),
+    phone: u.phone != null ? String(u.phone) : undefined,
+    status: String(u.status ?? "active"),
+    role: u.role != null ? String(u.role) : "participant",
+    createdAt: u.createdAt != null ? String(u.createdAt) : undefined,
+    updatedAt: u.updatedAt != null ? String(u.updatedAt) : undefined,
+  };
+}
+
+export async function listStaffUsers(params?: {
+  page?: number;
+  limit?: number;
+  roles?: string;
+  status?: string;
+  search?: string;
+}): Promise<PaginatedList<StaffUser>> {
+  const page = params?.page ?? 1;
+  const limit = params?.limit ?? 20;
+  const qs = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+    roles: params?.roles ?? "super_admin,admin,compliance",
+  });
+  if (params?.status) qs.set("status", params.status);
+  if (params?.search?.trim()) qs.set("search", params.search.trim());
+
+  const res = await apiFetch<ApiResponse<unknown>>(
+    `/api/users?${qs.toString()}`
+  );
+  return parsePaginatedList(
+    unwrapData(res) ?? res.data ?? res,
+    page,
+    limit,
+    mapStaffUser
+  );
+}
+
+export async function createStaffUser(payload: {
+  fullName: string;
+  email: string;
+  phone?: string;
+  role: "admin" | "compliance";
+}): Promise<StaffUser> {
+  const res = await apiFetch<ApiResponse<unknown>>("/api/users/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  const raw = unwrapData(res) ?? res.data ?? res;
+  const mapped = mapStaffUser(raw);
+  if (!mapped) throw new Error("Invalid user response");
+  return mapped;
+}
+
+export async function updateStaffUserStatus(
+  id: string,
+  status: StaffUserStatus
+): Promise<void> {
+  await apiFetch(`/api/users/${encodeURIComponent(id)}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function deleteStaffUser(id: string): Promise<void> {
+  await apiFetch(`/api/users/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function listParticipants(params?: {
+  page?: number;
+  limit?: number;
+  status?: string;
+  search?: string;
+}): Promise<PaginatedList<ParticipantCustomer>> {
+  const page = params?.page ?? 1;
+  const limit = params?.limit ?? 20;
+  const qs = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+  if (params?.status) qs.set("status", params.status);
+  if (params?.search?.trim()) qs.set("search", params.search.trim());
+
+  const res = await apiFetch<ApiResponse<unknown>>(
+    `/api/participants?${qs.toString()}`
+  );
+  return parsePaginatedList(
+    unwrapData(res) ?? res.data ?? res,
+    page,
+    limit,
+    mapParticipant
+  );
+}
+
+export async function updateParticipantStatus(
+  id: string,
+  status: "active" | "suspended"
+): Promise<void> {
+  await apiFetch(`/api/participants/${encodeURIComponent(id)}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function deleteParticipant(id: string): Promise<void> {
+  await apiFetch(`/api/participants/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
 export async function uploadStaffMedia(file: File): Promise<{ url: string }> {
   const token = await getCsrfToken();
   const formData = new FormData();
