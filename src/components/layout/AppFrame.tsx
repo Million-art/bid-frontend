@@ -13,7 +13,12 @@ export function AppFrame({ children }: { children: React.ReactNode }) {
   const bareAuth = AUTH_FULL_BLEED.test(pathname);
 
   if (bareAuth) {
-    return <>{children}</>;
+    return (
+      <>
+        {children}
+        <TelegramPrompts />
+      </>
+    );
   }
 
   return (

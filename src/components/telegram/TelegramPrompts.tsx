@@ -7,9 +7,10 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { SOCIAL } from "@/lib/social";
 import {
+  canRequestTelegramContact,
   ensureTelegramWebAppReady,
   getTelegramWebAppUser,
-  isTelegramMiniApp,
+  isInsideTelegram,
   openTelegramUrl,
   requestTelegramContact,
 } from "@/lib/telegram-webapp";
@@ -19,8 +20,7 @@ const CHANNEL_DISMISS_KEY = "carramarket_tg_channel_dismissed";
 const CONTACT_DONE_KEY = "carramarket_tg_contact_done";
 const CONTACT_DISMISS_KEY = "carramarket_tg_contact_dismissed";
 
-const SKIP_PATH =
-  /^\/(login|signup|forgot-password|set-password|staffpanel)(\/|$)/;
+const STAFF_PATH = /^\/staffpanel(\/|$)/;
 
 function readFlag(key: string): boolean {
   try {
@@ -43,13 +43,14 @@ export function TelegramPrompts() {
   const { t } = useLanguage();
   const { user, refreshUser } = useAuth();
 
-  const [inMiniApp, setInMiniApp] = useState(false);
+  const [insideTelegram, setInsideTelegram] = useState(false);
+  const [canShareContact, setCanShareContact] = useState(false);
   const [showChannel, setShowChannel] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [contactBusy, setContactBusy] = useState(false);
 
   useEffect(() => {
-    if (SKIP_PATH.test(pathname)) {
+    if (STAFF_PATH.test(pathname)) {
       setShowChannel(false);
       setShowContact(false);
       return;
@@ -61,16 +62,20 @@ export function TelegramPrompts() {
     const tick = () => {
       if (cancelled) return;
       ensureTelegramWebAppReady();
-      const mini = isTelegramMiniApp();
-      setInMiniApp(mini);
+      const inside = isInsideTelegram();
+      const canContact = canRequestTelegramContact();
+      setInsideTelegram(inside);
+      setCanShareContact(canContact);
 
       if (!readFlag(CHANNEL_DISMISS_KEY)) {
         setShowChannel(true);
       }
 
       const hasPhone = Boolean(user?.phone?.trim());
+      // Prompt contact whenever the user is inside Telegram and we can request it
+      // (Mini App), or we at least detected Telegram + no phone yet.
       if (
-        mini &&
+        inside &&
         !hasPhone &&
         !readFlag(CONTACT_DONE_KEY) &&
         !readFlag(CONTACT_DISMISS_KEY)
@@ -80,8 +85,7 @@ export function TelegramPrompts() {
         setShowContact(false);
       }
 
-      // WebApp script may load after first paint.
-      if (!mini && attempts < 8) {
+      if (!inside && attempts < 12) {
         attempts += 1;
         window.setTimeout(tick, 250);
       }
@@ -112,6 +116,13 @@ export function TelegramPrompts() {
   const shareContact = useCallback(async () => {
     setContactBusy(true);
     try {
+      if (!canRequestTelegramContact()) {
+        // In Telegram browser but not Mini App — open bot so user can share contact there.
+        openTelegramUrl(
+          `https://t.me/${(process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "carramarket_bot").replace(/^@/, "")}`
+        );
+        return;
+      }
       const result = await requestTelegramContact();
       if (!result.shared || !result.phone) {
         return;
@@ -121,7 +132,10 @@ export function TelegramPrompts() {
       if (!telegramId) {
         return;
       }
-      const fullName = [result.firstName ?? tgUser?.first_name, result.lastName ?? tgUser?.last_name]
+      const fullName = [
+        result.firstName ?? tgUser?.first_name,
+        result.lastName ?? tgUser?.last_name,
+      ]
         .filter(Boolean)
         .join(" ")
         .trim();
@@ -139,18 +153,18 @@ export function TelegramPrompts() {
         /* ignore */
       }
     } catch {
-      /* user cancelled or network error  keep prompt */
+      /* keep prompt */
     } finally {
       setContactBusy(false);
     }
   }, [refreshUser]);
 
-  if (SKIP_PATH.test(pathname)) return null;
+  if (STAFF_PATH.test(pathname)) return null;
   if (!showChannel && !showContact) return null;
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex flex-col gap-3 p-3 sm:bottom-5 sm:left-auto sm:right-5 sm:max-w-[22rem] sm:p-0">
-      {showContact && inMiniApp ? (
+      {showContact && insideTelegram ? (
         <div className="pointer-events-auto overflow-hidden rounded-[22px] border border-white/70 bg-white shadow-[0_18px_50px_-18px_rgba(15,23,42,0.45)]">
           <div className="p-4">
             <p className="text-[15px] font-semibold tracking-tight text-slate-900">
@@ -168,7 +182,9 @@ export function TelegramPrompts() {
               >
                 {contactBusy
                   ? t("telegram.contactSharing")
-                  : t("telegram.shareContact")}
+                  : canShareContact
+                    ? t("telegram.shareContact")
+                    : t("telegram.shareContact")}
               </button>
               <button
                 type="button"
@@ -184,7 +200,6 @@ export function TelegramPrompts() {
 
       {showChannel ? (
         <div className="pointer-events-auto relative overflow-hidden rounded-[22px] border border-[#8ec9a0]/55 shadow-[0_22px_55px_-20px_rgba(34,158,217,0.55)]">
-          {/* Official Telegram wallpaper */}
           <div
             aria-hidden
             className="absolute inset-0 bg-[#c6e1b3]"

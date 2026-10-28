@@ -164,6 +164,16 @@ export async function telegramLogin(payload: TelegramAuthPayload): Promise<AuthR
   return response.data;
 }
 
+/** Mini App silent login — uses Telegram.WebApp.initData (works inside Telegram). */
+export async function telegramWebAppLogin(initData: string): Promise<AuthResponse> {
+  await syncCsrfToken();
+  const response = await apiFetch<ApiResponse<AuthResponse>>("/api/auth/telegram", {
+    method: "POST",
+    body: JSON.stringify({ initData }),
+  });
+  return response.data;
+}
+
 export async function getMe(): Promise<{ user: User } | null> {
   try {
     const response = await apiFetch<ApiResponse<{ user: User }>>("/api/me", { skipAuthRedirect: true });

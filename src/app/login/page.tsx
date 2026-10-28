@@ -49,7 +49,7 @@ function GoogleLoginSection() {
 }
 
 function TelegramLoginSection() {
-  const { telegramLogin } = useAuth();
+  const { telegramLogin, telegramWebAppLogin } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams?.get("redirect") || "/";
@@ -58,7 +58,11 @@ function TelegramLoginSection() {
     <TelegramLoginButton
       onAuth={async (payload) => {
         await telegramLogin(payload);
-        router.push(redirect);
+        router.replace(redirect);
+      }}
+      onWebAppAuth={async (initData) => {
+        await telegramWebAppLogin(initData);
+        router.replace(redirect);
       }}
     />
   );

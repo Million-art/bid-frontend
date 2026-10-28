@@ -1,10 +1,11 @@
-/** Telegram Mini App (WebApp) helpers. */
+/** Telegram Mini App / in-app browser helpers. */
 
 export type TelegramWebAppUser = {
   id: number;
   first_name?: string;
   last_name?: string;
   username?: string;
+  photo_url?: string;
 };
 
 export type TelegramWebAppContact = {
@@ -20,14 +21,18 @@ type TelegramWebApp = {
   initData?: string;
   initDataUnsafe?: {
     user?: TelegramWebAppUser;
+    auth_date?: number;
+    hash?: string;
   };
+  platform?: string;
+  version?: string;
   ready?: () => void;
   expand?: () => void;
   requestContact?: (
     callback?: (shared: boolean, response?: TelegramWebAppContact) => void
   ) => void;
   openTelegramLink?: (url: string) => void;
-  openLink?: (url: string) => void;
+  openLink?: (url: string, options?: { try_instant_view?: boolean }) => void;
 };
 
 declare global {
@@ -41,7 +46,7 @@ export function getTelegramWebApp(): TelegramWebApp | null {
   return window.Telegram?.WebApp ?? null;
 }
 
-/** True when the page is running inside Telegram's Mini App WebView. */
+/** True when opened as a Telegram Mini App with signed initData. */
 export function isTelegramMiniApp(): boolean {
   const wa = getTelegramWebApp();
   if (!wa) return false;
@@ -50,10 +55,41 @@ export function isTelegramMiniApp(): boolean {
   return false;
 }
 
+/**
+ * True when the page is running inside Telegram (Mini App or Telegram in-app browser).
+ * Broader than isTelegramMiniApp — used for contact / channel prompts.
+ */
+export function isInsideTelegram(): boolean {
+  if (typeof window === "undefined") return false;
+  if (isTelegramMiniApp()) return true;
+
+  const wa = getTelegramWebApp();
+  if (wa?.platform && wa.platform !== "unknown" && wa.platform !== "") {
+    // Script is present and Telegram filled platform (Mini App / TG browser).
+    return true;
+  }
+
+  const ua = navigator.userAgent || "";
+  if (/Telegram/i.test(ua)) return true;
+  if (/\bTG\//i.test(ua)) return true;
+  // Some Android Telegram WebViews
+  if (/TelegramBot/i.test(ua)) return true;
+
+  return false;
+}
+
+export function canRequestTelegramContact(): boolean {
+  return Boolean(getTelegramWebApp()?.requestContact) && isTelegramMiniApp();
+}
+
 export function getTelegramWebAppUser(): TelegramWebAppUser | null {
   const user = getTelegramWebApp()?.initDataUnsafe?.user;
   if (!user?.id) return null;
   return user;
+}
+
+export function getTelegramInitData(): string {
+  return (getTelegramWebApp()?.initData || "").trim();
 }
 
 export function ensureTelegramWebAppReady(): void {
@@ -84,7 +120,7 @@ export function openTelegramUrl(url: string): void {
 
 /**
  * Ask the user to share their phone via Telegram's native contact sheet.
- * Falls back to false when the API is unavailable.
+ * Only works inside a real Mini App session.
  */
 export function requestTelegramContact(): Promise<{
   shared: boolean;

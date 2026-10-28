@@ -15,6 +15,7 @@ import {
   login as apiLogin,
   googleLogin as apiGoogleLogin,
   telegramLogin as apiTelegramLogin,
+  telegramWebAppLogin as apiTelegramWebAppLogin,
   logout as apiLogout,
 } from "@/services/auth.service";
 
@@ -26,6 +27,7 @@ interface AuthContextValue {
   login: (payload: LoginPayload) => Promise<AuthResponse>;
   googleLogin: (credential: string, opts?: GoogleLoginOptions) => Promise<AuthResponse>;
   telegramLogin: (payload: TelegramAuthPayload) => Promise<AuthResponse>;
+  telegramWebAppLogin: (initData: string) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   /** Reload user from GET /api/me (e.g. after profile update). */
   refreshUser: () => Promise<void>;
@@ -112,6 +114,19 @@ export function AuthProvider({ children, googleClientId }: { children: React.Rea
     }
   }, []);
 
+  const telegramWebAppLogin = useCallback(async (initData: string) => {
+    setError(null);
+    try {
+      const data = await apiTelegramWebAppLogin(initData);
+      setUser(data.user);
+      return data;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Telegram login failed";
+      setError(message);
+      throw e;
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     setError(null);
     try {
@@ -141,6 +156,7 @@ export function AuthProvider({ children, googleClientId }: { children: React.Rea
     login,
     googleLogin,
     telegramLogin,
+    telegramWebAppLogin,
     logout,
     refreshUser,
     error,
