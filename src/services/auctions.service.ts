@@ -3,17 +3,27 @@ import {
   AuctionAuditSchema,
   AuctionParticipationSchema,
   AuctionSchema,
-  AuctionsListSchema,
+  PublicAuctionCardSchema,
+  PublicAuctionsListSchema,
   BidSchema,
   type Auction,
   type AuctionAudit,
   type AuctionAuditEntry,
   type AuctionParticipation,
-  type AuctionsList,
   type Bid,
+  type PublicAuctionCard,
+  type PublicAuctionsList,
 } from "@/lib/schemas";
 
-export type { Auction, AuctionAudit, AuctionAuditEntry, AuctionParticipation, AuctionsList, Bid };
+export type {
+  Auction,
+  AuctionAudit,
+  AuctionAuditEntry,
+  AuctionParticipation,
+  Bid,
+  PublicAuctionCard,
+  PublicAuctionsList,
+};
 
 function unwrapData(payload: unknown): unknown {
   if (payload && typeof payload === "object" && "data" in payload) {
@@ -22,10 +32,11 @@ function unwrapData(payload: unknown): unknown {
   return payload;
 }
 
+/** Public list — strips any bid fields that may appear in the payload. */
 export async function listAuctions(params?: {
   page?: number;
   limit?: number;
-}): Promise<AuctionsList> {
+}): Promise<PublicAuctionsList> {
   const page = params?.page ?? 1;
   const limit = params?.limit ?? 20;
   const qs = new URLSearchParams({
@@ -36,12 +47,12 @@ export async function listAuctions(params?: {
     `/api/public/auctions?${qs.toString()}`
   );
   const raw = unwrapData(res) ?? res.data ?? res;
-  const parsed = AuctionsListSchema.safeParse(raw);
+  const parsed = PublicAuctionsListSchema.safeParse(raw);
   if (parsed.success) return parsed.data;
   if (Array.isArray(raw)) {
     return {
       items: raw
-        .map((item) => AuctionSchema.safeParse(item))
+        .map((item) => PublicAuctionCardSchema.safeParse(item))
         .filter((r) => r.success)
         .map((r) => r.data),
       total: raw.length,

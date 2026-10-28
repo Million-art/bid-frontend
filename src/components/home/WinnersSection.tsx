@@ -10,11 +10,15 @@ import {
 import { SectionTag } from "@/components/home/SectionTag";
 import { ConceptDemoCard } from "@/components/home/ConceptDemoCard";
 import { useLanguage } from "@/contexts/LanguageContext";
-import type { Auction } from "@/services/auctions.service";
+import type { PublicAuctionCard } from "@/services/auctions.service";
 import { auctionCoverImage } from "@/lib/auction-media";
 
-export function WinnersSection({ winners }: { winners: Auction[] }) {
-  const { dict, locale, formatCurrency } = useLanguage();
+export function WinnersSection({
+  winners,
+}: {
+  winners: PublicAuctionCard[];
+}) {
+  const { dict, locale } = useLanguage();
 
   return (
     <section
@@ -113,12 +117,6 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
                       <span>{dict.winners.auditedAndVerified}</span>
                     </span>
 
-                    {/* Winning Unique Value Badge - Brand Yellow */}
-                    {auction.winnerBidValue != null && (
-                      <span className="absolute right-2.5 top-2.5 z-10 inline-flex items-center gap-1 rounded-full bg-[var(--brand-yellow)] px-2.5 py-1 text-[11px] font-extrabold text-black shadow-xs">
-                        {formatCurrency(Number(auction.winnerBidValue))}
-                      </span>
-                    )}
                   </div>
 
                   {/* Card Info */}
@@ -127,7 +125,6 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
                       {auction.title}
                     </h3>
 
-                    {/* Winner and Bid Summary */}
                     <div className="mt-2.5 flex items-baseline justify-between gap-2 border-t border-slate-100 pt-2.5">
                       <div className="min-w-0">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -137,16 +134,6 @@ export function WinnersSection({ winners }: { winners: Auction[] }) {
                           {auction.winnerName || dict.winners.won}
                         </p>
                       </div>
-                      {auction.winnerBidValue != null && (
-                        <div className="shrink-0 text-right">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                            {dict.winners.winningBid}
-                          </p>
-                          <p className="text-xs sm:text-sm font-black text-slate-900 tabular-nums">
-                            {formatCurrency(Number(auction.winnerBidValue))}
-                          </p>
-                        </div>
-                      )}
                     </div>
 
                     {/* View Audit Button */}

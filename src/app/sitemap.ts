@@ -19,8 +19,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const res = await listAuctions({ limit: 100 });
     auctionEntries = (res.items || []).map((auction) => ({
       url: `${siteOrigin}/auctions/${auction.id}`,
-      lastModified: auction.executedAt
-        ? new Date(auction.executedAt)
+      lastModified: auction.createdAt
+        ? new Date(auction.createdAt)
         : new Date(),
       changeFrequency: "daily" as const,
       priority: 0.8,

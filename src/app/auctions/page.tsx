@@ -9,7 +9,10 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { AuctionCard } from "@/components/auctions/AuctionCard";
-import { listAuctions, type Auction } from "@/services/auctions.service";
+import {
+  listAuctions,
+  type PublicAuctionCard,
+} from "@/services/auctions.service";
 import { queryKeys } from "@/lib/query-keys";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -59,9 +62,11 @@ export default function AuctionsPage() {
   } = useQuery({
     queryKey: queryKeys.auctions.list({ page: 1, limit: 100 }),
     queryFn: () => listAuctions({ page: 1, limit: 100 }),
+    refetchInterval: 45_000,
+    refetchOnWindowFocus: true,
   });
 
-  const items: Auction[] = useMemo(() => data?.items ?? [], [data]);
+  const items: PublicAuctionCard[] = useMemo(() => data?.items ?? [], [data]);
 
   const statusCounts = useMemo(() => {
     const counts: Record<StatusFilter, number> = {
@@ -108,8 +113,10 @@ export default function AuctionsPage() {
         return b.entranceFee - a.entranceFee;
       }
       if (sortBy === "closing_soon") {
-        const aTime = a.closeAt ? new Date(a.closeAt).getTime() : Number.POSITIVE_INFINITY;
-        const bTime = b.closeAt ? new Date(b.closeAt).getTime() : Number.POSITIVE_INFINITY;
+        const aEnd = a.endsAt ?? a.closeAt;
+        const bEnd = b.endsAt ?? b.closeAt;
+        const aTime = aEnd ? new Date(aEnd).getTime() : Number.POSITIVE_INFINITY;
+        const bTime = bEnd ? new Date(bEnd).getTime() : Number.POSITIVE_INFINITY;
         return aTime - bTime;
       }
       const aCreated = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -239,7 +246,7 @@ export default function AuctionsPage() {
 
         {/* Auctions Grid / States */}
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, idx) => (
               <div
                 key={idx}
@@ -289,7 +296,7 @@ export default function AuctionsPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredItems.map((auction) => (
               <AuctionCard key={auction.id} auction={auction} />
             ))}

@@ -288,6 +288,12 @@ function AuctionFormModal({
   const [entranceFee, setEntranceFee] = useState(
     initial?.entranceFee ? String(initial.entranceFee) : "100"
   );
+  const [retailValue, setRetailValue] = useState(
+    initial?.retailValue ? String(initial.retailValue) : ""
+  );
+  const [minParticipants, setMinParticipants] = useState(
+    initial?.minParticipants ? String(initial.minParticipants) : "10"
+  );
   const [minBidValue, setMinBidValue] = useState(
     initial?.minBidValue ? String(initial.minBidValue) : "0.01"
   );
@@ -331,6 +337,8 @@ function AuctionFormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const fee = Number(entranceFee);
+    const retail = retailValue.trim() ? Number(retailValue) : 0;
+    const minParts = Number(minParticipants || "10");
     const minBid = Number(minBidValue || "0.01");
     const maxBid = maxBidValue.trim() ? Number(maxBidValue) : null;
 
@@ -342,6 +350,14 @@ function AuctionFormModal({
       toast.error("Entrance fee must be greater than 0");
       return;
     }
+    if (retailValue.trim() && (!Number.isFinite(retail) || retail < 0)) {
+      toast.error("Retail value must be 0 or greater");
+      return;
+    }
+    if (!Number.isFinite(minParts) || minParts < 1) {
+      toast.error("Minimum participants must be at least 1");
+      return;
+    }
 
     const payload: StaffAuctionPayload = {
       title: title.trim(),
@@ -350,6 +366,8 @@ function AuctionFormModal({
       imageUrls,
       videoUrl: videoUrl.trim() || undefined,
       entranceFee: fee,
+      retailValue: retail > 0 ? retail : 0,
+      minParticipants: minParts,
       minBidValue: minBid > 0 ? minBid : 0.01,
       maxBidValue: maxBid,
       startAt: fromLocalDatetimeInput(startAt),
@@ -421,7 +439,7 @@ function AuctionFormModal({
             />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-slate-800">
                 Entrance Fee (ETB) *
@@ -437,6 +455,31 @@ function AuctionFormModal({
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-slate-800">
+                Retail value (ETB)
+              </label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={retailValue}
+                onChange={(e) => setRetailValue(e.target.value)}
+                placeholder="e.g. 45000"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-semibold text-slate-800">
+                Min participants
+              </label>
+              <Input
+                type="number"
+                step="1"
+                min="1"
+                value={minParticipants}
+                onChange={(e) => setMinParticipants(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-semibold text-slate-800">
                 Min Bid (ETB)
               </label>
               <Input
@@ -447,7 +490,7 @@ function AuctionFormModal({
                 onChange={(e) => setMinBidValue(e.target.value)}
               />
             </div>
-            <div>
+            <div className="sm:col-span-2">
               <label className="mb-1.5 block text-sm font-semibold text-slate-800">
                 Max Bid (ETB)
               </label>

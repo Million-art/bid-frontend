@@ -33,6 +33,7 @@ export default function AuctionDetailPage({
   const { data: listData } = useQuery({
     queryKey: queryKeys.auctions.list({ page: 1, limit: 24 }),
     queryFn: () => listAuctions({ page: 1, limit: 24 }),
+    refetchInterval: 45_000,
   });
 
   const recommendedAuctions = useMemo(() => {
@@ -157,7 +158,7 @@ export default function AuctionDetailPage({
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {recommendedAuctions.map((item) => (
                 <AuctionCard key={item.id} auction={item} />
               ))}

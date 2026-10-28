@@ -17,6 +17,8 @@ export interface StaffAuctionPayload {
   imageUrls?: string[];
   videoUrl?: string;
   entranceFee: number;
+  retailValue?: number;
+  minParticipants?: number;
   minBidValue?: number;
   maxBidValue?: number | null;
   startAt?: string | null;

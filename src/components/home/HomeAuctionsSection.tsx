@@ -1,13 +1,47 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SectionTag } from "@/components/home/SectionTag";
 import { AuctionCard } from "@/components/auctions/AuctionCard";
 import { useLanguage } from "@/contexts/LanguageContext";
-import type { Auction } from "@/services/auctions.service";
+import {
+  listAuctions,
+  type PublicAuctionCard,
+} from "@/services/auctions.service";
 
-export function HomeAuctionsSection({ auctions }: { auctions: Auction[] }) {
+const POLL_MS = 45_000;
+
+export function HomeAuctionsSection({
+  auctions,
+}: {
+  auctions: PublicAuctionCard[];
+}) {
   const { dict } = useLanguage();
+  const [items, setItems] = useState<PublicAuctionCard[]>(auctions);
+
+  useEffect(() => {
+    setItems(auctions);
+  }, [auctions]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const res = await listAuctions({ page: 1, limit: 24 });
+        if (!cancelled && res.items) {
+          setItems(res.items);
+        }
+      } catch {
+        // keep last good snapshot
+      }
+    };
+    const id = window.setInterval(tick, POLL_MS);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, []);
 
   return (
     <section className="bg-slate-50 py-16 sm:py-20">
@@ -26,13 +60,13 @@ export function HomeAuctionsSection({ auctions }: { auctions: Auction[] }) {
             {dict.common.viewAll}
           </Link>
         </div>
-        {auctions.length === 0 ? (
+        {items.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center text-slate-500">
             {dict.home.noLiveAuctions}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {auctions.map((auction) => (
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {items.map((auction) => (
               <AuctionCard key={auction.id} auction={auction} />
             ))}
           </div>

@@ -19,8 +19,7 @@ export default async function HomePage() {
     winners = res.items
       .filter(
         (a) =>
-          ["executed", "closed"].includes(String(a.status)) &&
-          a.winnerBidValue != null
+          String(a.status) === "executed" && Boolean(a.winnerName)
       )
       .slice(0, 6);
   } catch {
