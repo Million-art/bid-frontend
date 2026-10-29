@@ -31,6 +31,7 @@ type TelegramWebApp = {
     user?: TelegramWebAppUser;
     auth_date?: number;
     hash?: string;
+    start_param?: string;
   };
   platform?: string;
   version?: string;
@@ -214,3 +215,67 @@ export function requestTelegramContact(): Promise<{
     }, 60_000);
   });
 }
+
+/**
+ * Extracts deep-link start_param from Telegram WebApp or URL search/hash params.
+ * E.g. "auction_6ed3fc7e-1261-4303-8c65-a29ff5242e7e"
+ */
+export function getTelegramStartParam(): string | null {
+  if (typeof window === "undefined") return null;
+
+  // 1. Check window.Telegram.WebApp.initDataUnsafe.start_param
+  const wa = getTelegramWebApp();
+  if (wa?.initDataUnsafe?.start_param) {
+    return wa.initDataUnsafe.start_param;
+  }
+
+  // 2. Check URL search params (tgWebAppStartParam or startapp or start_param)
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const fromQuery =
+      params.get("tgWebAppStartParam") ||
+      params.get("startapp") ||
+      params.get("start_param");
+    if (fromQuery) return fromQuery;
+
+    // 3. Check hash for tgWebAppStartParam or tgWebAppData
+    if (window.location.hash) {
+      const hashString = window.location.hash.replace(/^#/, "");
+      const hashParams = new URLSearchParams(hashString);
+      const fromHash =
+        hashParams.get("tgWebAppStartParam") ||
+        hashParams.get("startapp") ||
+        hashParams.get("start_param");
+      if (fromHash) return fromHash;
+
+      // Check tgWebAppData embedded query string if present
+      const rawData = hashParams.get("tgWebAppData");
+      if (rawData) {
+        const dataParams = new URLSearchParams(rawData);
+        const fromData = dataParams.get("start_param");
+        if (fromData) return fromData;
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+
+  return null;
+}
+
+/**
+ * Strips 'auction_' prefix from start_param to get raw auction UUID.
+ * Supports both "auction_6ed3fc7e-..." and legacy "6ed3fc7e-..."
+ */
+export function extractAuctionIdFromStartParam(
+  param: string | null | undefined
+): string | null {
+  if (!param) return null;
+  const trimmed = param.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("auction_")) {
+    return trimmed.slice("auction_".length).trim();
+  }
+  return trimmed;
+}
+

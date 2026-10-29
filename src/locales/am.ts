@@ -405,11 +405,13 @@ export const am: Translations = {
       "አዲስ ጨረታዎችን እና አሸናፊዎችን በፍጥነት ለማየት የCarraMarket ቴሌግራም ቻናል ይቀላቀሉ።",
     joinChannel: "ቴሌግራም ይቀላቀሉ",
     maybeLater: "ምናልባት በኋላ",
-    contactTitle: "ስልክ ቁጥርዎን ያጋሩ",
+    contactTitle: "ስልክ ቁጥርዎን ያረጋግጡ",
     contactBody:
-      "መለያዎን ለማረጋገጥ እና ስለ አሸናፊነት ለማሳወቅ የቴሌግራም እውቂያዎን ያጋሩ።",
-    shareContact: "እውቂያ ያጋሩ",
-    contactSharing: "በመጋራት ላይ…",
-    contactThanks: "አመሰግናለን — ስልክ ቁጥርዎ ተቀብለናል።",
+      "ጨረታዎችን ለመቀላቀል፣ ዋጋ ለመስጠት እና ሲያሸንፉ ማሳወቂያዎችን ለመቀበል ስልክ ቁጥርዎን ያጋሩ።",
+    shareContact: "ስልክ ቁጥር አጋራ",
+    contactSharing: "ከቴሌግራም ጋር በመገናኘት ላይ…",
+    contactThanks: "ስልክ ቁጥርዎ በተሳካ ሁኔታ ተረጋግጧል!",
+    verifiedBadge: "የቴሌግራም ማረጋገጫ",
+    privacyNote: "በቴሌግራም ደህንነቱ በተጠበቀ ሁኔታ የተረጋገጠ",
   },
 };

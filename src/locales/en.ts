@@ -400,15 +400,17 @@ export const en = {
   telegram: {
     channelTitle: "Join our Telegram",
     channelBody:
-      "Get new auctions and winners first  follow CarraMarket on Telegram.",
+      "Get new auctions and winners first — follow CarraMarket on Telegram.",
     joinChannel: "Join Telegram",
     maybeLater: "Maybe later",
-    contactTitle: "Share your phone",
+    contactTitle: "Verify Your Phone",
     contactBody:
-      "Share your Telegram contact so we can verify your account and reach you about wins.",
-    shareContact: "Share contact",
-    contactSharing: "Sharing…",
-    contactThanks: "Thanks — phone saved.",
+      "Share your phone number to verify your account, place bids, and receive instant win notifications.",
+    shareContact: "Share Phone Number",
+    contactSharing: "Connecting with Telegram…",
+    contactThanks: "Phone verified successfully!",
+    verifiedBadge: "Telegram Integration",
+    privacyNote: "Secured directly by Telegram",
   },
 };
 
