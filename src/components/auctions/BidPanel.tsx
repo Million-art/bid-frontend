@@ -132,7 +132,7 @@ export function BidPanel({
 
     if (urlBidsRaw) {
       const parsed = urlBidsRaw
-        .split(",")
+        .split(/[,_;|]+/)
         .map((p) => Number.parseFloat(p.trim()))
         .filter((n) => Number.isFinite(n) && n > 0)
         .map(roundMoney);
