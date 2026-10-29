@@ -36,6 +36,7 @@ export function HomeAuctionsSection({
         // keep last good snapshot
       }
     };
+    void tick();
     const id = window.setInterval(tick, POLL_MS);
     return () => {
       cancelled = true;

@@ -37,6 +37,14 @@ export type TelegramPopupParams = {
   buttons?: TelegramPopupButton[];
 };
 
+export type TelegramBackButton = {
+  isVisible?: boolean;
+  show?: () => void;
+  hide?: () => void;
+  onClick?: (callback: () => void) => void;
+  offClick?: (callback: () => void) => void;
+};
+
 type TelegramWebApp = {
   initData?: string;
   initDataUnsafe?: {
@@ -49,6 +57,7 @@ type TelegramWebApp = {
   version?: string;
   ready?: () => void;
   expand?: () => void;
+  BackButton?: TelegramBackButton;
   showPopup?: (
     params: TelegramPopupParams,
     callback?: (buttonId: string) => void

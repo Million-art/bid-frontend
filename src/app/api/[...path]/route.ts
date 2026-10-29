@@ -11,16 +11,24 @@ function getUpstreamBase(): string {
   return configured.replace(/\/$/, "");
 }
 
-function rewriteCookieForLocal(rawCookie: string, req: NextRequest): string {
-  const host = req.nextUrl.hostname;
-  const isLocal = host === "localhost" || host === "127.0.0.1";
-  const isHttp = req.nextUrl.protocol === "http:";
+function rewriteCookie(rawCookie: string, req: NextRequest): string {
+  const isHttps = req.nextUrl.protocol === "https:";
 
-  let cookie = rawCookie;
-  if (isLocal) {
-    cookie = cookie.replace(/;\s*Domain=[^;]*/gi, "");
-  }
-  if (isHttp) {
+  // Strip Domain attribute so the cookie is bound to the frontend host (e.g. carramarket.com or localhost)
+  // even if the backend was configured with COOKIE_DOMAIN=localhost.
+  let cookie = rawCookie.replace(/;\s*Domain=[^;]*/gi, "");
+
+  if (isHttps) {
+    // Inside Telegram WebView (iframe on web.telegram.org), cookies must be SameSite=None; Secure
+    if (!/;\s*Secure/i.test(cookie)) {
+      cookie += "; Secure";
+    }
+    if (/;\s*SameSite=/i.test(cookie)) {
+      cookie = cookie.replace(/;\s*SameSite=[^;]*/gi, "; SameSite=None");
+    } else {
+      cookie += "; SameSite=None";
+    }
+  } else {
     cookie = cookie.replace(/;\s*Secure/gi, "");
     cookie = cookie.replace(/;\s*SameSite=None/gi, "; SameSite=Lax");
   }
@@ -73,12 +81,12 @@ async function proxyRequest(req: NextRequest): Promise<NextResponse> {
         : [];
     if (setCookies.length > 0) {
       for (const ck of setCookies) {
-        resHeaders.append("set-cookie", rewriteCookieForLocal(ck, req));
+        resHeaders.append("set-cookie", rewriteCookie(ck, req));
       }
     } else {
       const singleCookie = upstreamRes.headers.get("set-cookie");
       if (singleCookie) {
-        resHeaders.set("set-cookie", rewriteCookieForLocal(singleCookie, req));
+        resHeaders.set("set-cookie", rewriteCookie(singleCookie, req));
       }
     }
 

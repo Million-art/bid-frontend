@@ -2,12 +2,9 @@ const ACCESS_TOKEN_STORAGE_KEY = "carra_access_token";
 
 export const getApiBase = (): string => {
   if (typeof window !== "undefined") {
-    const hostname = window.location.hostname;
-    if (hostname === "localhost" || hostname === "127.0.0.1") {
-      // Use same-origin Next.js /api proxy on localhost so cookies & CSRF work seamlessly
-      return "";
-    }
-    return process.env.NEXT_PUBLIC_API_URL || "https://clientbackend.carramarket.com";
+    // Always use same-origin Next.js /api proxy in the browser so cookies, CSRF,
+    // and Telegram WebView requests work without cross-origin or third-party cookie issues.
+    return "";
   }
   return (
     process.env.NEXT_PUBLIC_API_URL ||

@@ -18,7 +18,7 @@ import {
   telegramWebAppLogin as apiTelegramWebAppLogin,
   logout as apiLogout,
 } from "@/services/auth.service";
-
+import { getAccessToken } from "@/lib/api";
 
 import {
   ensureTelegramWebAppReady,
@@ -50,16 +50,23 @@ export function AuthProvider({ children, googleClientId }: { children: React.Rea
   const [error, setError] = useState<string | null>(null);
 
   const loadUser = useCallback(async () => {
-    try {
-      // 1. Try restoring session from existing auth cookie / token
-      const data = await getMe();
-      if (data?.user) {
-        setUser(data.user);
-        setLoading(false);
-        return;
+    const insideTg = typeof window !== "undefined" && isInsideTelegram();
+    const hasBearerToken = Boolean(getAccessToken());
+
+    // 1. Try restoring session from existing auth cookie / token.
+    // Inside Telegram Mini App, only call /api/me first if we already have a stored bearer token;
+    // otherwise authenticate directly via Telegram initData without triggering a 401 + refresh.
+    if (!insideTg || hasBearerToken) {
+      try {
+        const data = await getMe();
+        if (data?.user) {
+          setUser(data.user);
+          setLoading(false);
+          return;
+        }
+      } catch {
+        /* not authenticated yet */
       }
-    } catch {
-      /* not authenticated with cookie yet */
     }
 
     // 2. If running inside Telegram Mini App, automatically authenticate with Telegram's signed initData
@@ -70,7 +77,7 @@ export function AuthProvider({ children, googleClientId }: { children: React.Rea
 
         // If inside Telegram, wait briefly for SDK to populate initData if not immediately ready
         if (!initData && isInsideTelegram()) {
-          for (let i = 0; i < 4; i++) {
+          for (let i = 0; i < 6; i++) {
             await new Promise((res) => setTimeout(res, 120));
             initData = getTelegramInitData();
             if (initData) break;
