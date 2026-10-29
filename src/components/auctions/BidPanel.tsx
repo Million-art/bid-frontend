@@ -65,7 +65,19 @@ export function BidPanel({
   const hasJoined = Boolean(user) && (participating || myBids.length > 0);
   const canBid = hasJoined && isOpen;
   const totalBidsCount = auction.totalBids ?? 0;
-  const packTotal = roundMoney(packTags.length * Number(auction.entranceFee || 0));
+  const entranceFeeNum = Number(auction.entranceFee || 0);
+  const draftAmountNum = roundMoney(Number.parseFloat(draftValue));
+  const hasValidDraft =
+    draftValue.trim() !== "" &&
+    Number.isFinite(draftAmountNum) &&
+    draftAmountNum > 0;
+  const effectiveBids =
+    packTags.length > 0 ? packTags : hasValidDraft ? [draftAmountNum] : [];
+  const packBidsSum = roundMoney(
+    effectiveBids.reduce((sum, val) => sum + Number(val || 0), 0)
+  );
+  const packEntranceSum = roundMoney(effectiveBids.length * entranceFeeNum);
+  const packTotal = roundMoney(packEntranceSum + packBidsSum);
   const existingValues = new Set(
     myBids.map((b) => roundMoney(Number(b.bidValue)).toFixed(2))
   );
@@ -278,11 +290,34 @@ export function BidPanel({
 
   const submitPack = () => {
     setPackError(null);
-    if (packTags.length === 0) {
+    let bidsToSubmit = [...packTags];
+
+    // If user typed a bid in the input box and clicked Pay directly (or pressed Pay with a draft),
+    // validate and include it automatically.
+    if (draftValue.trim() !== "") {
+      if (bidsToSubmit.length >= MAX_PACK) {
+        setPackError(dict.auctionDetail.maxPackReached);
+        return;
+      }
+      const value = roundMoney(Number.parseFloat(draftValue));
+      if (!validateBidAmount(value)) return;
+      const key = value.toFixed(2);
+      if (existingValues.has(key)) {
+        setPackError(dict.auctionDetail.duplicateExistingBid);
+        return;
+      }
+      if (!bidsToSubmit.some((t) => t.toFixed(2) === key)) {
+        bidsToSubmit.push(value);
+      }
+      setDraftValue("");
+      setPackTags(bidsToSubmit);
+    }
+
+    if (bidsToSubmit.length === 0) {
       setPackError(dict.auctionDetail.addAtLeastOneBid);
       return;
     }
-    participateMutation.mutate(packTags);
+    participateMutation.mutate(bidsToSubmit);
   };
 
   if (auction.status === "executed") {
@@ -436,36 +471,61 @@ export function BidPanel({
             </div>
             <p className="text-xs text-slate-500">{dict.auctionDetail.addBidHint}</p>
 
-            {packTags.length > 0 && (
+            {effectiveBids.length > 0 && (
               <div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                    {dict.auctionDetail.yourPack}
-                  </p>
-                  <span className="text-xs font-semibold text-slate-500">
-                    {t("auctionDetail.packCount", {
-                      count: String(packTags.length),
-                    })}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {packTags.map((value, index) => (
-                    <span
-                      key={`${value.toFixed(2)}-${index}`}
-                      className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 py-1 pl-3 pr-1.5 text-sm font-semibold text-slate-900"
-                    >
-                      {formatCurrency(value)}
-                      <button
-                        type="button"
-                        aria-label={dict.auctionDetail.removeBidAria}
-                        className="rounded-full p-0.5 text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
-                        onClick={() => removeTag(index)}
-                        disabled={participateMutation.isPending}
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
+                {packTags.length > 0 && (
+                  <>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        {dict.auctionDetail.yourPack}
+                      </p>
+                      <span className="text-xs font-semibold text-slate-500">
+                        {t("auctionDetail.packCount", {
+                          count: String(packTags.length),
+                        })}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {packTags.map((value, index) => (
+                        <span
+                          key={`${value.toFixed(2)}-${index}`}
+                          className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 py-1 pl-3 pr-1.5 text-sm font-semibold text-slate-900"
+                        >
+                          {formatCurrency(value)}
+                          <button
+                            type="button"
+                            aria-label={dict.auctionDetail.removeBidAria}
+                            className="rounded-full p-0.5 text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+                            onClick={() => removeTag(index)}
+                            disabled={participateMutation.isPending}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
+                <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-2 text-xs text-slate-600 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span>
+                      {dict.auctionDetail.entranceFee} ({effectiveBids.length} ×{" "}
+                      {formatCurrency(entranceFeeNum)})
                     </span>
-                  ))}
+                    <span className="font-semibold text-slate-800">
+                      {formatCurrency(packEntranceSum)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>{dict.auctionDetail.yourBidValue}</span>
+                    <span className="font-semibold text-slate-800">
+                      {formatCurrency(packBidsSum)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-slate-200 pt-1 text-slate-900 font-bold">
+                    <span>Total</span>
+                    <span>{formatCurrency(packTotal)}</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -484,15 +544,15 @@ export function BidPanel({
               disabled={
                 !isOpen ||
                 participateMutation.isPending ||
-                packTags.length === 0
+                (packTags.length === 0 && !hasValidDraft)
               }
               onClick={submitPack}
             >
               {participateMutation.isPending
                 ? dict.auctionDetail.redirectingToChapa
                 : t("auctionDetail.placePackAndPayChapa", {
-                    count: String(Math.max(packTags.length, 1)),
-                    amount: formatCurrency(packTotal || auction.entranceFee),
+                    count: String(Math.max(effectiveBids.length, 1)),
+                    amount: formatCurrency(packTotal || entranceFeeNum),
                   })}
             </Button>
           </div>
