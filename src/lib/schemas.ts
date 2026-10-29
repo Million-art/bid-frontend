@@ -67,7 +67,13 @@ export const PublicAuctionsListSchema = z.object({
   items: z.array(PublicAuctionCardSchema),
   total: z.coerce.number().optional().default(0),
   page: z.coerce.number().optional().default(1),
-  limit: z.coerce.number().optional().default(20),
+  limit: z.coerce.number().optional().default(12),
+  totalPages: z.coerce.number().optional().default(1),
+  hasMore: z.boolean().optional().default(false),
+  statusCounts: z
+    .record(z.string(), z.coerce.number())
+    .optional()
+    .default({}),
 });
 
 export type PublicAuctionsList = z.infer<typeof PublicAuctionsListSchema>;

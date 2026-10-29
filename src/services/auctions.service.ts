@@ -36,13 +36,25 @@ function unwrapData(payload: unknown): unknown {
 export async function listAuctions(params?: {
   page?: number;
   limit?: number;
+  status?: string;
+  search?: string;
+  sort?: string;
 }): Promise<PublicAuctionsList> {
   const page = params?.page ?? 1;
-  const limit = params?.limit ?? 20;
+  const limit = params?.limit ?? 12;
   const qs = new URLSearchParams({
     page: String(page),
     limit: String(limit),
   });
+  if (params?.status && params.status !== "all") {
+    qs.set("status", params.status);
+  }
+  if (params?.search && params.search.trim() !== "") {
+    qs.set("search", params.search.trim());
+  }
+  if (params?.sort && params.sort.trim() !== "") {
+    qs.set("sort", params.sort.trim());
+  }
   const res = await apiFetch<ApiResponse<unknown>>(
     `/api/public/auctions?${qs.toString()}`
   );
@@ -58,9 +70,20 @@ export async function listAuctions(params?: {
       total: raw.length,
       page,
       limit,
+      totalPages: 1,
+      hasMore: false,
+      statusCounts: {},
     };
   }
-  return { items: [], total: 0, page, limit };
+  return {
+    items: [],
+    total: 0,
+    page,
+    limit,
+    totalPages: 0,
+    hasMore: false,
+    statusCounts: {},
+  };
 }
 
 export async function getAuction(id: string): Promise<Auction> {

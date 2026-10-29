@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import {
   Search,
   ArrowUpDown,
   X,
   RefreshCw,
+  Loader2,
 } from "lucide-react";
 import { AuctionCard } from "@/components/auctions/AuctionCard";
 import {
@@ -19,19 +20,22 @@ import { useLanguage } from "@/contexts/LanguageContext";
 type StatusFilter = "all" | "active" | "closed" | "executed";
 type SortOption = "newest" | "closing_soon" | "fee_asc" | "fee_desc";
 
-function normalizeStatus(status: string): StatusFilter {
-  const s = String(status).toLowerCase();
-  if (s === "completed" || s === "executed") return "executed";
-  if (s === "active") return "active";
-  if (s === "closed") return "closed";
-  return "all";
-}
+const PAGE_SIZE = 12;
 
 export default function AuctionsPage() {
   const { dict, t } = useLanguage();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
   const statusOptions: { value: StatusFilter; label: string }[] = useMemo(
     () => [
@@ -59,77 +63,101 @@ export default function AuctionsPage() {
     isError,
     refetch,
     isFetching,
-  } = useQuery({
-    queryKey: queryKeys.auctions.list({ page: 1, limit: 100 }),
-    queryFn: () => listAuctions({ page: 1, limit: 100 }),
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: queryKeys.auctions.infinite({
+      limit: PAGE_SIZE,
+      status: statusFilter,
+      search: debouncedSearch,
+      sort: sortBy,
+    }),
+    initialPageParam: 1,
+    queryFn: ({ pageParam = 1 }) =>
+      listAuctions({
+        page: pageParam,
+        limit: PAGE_SIZE,
+        status: statusFilter,
+        search: debouncedSearch,
+        sort: sortBy,
+      }),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.hasMore) {
+        return (lastPage.page ?? 1) + 1;
+      }
+      const currentPage = lastPage.page ?? 1;
+      const limit = lastPage.limit || PAGE_SIZE;
+      if (currentPage * limit < (lastPage.total ?? 0)) {
+        return currentPage + 1;
+      }
+      return undefined;
+    },
+    placeholderData: keepPreviousData,
+    staleTime: 15_000,
     refetchInterval: 45_000,
     refetchOnWindowFocus: true,
   });
 
-  const items: PublicAuctionCard[] = useMemo(() => data?.items ?? [], [data]);
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          void fetchNextPage();
+        }
+      },
+      { rootMargin: "320px 0px" }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const items: PublicAuctionCard[] = useMemo(() => {
+    if (!data?.pages) return [];
+    const seen = new Set<string>();
+    const merged: PublicAuctionCard[] = [];
+    for (const page of data.pages) {
+      for (const item of page.items) {
+        if (!seen.has(item.id)) {
+          seen.add(item.id);
+          merged.push(item);
+        }
+      }
+    }
+    return merged;
+  }, [data]);
+
+  const firstPage = data?.pages?.[0];
+  const totalMatching = firstPage?.total ?? items.length;
 
   const statusCounts = useMemo(() => {
-    const counts: Record<StatusFilter, number> = {
-      all: items.length,
+    const serverCounts = firstPage?.statusCounts;
+    if (serverCounts && Object.keys(serverCounts).length > 0) {
+      return {
+        all: serverCounts.all ?? totalMatching,
+        active: serverCounts.active ?? 0,
+        closed: serverCounts.closed ?? 0,
+        executed: serverCounts.executed ?? 0,
+      };
+    }
+    return {
+      all: totalMatching,
       active: 0,
       closed: 0,
       executed: 0,
     };
-    for (const item of items) {
-      const st = normalizeStatus(String(item.status));
-      if (st !== "all") {
-        counts[st] = (counts[st] ?? 0) + 1;
-      }
-    }
-    return counts;
-  }, [items]);
-
-  const filteredItems = useMemo(() => {
-    const q = search.trim().toLowerCase();
-
-    const filtered = items.filter((auction) => {
-      if (statusFilter !== "all") {
-        if (normalizeStatus(String(auction.status)) !== statusFilter) {
-          return false;
-        }
-      }
-
-      if (q) {
-        const titleMatch = auction.title.toLowerCase().includes(q);
-        const descMatch = (auction.description || "").toLowerCase().includes(q);
-        if (!titleMatch && !descMatch) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-    return [...filtered].sort((a, b) => {
-      if (sortBy === "fee_asc") {
-        return a.entranceFee - b.entranceFee;
-      }
-      if (sortBy === "fee_desc") {
-        return b.entranceFee - a.entranceFee;
-      }
-      if (sortBy === "closing_soon") {
-        const aEnd = a.endsAt ?? a.closeAt;
-        const bEnd = b.endsAt ?? b.closeAt;
-        const aTime = aEnd ? new Date(aEnd).getTime() : Number.POSITIVE_INFINITY;
-        const bTime = bEnd ? new Date(bEnd).getTime() : Number.POSITIVE_INFINITY;
-        return aTime - bTime;
-      }
-      const aCreated = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return bCreated - aCreated;
-    });
-  }, [items, search, statusFilter, sortBy]);
+  }, [firstPage?.statusCounts, totalMatching]);
 
   const hasActiveFilters =
     search.trim() !== "" || statusFilter !== "all" || sortBy !== "newest";
 
   const clearFilters = () => {
     setSearch("");
+    setDebouncedSearch("");
     setStatusFilter("all");
     setSortBy("newest");
   };
@@ -165,7 +193,10 @@ export default function AuctionsPage() {
               {search && (
                 <button
                   type="button"
-                  onClick={() => setSearch("")}
+                  onClick={() => {
+                    setSearch("");
+                    setDebouncedSearch("");
+                  }}
                   aria-label="Clear search"
                   className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
                 >
@@ -224,10 +255,13 @@ export default function AuctionsPage() {
             </div>
 
             <div className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-500 sm:justify-end">
-              <span>
+              <span className="inline-flex items-center gap-1.5">
+                {isFetching && !isFetchingNextPage && (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-[var(--brand-blue)]" />
+                )}
                 {t("auctions.showingSummary", {
-                  count: filteredItems.length,
-                  total: items.length,
+                  count: items.length,
+                  total: totalMatching,
                 })}
               </span>
               {hasActiveFilters && (
@@ -274,11 +308,11 @@ export default function AuctionsPage() {
               {dict.common.retry}
             </button>
           </div>
-        ) : items.length === 0 ? (
+        ) : items.length === 0 && !hasActiveFilters ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center text-slate-500">
             {dict.auctions.noAuctionsYet}
           </div>
-        ) : filteredItems.length === 0 ? (
+        ) : items.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
             <p className="text-base font-bold text-slate-800">
               {dict.auctions.noMatches}
@@ -296,11 +330,34 @@ export default function AuctionsPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredItems.map((auction) => (
-              <AuctionCard key={auction.id} auction={auction} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {items.map((auction) => (
+                <AuctionCard key={auction.id} auction={auction} />
+              ))}
+            </div>
+
+            {/* Infinite scroll sentinel & Load More fallback */}
+            <div
+              ref={sentinelRef}
+              className="mt-10 flex flex-col items-center justify-center gap-3"
+            >
+              {isFetchingNextPage ? (
+                <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-600 shadow-sm">
+                  <Loader2 className="h-4 w-4 animate-spin text-[var(--brand-blue)]" />
+                  {dict.common.loading}
+                </div>
+              ) : hasNextPage ? (
+                <button
+                  type="button"
+                  onClick={() => void fetchNextPage()}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)]"
+                >
+                  {dict.common.viewAll} ({items.length} / {totalMatching})
+                </button>
+              ) : null}
+            </div>
+          </>
         )}
       </div>
     </div>

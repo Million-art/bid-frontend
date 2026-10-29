@@ -7,8 +7,19 @@ export const queryKeys = {
   auctions: {
     all: () => [...queryKeys.all, "auctions"] as const,
     lists: () => [...queryKeys.auctions.all(), "list"] as const,
-    list: (filters: { page?: number; limit?: number }) =>
-      [...queryKeys.auctions.lists(), filters] as const,
+    list: (filters: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      search?: string;
+      sort?: string;
+    }) => [...queryKeys.auctions.lists(), filters] as const,
+    infinite: (filters: {
+      limit?: number;
+      status?: string;
+      search?: string;
+      sort?: string;
+    }) => [...queryKeys.auctions.lists(), "infinite", filters] as const,
     details: () => [...queryKeys.auctions.all(), "detail"] as const,
     detail: (id: string) => [...queryKeys.auctions.details(), id] as const,
     myBids: (id: string) =>
