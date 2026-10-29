@@ -23,7 +23,7 @@ const STAFF_PATH = /^\/staffpanel(\/|$)/;
  */
 export function TelegramPrompts() {
   const pathname = usePathname() || "";
-  const { user, refreshUser } = useAuth();
+  const { user, loading: authLoading, refreshUser } = useAuth();
   const busyRef = useRef(false);
 
   const handleRequestContact = useCallback(async () => {
@@ -62,6 +62,11 @@ export function TelegramPrompts() {
         } catch {
           /* webhook will still persist the contact */
         }
+      } else {
+        // Older Telegram clients send contact only to the bot webhook; poll briefly then refresh user
+        window.setTimeout(() => {
+          void refreshUser();
+        }, 1500);
       }
     } catch {
       /* ignore */
@@ -75,8 +80,14 @@ export function TelegramPrompts() {
       return;
     }
 
-    // Only run if user is inside Telegram and phone is not yet verified
-    const hasPhone = Boolean(user?.phone?.trim());
+    // Wait until AuthContext finishes loading the user profile from the backend
+    // so we don't prompt users who already shared their contact previously.
+    if (authLoading || !user) {
+      return;
+    }
+
+    // Only run if user is inside Telegram and phone is not yet verified in the database
+    const hasPhone = Boolean(user.phone?.trim());
     if (hasPhone) {
       return;
     }
@@ -149,7 +160,7 @@ export function TelegramPrompts() {
     return () => {
       cancelled = true;
     };
-  }, [pathname, user?.phone, handleRequestContact]);
+  }, [pathname, authLoading, user, handleRequestContact]);
 
   // Renders no HTML in the DOM — pure native Telegram UI integration
   return null;

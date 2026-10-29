@@ -123,7 +123,7 @@ export function TelegramLoginButton({
       const bot = (botUsername || process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "")
         .replace(/^@/, "");
       if (bot) {
-        window.location.href = `https://t.me/${bot}/startapp`;
+        window.location.href = `https://t.me/${bot}?startapp`;
         return;
       }
       onErrorRef.current?.(
