@@ -1,4 +1,4 @@
-import { apiFetch, resetCsrfToken, setAccessToken, syncCsrfToken, type ApiResponse } from "@/lib/api";
+import { apiFetch, resetCsrfToken, setAccessToken, setCsrfToken, syncCsrfToken, type ApiResponse } from "@/lib/api";
 
 export type UserRole =
   | "super_admin"
@@ -49,6 +49,18 @@ export interface LoginPayload {
 
 export interface AuthResponse {
   user: User;
+  accessToken?: string;
+  csrfToken?: string;
+}
+
+function handleAuthSuccess(data: AuthResponse): AuthResponse {
+  if (data?.accessToken) {
+    setAccessToken(data.accessToken);
+  }
+  if (data?.csrfToken) {
+    setCsrfToken(data.csrfToken);
+  }
+  return data;
 }
 
 export async function signup(payload: SignupPayload): Promise<AuthResponse> {
@@ -56,7 +68,7 @@ export async function signup(payload: SignupPayload): Promise<AuthResponse> {
     method: "POST",
     body: JSON.stringify(payload),
   });
-  return response.data;
+  return handleAuthSuccess(response.data);
 }
 
 export async function sendOtp(phone: string): Promise<{ sent: boolean }> {
@@ -126,7 +138,7 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
     method: "POST",
     body: JSON.stringify(payload),
   });
-  return response.data;
+  return handleAuthSuccess(response.data);
 }
 
 export type GoogleLoginOptions = { isSignup?: boolean; acceptTerms?: boolean };
@@ -142,7 +154,7 @@ export async function googleLogin(credential: string, opts?: GoogleLoginOptions)
       acceptTerms: opts?.acceptTerms ?? false,
     }),
   });
-  return response.data;
+  return handleAuthSuccess(response.data);
 }
 
 export type TelegramAuthPayload = {
@@ -161,7 +173,7 @@ export async function telegramLogin(payload: TelegramAuthPayload): Promise<AuthR
     method: "POST",
     body: JSON.stringify(payload),
   });
-  return response.data;
+  return handleAuthSuccess(response.data);
 }
 
 /** Mini App silent login — uses Telegram.WebApp.initData (works inside Telegram). */
@@ -171,7 +183,7 @@ export async function telegramWebAppLogin(initData: string): Promise<AuthRespons
     method: "POST",
     body: JSON.stringify({ initData }),
   });
-  return response.data;
+  return handleAuthSuccess(response.data);
 }
 
 export async function getMe(): Promise<{ user: User } | null> {

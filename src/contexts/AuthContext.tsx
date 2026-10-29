@@ -20,6 +20,12 @@ import {
 } from "@/services/auth.service";
 
 
+import {
+  ensureTelegramWebAppReady,
+  getTelegramInitData,
+  isInsideTelegram,
+} from "@/lib/telegram-webapp";
+
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
@@ -45,17 +51,47 @@ export function AuthProvider({ children, googleClientId }: { children: React.Rea
 
   const loadUser = useCallback(async () => {
     try {
+      // 1. Try restoring session from existing auth cookie / token
       const data = await getMe();
-      if (data) {
+      if (data?.user) {
         setUser(data.user);
-      } else {
-        setUser(null);
+        setLoading(false);
+        return;
       }
     } catch {
-      setUser(null);
-    } finally {
-      setLoading(false);
+      /* not authenticated with cookie yet */
     }
+
+    // 2. If running inside Telegram Mini App, automatically authenticate with Telegram's signed initData
+    if (typeof window !== "undefined") {
+      try {
+        ensureTelegramWebAppReady();
+        let initData = getTelegramInitData();
+
+        // If inside Telegram, wait briefly for SDK to populate initData if not immediately ready
+        if (!initData && isInsideTelegram()) {
+          for (let i = 0; i < 4; i++) {
+            await new Promise((res) => setTimeout(res, 120));
+            initData = getTelegramInitData();
+            if (initData) break;
+          }
+        }
+
+        if (initData) {
+          const authData = await apiTelegramWebAppLogin(initData);
+          if (authData?.user) {
+            setUser(authData.user);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Telegram auto-authentication failed:", err);
+      }
+    }
+
+    setUser(null);
+    setLoading(false);
   }, []);
 
   useEffect(() => {

@@ -25,6 +25,18 @@ export type TelegramWebAppContact = {
   };
 };
 
+export type TelegramPopupButton = {
+  id?: string;
+  type?: "default" | "ok" | "close" | "cancel" | "destructive";
+  text?: string;
+};
+
+export type TelegramPopupParams = {
+  title?: string;
+  message: string;
+  buttons?: TelegramPopupButton[];
+};
+
 type TelegramWebApp = {
   initData?: string;
   initDataUnsafe?: {
@@ -37,6 +49,15 @@ type TelegramWebApp = {
   version?: string;
   ready?: () => void;
   expand?: () => void;
+  showPopup?: (
+    params: TelegramPopupParams,
+    callback?: (buttonId: string) => void
+  ) => void;
+  showAlert?: (message: string, callback?: () => void) => void;
+  showConfirm?: (
+    message: string,
+    callback?: (confirmed: boolean) => void
+  ) => void;
   requestContact?: (
     callback?: (
       shared: boolean | string,
@@ -101,7 +122,23 @@ export function getTelegramWebAppUser(): TelegramWebAppUser | null {
 }
 
 export function getTelegramInitData(): string {
-  return (getTelegramWebApp()?.initData || "").trim();
+  const wa = getTelegramWebApp();
+  if (wa?.initData && wa.initData.trim().length > 0) {
+    return wa.initData.trim();
+  }
+  if (typeof window !== "undefined" && window.location.hash) {
+    try {
+      const hashStr = window.location.hash.replace(/^#/, "");
+      const hashParams = new URLSearchParams(hashStr);
+      const fromHash = hashParams.get("tgWebAppData");
+      if (fromHash && fromHash.trim().length > 0) {
+        return fromHash.trim();
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  return "";
 }
 
 export function ensureTelegramWebAppReady(): void {
@@ -278,4 +315,27 @@ export function extractAuctionIdFromStartParam(
   }
   return trimmed;
 }
+
+/**
+ * Triggers Telegram's official native dialog inside the Telegram client.
+ * Returns the button ID clicked ('share', 'cancel', etc.).
+ */
+export function showTelegramNativePopup(
+  params: TelegramPopupParams
+): Promise<string> {
+  const wa = getTelegramWebApp();
+  if (!wa || typeof wa.showPopup !== "function") {
+    return Promise.resolve("");
+  }
+  return new Promise((resolve) => {
+    try {
+      wa.showPopup!(params, (buttonId: string) => {
+        resolve(buttonId || "");
+      });
+    } catch {
+      resolve("");
+    }
+  });
+}
+
 

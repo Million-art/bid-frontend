@@ -9,6 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { validatePasswordPolicy } from "@/lib/passwordPolicy";
 import { ApiError, getErrorMessage, getCsrfToken } from "@/lib/api";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { isInsideTelegram } from "@/lib/telegram-webapp";
 import { AuthSplitShell } from "@/components/auth/AuthSplitShell";
 import { PhonePrefixInput } from "@/components/auth/PhonePrefixInput";
 import { Button } from "@/components/ui/button";
@@ -128,11 +129,17 @@ function SignupForm() {
 
   const linkClass = "font-semibold text-brand-blue hover:text-blue-600 underline-offset-2 hover:underline";
 
-  if (authLoading) {
+  if (authLoading || (isInsideTelegram() && !user)) {
     return (
       <AuthSplitShell>
-        <div className="flex min-h-[40vh] items-center justify-center lg:min-h-[50vh]">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-brand-blue border-t-transparent" />
+        <div className="flex min-h-[40vh] flex-col items-center justify-center p-6 text-center lg:min-h-[50vh]">
+          <div className="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-[#24A1DE] border-t-transparent" />
+          <p className="text-base font-bold text-slate-900">
+            Authenticating with Telegram…
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Accessing marketplace…
+          </p>
         </div>
       </AuthSplitShell>
     );
