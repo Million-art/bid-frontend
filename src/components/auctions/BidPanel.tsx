@@ -19,11 +19,6 @@ import {
   type Bid,
 } from "@/services/auctions.service";
 import { AnalyticsEvents, track } from "@/lib/analytics";
-import {
-  getTelegramWebApp,
-  isInsideTelegram,
-  openTelegramUrl,
-} from "@/lib/telegram-webapp";
 
 const MAX_PACK = 10;
 
