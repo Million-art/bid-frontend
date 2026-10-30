@@ -25,6 +25,7 @@ import {
   getTelegramInitData,
   isInsideTelegram,
 } from "@/lib/telegram-webapp";
+import { AnalyticsEvents, track } from "@/lib/analytics";
 
 interface AuthContextValue {
   user: User | null;
@@ -88,6 +89,7 @@ export function AuthProvider({ children, googleClientId }: { children: React.Rea
           const authData = await apiTelegramWebAppLogin(initData);
           if (authData?.user) {
             setUser(authData.user);
+            track(AnalyticsEvents.LoginSuccess, { method: "telegram_webapp_auto" });
             setLoading(false);
             return;
           }
@@ -110,6 +112,7 @@ export function AuthProvider({ children, googleClientId }: { children: React.Rea
     try {
       const data = await apiSignup(payload);
       setUser(data.user);
+      track(AnalyticsEvents.SignupSuccess, { method: "password" });
       return data;
     } catch (e) {
       const message = e instanceof Error ? e.message : "Signup failed";
@@ -123,6 +126,7 @@ export function AuthProvider({ children, googleClientId }: { children: React.Rea
     try {
       const data = await apiLogin(payload);
       setUser(data.user);
+      track(AnalyticsEvents.LoginSuccess, { method: "password" });
       return data;
     } catch (e) {
       const message = e instanceof Error ? e.message : "Login failed";
@@ -136,6 +140,7 @@ export function AuthProvider({ children, googleClientId }: { children: React.Rea
     try {
       const data = await apiGoogleLogin(credential, opts);
       setUser(data.user);
+      track(AnalyticsEvents.LoginSuccess, { method: "google" });
       return data;
     } catch (e) {
       const message = e instanceof Error ? e.message : "Google login failed";
@@ -149,6 +154,7 @@ export function AuthProvider({ children, googleClientId }: { children: React.Rea
     try {
       const data = await apiTelegramLogin(payload);
       setUser(data.user);
+      track(AnalyticsEvents.LoginSuccess, { method: "telegram_widget" });
       return data;
     } catch (e) {
       const message = e instanceof Error ? e.message : "Telegram login failed";
@@ -162,6 +168,7 @@ export function AuthProvider({ children, googleClientId }: { children: React.Rea
     try {
       const data = await apiTelegramWebAppLogin(initData);
       setUser(data.user);
+      track(AnalyticsEvents.LoginSuccess, { method: "telegram_webapp" });
       return data;
     } catch (e) {
       const message = e instanceof Error ? e.message : "Telegram login failed";
@@ -176,6 +183,8 @@ export function AuthProvider({ children, googleClientId }: { children: React.Rea
       await apiLogout();
     } finally {
       setUser(null);
+      const { resetAnalytics } = await import("@/lib/analytics");
+      resetAnalytics();
     }
   }, []);
 

@@ -16,6 +16,7 @@ import {
   requestTelegramContact,
 } from "@/lib/telegram-webapp";
 import { shareTelegramContact } from "@/services/telegram.service";
+import { AnalyticsEvents, track } from "@/lib/analytics";
 
 const CONTACT_PROMPTED_SESSION_KEY = "carramarket_tg_contact_prompted";
 const CHANNEL_DISMISS_KEY = "carramarket_tg_channel_dismissed";
@@ -61,9 +62,11 @@ export function TelegramPrompts() {
 
       const result = await requestTelegramContact();
       if (!result.shared) {
+        track(AnalyticsEvents.ContactShareDismissed);
         return;
       }
 
+      track(AnalyticsEvents.ContactShareShared);
       const tgUser = getTelegramWebAppUser();
       const telegramId = result.userId || tgUser?.id;
       if (result.phone && telegramId) {
@@ -153,6 +156,7 @@ export function TelegramPrompts() {
       if (!wa) return;
 
       setContactPromptActive(true);
+      track(AnalyticsEvents.ContactSharePrompted);
 
       // Small delay so the Telegram Mini App view is completely settled
       window.setTimeout(() => {
@@ -174,6 +178,7 @@ export function TelegramPrompts() {
               if (buttonId === "share") {
                 void handleRequestContact();
               } else {
+                track(AnalyticsEvents.ContactShareDismissed);
                 setContactPromptActive(false);
               }
             }
@@ -247,11 +252,13 @@ export function TelegramPrompts() {
   }, [pathname, contactPromptActive]);
 
   const dismissChannel = useCallback(() => {
+    track(AnalyticsEvents.ChannelJoinDismissed);
     writeFlag(CHANNEL_DISMISS_KEY);
     setShowChannel(false);
   }, []);
 
   const joinChannel = useCallback(() => {
+    track(AnalyticsEvents.ChannelJoinClicked);
     openTelegramUrl(SOCIAL.telegram);
     writeFlag(CHANNEL_DISMISS_KEY);
     setShowChannel(false);

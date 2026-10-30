@@ -18,6 +18,12 @@ import {
   type Auction,
   type Bid,
 } from "@/services/auctions.service";
+import { AnalyticsEvents, track } from "@/lib/analytics";
+import {
+  getTelegramWebApp,
+  isInsideTelegram,
+  openTelegramUrl,
+} from "@/lib/telegram-webapp";
 
 const MAX_PACK = 10;
 
@@ -94,6 +100,24 @@ export function BidPanel({
     });
   };
 
+  const clearPendingChapa = () => {
+    try {
+      sessionStorage.removeItem(`carramarket_pending_chapa_${auction.id}`);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const finishVerifyUI = (verified: boolean) => {
+    clearPendingChapa();
+    setPackTags([]);
+    invalidate();
+    router.replace(`/auctions/${auction.id}`);
+    if (verified) {
+      toast.success(dict.auctionDetail.paymentVerifiedSuccess);
+    }
+  };
+
   const verifyMutation = useMutation({
     mutationFn: ({
       txRef,
@@ -101,26 +125,46 @@ export function BidPanel({
     }: {
       txRef: string;
       bidValues?: number[];
-    }) => verifyChapaPayment(txRef, bidValues),
+    }) => {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 20000);
+      return verifyChapaPayment(txRef, bidValues, controller.signal).finally(
+        () => window.clearTimeout(timeout)
+      );
+    },
     onSuccess: (res) => {
-      try {
-        sessionStorage.removeItem(`carramarket_pending_chapa_${auction.id}`);
-      } catch {
-        // ignore storage errors
-      }
-      if (res.verified) {
-        toast.success(dict.auctionDetail.paymentVerifiedSuccess);
-      }
-      setPackTags([]);
-      invalidate();
-      router.replace(`/auctions/${auction.id}`);
+      track(AnalyticsEvents.PaymentVerified, {
+        auction_id: auction.id,
+        verified: Boolean(res.verified),
+      });
+      finishVerifyUI(Boolean(res.verified || res.participating));
     },
     onError: (err) => {
+      track(AnalyticsEvents.PaymentVerifyFailed, { auction_id: auction.id });
+      // Webhook may already have fulfilled — refresh and drop the spinner.
+      clearPendingChapa();
+      invalidate();
+      router.replace(`/auctions/${auction.id}`);
       toastApiError(err, dict.auctionDetail.paymentVerifyError);
     },
   });
 
   useEffect(() => {
+    // Already joined (e.g. webhook fulfilled while on Chapa) — don't keep verifying.
+    if (participating || myBids.length > 0) {
+      const hasReturnRef =
+        searchParams.get("tx_ref") ||
+        searchParams.get("trx_ref") ||
+        searchParams.get("txRef");
+      if (hasReturnRef) {
+        clearPendingChapa();
+        router.replace(`/auctions/${auction.id}`);
+      } else {
+        clearPendingChapa();
+      }
+      return;
+    }
+
     const urlTxRef =
       searchParams.get("tx_ref") ||
       searchParams.get("trx_ref") ||
@@ -180,7 +224,7 @@ export function BidPanel({
         bidValues: bidValuesToVerify,
       });
     }
-  }, [auction.id, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [auction.id, searchParams, participating, myBids.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const validateBidAmount = (value: number, silent = false): boolean => {
     if (!Number.isFinite(value) || value <= 0) {
@@ -249,6 +293,11 @@ export function BidPanel({
     },
     onSuccess: (result, bidValues) => {
       if (result.checkoutUrl) {
+        track(AnalyticsEvents.PaymentStarted, {
+          auction_id: auction.id,
+          bid_count: bidValues.length,
+          tx_ref: result.txRef || undefined,
+        });
         try {
           if (result.txRef) {
             sessionStorage.setItem(
@@ -415,7 +464,7 @@ export function BidPanel({
         )}
       </div>
 
-      {verifyMutation.isPending && (
+      {verifyMutation.isPending && !hasJoined && (
         <div className="flex items-center gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-medium text-sky-900">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--brand-blue)] border-t-transparent" />
           {dict.auctionDetail.verifyingPayment}

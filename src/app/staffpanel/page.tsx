@@ -27,6 +27,8 @@ import {
   UserCog,
   Contact,
   Megaphone,
+  BarChart3,
+  Wallet,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { isStaffRole } from "@/services/auth.service";
@@ -38,6 +40,8 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { StaffUsersPanel } from "@/components/staff/StaffUsersPanel";
 import { ParticipantsPanel } from "@/components/staff/ParticipantsPanel";
 import { BroadcastPanel } from "@/components/staff/BroadcastPanel";
+import { AnalyticsPanel } from "@/components/staff/AnalyticsPanel";
+import { PaymentsPanel } from "@/components/staff/PaymentsPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -57,7 +61,13 @@ import {
 import { auctionCoverImage, auctionImageList } from "@/lib/auction-media";
 import type { Auction } from "@/lib/schemas";
 
-type StaffSection = "auctions" | "users" | "customers" | "broadcast";
+type StaffSection =
+  | "analytics"
+  | "payments"
+  | "auctions"
+  | "users"
+  | "customers"
+  | "broadcast";
 
 const STATUS_BADGE: Record<string, string> = {
   draft: "bg-slate-100 text-slate-700 border-slate-200",
@@ -807,7 +817,7 @@ export default function StaffPanelPage() {
   const { user, loading, logout } = useAuth();
   const qc = useQueryClient();
 
-  const [section, setSection] = useState<StaffSection>("auctions");
+  const [section, setSection] = useState<StaffSection>("analytics");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [search, setSearch] = useState<string>("");
   const [modalAuction, setModalAuction] = useState<Auction | null | undefined>(
@@ -923,6 +933,8 @@ export default function StaffPanelPage() {
         <div className="mb-6 flex flex-wrap gap-1.5 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
           {(
             [
+              { id: "analytics", label: "Analytics", icon: BarChart3 },
+              { id: "payments", label: "Payments", icon: Wallet },
               { id: "auctions", label: "Auctions", icon: Gavel },
               { id: "users", label: "Staff users", icon: UserCog },
               { id: "customers", label: "Customers", icon: Contact },
@@ -944,6 +956,12 @@ export default function StaffPanelPage() {
             </button>
           ))}
         </div>
+
+        {section === "analytics" && <AnalyticsPanel />}
+
+        {section === "payments" && (
+          <PaymentsPanel actorRole={String(user.role || "")} />
+        )}
 
         {section === "users" && (
           <StaffUsersPanel

@@ -414,6 +414,149 @@ export interface TelegramBroadcastResult {
   audience: number;
 }
 
+export interface StaffDashboardStats {
+  totalAuctions: number;
+  totalParticipants: number;
+  totalRevenue: number;
+  pendingRevenue: number;
+  statusBreakdown: Record<string, number>;
+  pendingAuctionsCount: number;
+  activeAuctionsCount: number;
+  executedAuctionsCount: number;
+  paymentsSuccess: number;
+  paymentsFailed: number;
+  paymentsPending: number;
+  paymentsRefunded: number;
+  paymentsUnprocessed: number;
+  participationsTotal: number;
+}
+
+export interface StaffChartSeries {
+  labels: string[];
+  values: number[];
+}
+
+export interface StaffDashboardCharts {
+  revenue: StaffChartSeries;
+  userGrowth: StaffChartSeries;
+  participations: StaffChartSeries;
+  bids: StaffChartSeries;
+  payments: StaffChartSeries;
+}
+
+export interface StaffPaymentRow {
+  id: string;
+  txRef: string;
+  chapaReference?: string;
+  amount: string;
+  status: string;
+  processed: boolean;
+  retryDisabled: boolean;
+  lastError?: string;
+  createdAt: string;
+  updatedAt: string;
+  participantName?: string;
+  participantEmail?: string;
+  auctionTitle?: string;
+  hasParticipation: boolean;
+  refundStatus?: string;
+  canRefund: boolean;
+  userId?: string;
+  auctionId?: string;
+  participationId?: string;
+}
+
+function emptyChart(): StaffChartSeries {
+  return { labels: [], values: [] };
+}
+
+function parseChart(raw: unknown): StaffChartSeries {
+  if (!raw || typeof raw !== "object") return emptyChart();
+  const o = raw as { labels?: unknown; values?: unknown };
+  const labels = Array.isArray(o.labels) ? o.labels.map(String) : [];
+  const values = Array.isArray(o.values)
+    ? o.values.map((v) => Number(v) || 0)
+    : [];
+  return { labels, values };
+}
+
+export async function getStaffDashboardStats(): Promise<StaffDashboardStats> {
+  const res = await apiFetch<ApiResponse<StaffDashboardStats>>("/api/stats");
+  const raw = (unwrapData(res) ?? res.data ?? {}) as Partial<StaffDashboardStats>;
+  return {
+    totalAuctions: Number(raw.totalAuctions ?? 0),
+    totalParticipants: Number(raw.totalParticipants ?? 0),
+    totalRevenue: Number(raw.totalRevenue ?? 0),
+    pendingRevenue: Number(raw.pendingRevenue ?? 0),
+    statusBreakdown: (raw.statusBreakdown as Record<string, number>) || {},
+    pendingAuctionsCount: Number(raw.pendingAuctionsCount ?? 0),
+    activeAuctionsCount: Number(raw.activeAuctionsCount ?? 0),
+    executedAuctionsCount: Number(raw.executedAuctionsCount ?? 0),
+    paymentsSuccess: Number(raw.paymentsSuccess ?? 0),
+    paymentsFailed: Number(raw.paymentsFailed ?? 0),
+    paymentsPending: Number(raw.paymentsPending ?? 0),
+    paymentsRefunded: Number(raw.paymentsRefunded ?? 0),
+    paymentsUnprocessed: Number(raw.paymentsUnprocessed ?? 0),
+    participationsTotal: Number(raw.participationsTotal ?? 0),
+  };
+}
+
+export async function getStaffDashboardCharts(): Promise<StaffDashboardCharts> {
+  const res = await apiFetch<ApiResponse<StaffDashboardCharts>>("/api/stats/charts");
+  const raw = (unwrapData(res) ?? res.data ?? {}) as Partial<StaffDashboardCharts>;
+  return {
+    revenue: parseChart(raw.revenue),
+    userGrowth: parseChart(raw.userGrowth),
+    participations: parseChart(raw.participations),
+    bids: parseChart(raw.bids),
+    payments: parseChart(raw.payments),
+  };
+}
+
+export async function listStaffPayments(params?: {
+  page?: number;
+  limit?: number;
+  status?: string;
+  processed?: string;
+  search?: string;
+}): Promise<{ items: StaffPaymentRow[]; total: number; page: number; limit: number }> {
+  const page = params?.page ?? 1;
+  const limit = params?.limit ?? 20;
+  const qs = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+  if (params?.status) qs.set("status", params.status);
+  if (params?.processed) qs.set("processed", params.processed);
+  if (params?.search) qs.set("search", params.search);
+
+  const res = await apiFetch<
+    ApiResponse<{ items?: StaffPaymentRow[]; total?: number; page?: number; limit?: number }>
+  >(`/api/payments?${qs.toString()}`);
+  const raw = (unwrapData(res) ?? res.data ?? {}) as {
+    items?: StaffPaymentRow[];
+    total?: number;
+    page?: number;
+    limit?: number;
+  };
+  return {
+    items: Array.isArray(raw.items) ? raw.items : [],
+    total: Number(raw.total ?? 0),
+    page: Number(raw.page ?? page),
+    limit: Number(raw.limit ?? limit),
+  };
+}
+
+export async function refundStaffPayment(
+  txRef: string,
+  reason?: string
+): Promise<void> {
+  await apiFetch(`/api/payments/${encodeURIComponent(txRef)}/refund`, {
+    method: "POST",
+    body: JSON.stringify({ reason: reason || "" }),
+  });
+}
+
 export async function getTelegramBroadcastStats(): Promise<TelegramBroadcastStats> {
   const res = await apiFetch<ApiResponse<TelegramBroadcastStats>>(
     "/api/telegram/broadcast/stats"

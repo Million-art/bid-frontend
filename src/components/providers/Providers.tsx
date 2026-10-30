@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { AnalyticsProvider } from "@/components/providers/AnalyticsProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { getCsrfToken } from "@/lib/api";
 
@@ -22,7 +23,11 @@ export function Providers({ children, googleClientId }: { children: React.ReactN
   const content = (
     <QueryProvider>
       <LanguageProvider>
-        <AuthProvider googleClientId={clientId}>{children}</AuthProvider>
+        <AuthProvider googleClientId={clientId}>
+          <Suspense fallback={null}>
+            <AnalyticsProvider>{children}</AnalyticsProvider>
+          </Suspense>
+        </AuthProvider>
       </LanguageProvider>
     </QueryProvider>
   );

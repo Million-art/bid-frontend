@@ -151,7 +151,8 @@ export async function participateInAuction(
 /** Verify Chapa transaction after return from checkout. */
 export async function verifyChapaPayment(
   txRef: string,
-  bidValueOrValues?: number | number[]
+  bidValueOrValues?: number | number[],
+  signal?: AbortSignal
 ): Promise<VerifyPaymentResult> {
   const body: Record<string, unknown> = { txRef };
   if (Array.isArray(bidValueOrValues) && bidValueOrValues.length > 0) {
@@ -165,6 +166,7 @@ export async function verifyChapaPayment(
     {
       method: "POST",
       body: JSON.stringify(body),
+      signal,
     }
   );
   return (res.data ?? res) as VerifyPaymentResult;
