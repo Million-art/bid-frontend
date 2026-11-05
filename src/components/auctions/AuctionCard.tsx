@@ -330,7 +330,7 @@ export function AuctionCard({ auction }: { auction: PublicAuctionCard }) {
               {dict.auctions.ended}
             </span>
           ) : (
-            <span className="mt-0.5 inline-flex h-11 sm:h-12 w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-[var(--brand-yellow)] hover:brightness-95 active:scale-[0.99] px-4 text-sm sm:text-base font-extrabold text-slate-950 shadow-sm transition-all duration-200">
+            <span className="mt-0.5 inline-flex h-11 sm:h-12 w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-[var(--brand-blue)] hover:bg-[#1c8ee0] active:scale-[0.99] px-4 text-sm sm:text-base font-extrabold text-white shadow-sm transition-all duration-200 group-hover:brightness-105">
               <Gavel className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" aria-hidden />
               <span>{ctaLabel}</span>
               <ArrowRight
