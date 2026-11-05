@@ -43,16 +43,16 @@ export const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/95 py-0 shadow-sm backdrop-blur-md transition-all duration-500">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-4">
+    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-2.5 sm:px-6 sm:pt-3.5">
+      <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between rounded-full border border-slate-200/80 bg-white/95 px-4 shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur-md transition-all duration-300 sm:h-16 sm:px-6">
+        <div className="flex items-center gap-3 sm:gap-4">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-50 md:hidden"
+            className="rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-100 md:hidden"
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
 
           <Link href="/" className="flex shrink-0 items-center">
@@ -61,7 +61,7 @@ export const Navbar = () => {
               alt="CarraMarket"
               width={160}
               height={50}
-              className="h-9 w-auto object-contain sm:h-12"
+              className="h-8 w-auto object-contain sm:h-10"
               priority
             />
           </Link>
@@ -72,10 +72,10 @@ export const Navbar = () => {
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors hover:bg-slate-50 hover:text-slate-900 ${
+              className={`rounded-full px-3.5 py-2 text-sm font-bold transition-colors hover:bg-slate-50 hover:text-slate-950 ${
                 pathname === link.href || pathname.startsWith(`${link.href}/`)
-                  ? "text-[var(--brand-blue)]"
-                  : "text-slate-600"
+                  ? "text-slate-950 font-extrabold"
+                  : "text-slate-700"
               }`}
             >
               {link.label}
@@ -89,7 +89,7 @@ export const Navbar = () => {
           {!loading && (
             <>
               {user ? (
-                <div className="flex items-center gap-2 sm:gap-4">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <NotificationBell />
                   <div className="relative">
                     <button
@@ -116,7 +116,7 @@ export const Navbar = () => {
                     </button>
 
                     {accountMenuOpen && (
-                      <div className="absolute right-0 z-50 mt-2 w-56 rounded-lg border bg-white shadow-lg">
+                      <div className="absolute right-0 z-50 mt-2 w-56 rounded-2xl border border-slate-200 bg-white py-1 shadow-lg">
                         {isStaffRole(user.role) && (
                           <Link
                             href="/staffpanel"
@@ -145,30 +145,30 @@ export const Navbar = () => {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <Link
-                    href="/login"
-                    className="inline-flex min-h-10 items-center justify-center rounded-xl border-2 border-slate-900 bg-transparent px-3 text-sm font-bold text-slate-900 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:px-5"
-                  >
-                    {dict.nav.login}
-                  </Link>
+                <div className="flex items-center gap-2 sm:gap-2.5">
                   <Link
                     href="/signup"
-                    className="inline-flex min-h-10 items-center justify-center rounded-xl border-2 border-[var(--brand-blue)] bg-[var(--brand-blue)] px-3 text-sm font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:brightness-110 active:scale-[0.98] sm:px-5"
+                    className="inline-flex min-h-10 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-4 text-sm font-extrabold text-white shadow-sm transition-all hover:brightness-105 active:scale-[0.98] sm:px-6"
                   >
                     {dict.nav.signup}
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-extrabold text-slate-900 shadow-xs transition-all hover:bg-slate-50 active:scale-[0.98] sm:px-6"
+                  >
+                    {dict.nav.login}
                   </Link>
                 </div>
               )}
             </>
           )}
         </div>
-      </div>
+      </nav>
 
       <div
-        className={`fixed inset-x-0 top-16 z-40 overflow-hidden bg-white shadow-xl transition-all duration-300 ease-in-out md:hidden ${
+        className={`mx-auto mt-2 max-w-6xl overflow-hidden rounded-2xl bg-white shadow-xl transition-all duration-300 ease-in-out md:hidden ${
           mobileMenuOpen
-            ? "max-h-[100vh] border-b py-4 opacity-100"
+            ? "max-h-[85vh] border border-slate-200 py-4 opacity-100"
             : "max-h-0 py-0 opacity-0"
         }`}
       >
@@ -190,6 +190,6 @@ export const Navbar = () => {
           ))}
         </div>
       </div>
-    </nav>
+    </header>
   );
 };

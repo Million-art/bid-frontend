@@ -37,14 +37,16 @@ export const en = {
   },
   home: {
     heroTag: "Lowest Unique Bid",
-    heroTitlePrefix: "Pick the number",
-    heroTitleHighlight: "nobody else will.",
+    heroTitlePrefix: "Choose a number.",
+    heroTitleHighlight: "win something great.",
     heroKicker: "Lowest Unique Bid",
     heroSubtitle:
-      "Enter an auction, bid your lowest number. If anyone matches it, it’s out. The lowest bid left standing takes the prize.",
-    browseAuctions: "Browse auctions",
-    winProduct: "Win product",
+      "Pick a bid no one else chooses. If your number is unique and the lowest, you win.",
+    browseAuctions: "Explore auctions",
+    winProduct: "Explore auctions",
     howItWorksBtn: "How it works",
+    currentAuction: "Current auction",
+    entryFrom: "Entry from",
     recentWinner: "Recent winner",
     justWon: "{name} just won {product}!",
     features: {
