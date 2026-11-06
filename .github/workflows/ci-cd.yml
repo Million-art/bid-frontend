@@ -44,7 +44,8 @@ jobs:
   docker:
     name: Build & Push Docker Image
     needs: test
-    runs-on: ubuntu-latest
+    # Native ARM: Graviton deploy needs linux/arm64; QEMU cross-build crashes Next.js (SIGILL).
+    runs-on: ubuntu-24.04-arm
     outputs:
       image_tag: ${{ steps.meta.outputs.version }}
       image_uri: ${{ steps.image-uri.outputs.uri }}
@@ -71,13 +72,12 @@ jobs:
             type=sha,format=long,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
 
-      # amd64 only: Next.js SWC crashes under QEMU when cross-building arm64 (SIGILL).
       - name: Build and Push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64
+          platforms: linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
