@@ -3,13 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Trophy, Users, ChevronLeft, ChevronRight } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
 import { listAuctions } from "@/services/auctions.service";
 import { useEffect, useState } from "react";
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
+const AUTOPLAY_MS = 4000;
 
 export interface HeroFeaturedAuction {
   id?: string;
@@ -27,7 +28,8 @@ export function HeroSection({
   const { dict, locale } = useLanguage();
   const reduceMotion = useReducedMotion();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [autoplay, setAutoplay] = useState(true);
+  const [paused, setPaused] = useState(false);
+  const [slideDir, setSlideDir] = useState(1);
 
   const { data } = useQuery({
     queryKey: ["hero-auctions", locale],
@@ -47,28 +49,34 @@ export function HeroSection({
   const slideCount = Math.min(6, auctions.length);
 
   useEffect(() => {
-    if (!autoplay || slideCount <= 1) return;
+    if (slideCount <= 0) return;
+    setCurrentSlide((prev) => (prev >= slideCount ? 0 : prev));
+  }, [slideCount]);
+
+  useEffect(() => {
+    if (paused || slideCount <= 1) return;
 
     const interval = setInterval(() => {
+      setSlideDir(1);
       setCurrentSlide((prev) => (prev + 1) % slideCount);
-    }, 4000);
+    }, AUTOPLAY_MS);
 
     return () => clearInterval(interval);
-  }, [autoplay, slideCount]);
+  }, [paused, slideCount]);
 
   const goToSlide = (index: number) => {
+    setSlideDir(index > currentSlide ? 1 : -1);
     setCurrentSlide(index);
-    setAutoplay(false);
   };
 
   const goToPrev = () => {
+    setSlideDir(-1);
     setCurrentSlide((prev) => (prev - 1 + slideCount) % slideCount);
-    setAutoplay(false);
   };
 
   const goToNext = () => {
+    setSlideDir(1);
     setCurrentSlide((prev) => (prev + 1) % slideCount);
-    setAutoplay(false);
   };
 
   const auction = auctions[currentSlide] || {};
@@ -208,11 +216,22 @@ export function HeroSection({
             </div>
 
             {/* Slider container */}
-            <div className="relative z-30 w-full overflow-hidden rounded-3xl bg-white p-4 shadow-[0_18px_40px_rgba(15,23,42,0.18)] transition-transform duration-200 hover:-translate-y-1 sm:p-5">
+            <div
+              className="relative z-30 w-full overflow-hidden rounded-3xl bg-white p-4 shadow-[0_18px_40px_rgba(15,23,42,0.18)] transition-transform duration-200 hover:-translate-y-1 sm:p-5"
+              onMouseEnter={() => setPaused(true)}
+              onMouseLeave={() => setPaused(false)}
+              onFocusCapture={() => setPaused(true)}
+              onBlurCapture={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                  setPaused(false);
+                }
+              }}
+            >
               {/* Navigation arrows */}
               {slideCount > 1 && (
                 <>
                   <button
+                    type="button"
                     onClick={goToPrev}
                     className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow-sm transition-all hover:bg-white hover:scale-110 active:scale-95 sm:left-3"
                     aria-label="Previous auction"
@@ -220,6 +239,7 @@ export function HeroSection({
                     <ChevronLeft className="h-4 w-4 text-slate-700" />
                   </button>
                   <button
+                    type="button"
                     onClick={goToNext}
                     className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow-sm transition-all hover:bg-white hover:scale-110 active:scale-95 sm:right-3"
                     aria-label="Next auction"
@@ -229,50 +249,66 @@ export function HeroSection({
                 </>
               )}
 
-              {/* Single auction card in slider */}
-              <Link
-                href={auctionHref}
-                className="group block"
-                onMouseEnter={() => setAutoplay(false)}
-                onMouseLeave={() => setAutoplay(true)}
-              >
+              <Link href={auctionHref} className="group block">
                 <div className="flex items-center gap-2.5">
-                  
                   <span className="text-sm font-extrabold text-slate-500 sm:text-base">
                     {dict.home.currentAuction}
                   </span>
                 </div>
 
-                <p className="mt-2 truncate text-lg font-extrabold text-[#F59E0B] group-hover:underline sm:text-xl">
-                  {auctionTitle}
-                </p>
-
-                <div className="mt-2.5 flex items-baseline justify-between gap-2 border-t border-slate-200 pt-2.5">
-                  <span className="text-xs font-bold text-slate-800 sm:text-sm">
-                    {dict.home.entryFrom}
-                  </span>
-                  <span className="text-lg font-extrabold text-[#2D9FF6] tabular-nums sm:text-2xl">
-                    {formattedFee}
-                  </span>
+                <div className="relative mt-2 min-h-[3.25rem] overflow-hidden sm:min-h-[3.5rem]">
+                  <AnimatePresence mode="wait" initial={false} custom={slideDir}>
+                    <motion.div
+                      key={auction.id || currentSlide}
+                      custom={slideDir}
+                      initial={
+                        reduceMotion
+                          ? { opacity: 1, x: 0 }
+                          : { opacity: 0, x: slideDir * 28 }
+                      }
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={
+                        reduceMotion
+                          ? { opacity: 0, x: 0 }
+                          : { opacity: 0, x: slideDir * -28 }
+                      }
+                      transition={{ duration: reduceMotion ? 0 : 0.35, ease: easeOut }}
+                    >
+                      <p className="truncate text-lg font-extrabold text-[#F59E0B] group-hover:underline sm:text-xl">
+                        {auctionTitle}
+                      </p>
+                      <div className="mt-2.5 flex items-baseline justify-between gap-2 border-t border-slate-200 pt-2.5">
+                        <span className="text-xs font-bold text-slate-800 sm:text-sm">
+                          {dict.home.entryFrom}
+                        </span>
+                        <span className="text-lg font-extrabold text-[#2D9FF6] tabular-nums sm:text-2xl">
+                          {formattedFee}
+                        </span>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
-
-                {/* Slide indicators */}
-                {slideCount > 1 && (
-                  <div className="mt-3 flex items-center justify-center gap-1.5">
-                    {Array.from({ length: slideCount }).map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => goToSlide(index)}
-                        className={`h-1.5 rounded-full transition-all duration-300 ${index === currentSlide
-                            ? "w-8 bg-[#2D9FF6]"
-                            : "w-1.5 bg-slate-300 hover:bg-slate-400"
-                          }`}
-                        aria-label={`Go to auction ${index + 1}`}
-                      />
-                    ))}
-                  </div>
-                )}
               </Link>
+
+              {/* Slide indicators */}
+              {slideCount > 1 && (
+                <div className="mt-3 flex items-center justify-center gap-1.5">
+                  {Array.from({ length: slideCount }).map((_, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => goToSlide(index)}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        index === currentSlide
+                          ? "w-8 bg-[#2D9FF6]"
+                          : "w-1.5 bg-slate-300 hover:bg-slate-400"
+                      }`}
+                      aria-label={`Go to auction ${index + 1}`}
+                      aria-current={index === currentSlide ? "true" : undefined}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </motion.div>
