@@ -79,7 +79,7 @@ export function HeroSection({
     "iphone 18";
   const auctionFee = auction.entranceFee || featuredAuction?.entranceFee || 75;
   const formattedFee =
-    locale === "am" ? `${auctionFee} ብር` : `$${auctionFee} Birr`;
+    locale === "am" ? `${auctionFee} ብር` : `${auctionFee} ETB`;
   const auctionHref = auction.id
     ? `/auctions/${auction.id}`
     : featuredAuction?.id
@@ -106,15 +106,15 @@ export function HeroSection({
   };
 
   return (
-    <section className="relative overflow-hidden bg-[#2D9FF6] pt-16 sm:pt-20">
-      {/* Sunburst background */}
+    <section className="relative overflow-hidden bg-white pt-16 sm:bg-[#2D9FF6] sm:pt-20">
+      {/* Sunburst background — desktop/tablet only */}
       <Image
         src="/hero_banner.jpg"
         alt=""
         fill
         priority
         sizes="100vw"
-        className="pointer-events-none object-cover object-center"
+        className="pointer-events-none hidden object-cover object-center sm:block"
         aria-hidden
       />
 
@@ -134,17 +134,17 @@ export function HeroSection({
         >
           <motion.h1
             variants={fadeUp}
-            className="text-[2.4rem] font-extrabold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-[3.75rem]"
+            className="text-[2.4rem] font-extrabold leading-[1.08] tracking-tight text-slate-900 sm:text-5xl sm:text-white lg:text-[3.75rem]"
           >
             <span className="block">{dict.home.heroTitlePrefix}</span>
-            <span className="mt-1 block text-[#FFF307]">
+            <span className="mt-1 block text-[#2D9FF6] sm:text-[#FFF307]">
               {dict.home.heroTitleHighlight}
             </span>
           </motion.h1>
 
           <motion.p
             variants={fadeUp}
-            className="mt-6 max-w-lg text-base font-bold leading-relaxed text-white sm:text-xl"
+            className="mt-6 max-w-lg text-base font-bold leading-relaxed text-slate-600 sm:text-xl sm:text-white"
           >
             {dict.home.heroSubtitle}
           </motion.p>
@@ -155,7 +155,7 @@ export function HeroSection({
           >
             <Link
               href="/auctions"
-              className="inline-flex h-14 items-center justify-center gap-2.5 rounded-2xl bg-white px-7 text-base font-extrabold text-[#2D9FF6] shadow-[0_10px_25px_rgba(13,60,110,0.22)] transition hover:-translate-y-0.5 hover:bg-white/95 active:translate-y-0"
+              className="inline-flex h-14 items-center justify-center gap-2.5 rounded-2xl bg-[#2D9FF6] px-7 text-base font-extrabold text-white shadow-[0_10px_25px_rgba(13,60,110,0.18)] transition hover:-translate-y-0.5 hover:bg-[#1c8ee0] active:translate-y-0 sm:bg-white sm:text-[#2D9FF6] sm:hover:bg-white/95"
             >
               <Trophy className="h-5 w-5 shrink-0" />
               <span>{dict.home.browseAuctions}</span>
@@ -163,7 +163,7 @@ export function HeroSection({
 
             <Link
               href="/#how-it-works"
-              className="inline-flex h-14 items-center justify-center gap-2.5 rounded-2xl border border-white/85 bg-white/15 px-7 text-base font-extrabold text-white backdrop-blur-xs transition hover:-translate-y-0.5 hover:bg-white/25 active:translate-y-0"
+              className="inline-flex h-14 items-center justify-center gap-2.5 rounded-2xl border border-slate-200 bg-slate-50 px-7 text-base font-extrabold text-slate-800 transition hover:-translate-y-0.5 hover:bg-slate-100 active:translate-y-0 sm:border-white/85 sm:bg-white/15 sm:text-white sm:backdrop-blur-xs sm:hover:bg-white/25"
             >
               <Users className="h-5 w-5 shrink-0" />
               <span>{dict.home.howItWorksBtn}</span>
@@ -183,12 +183,6 @@ export function HeroSection({
           }}
         >
           <div className="relative mx-auto w-full max-w-[540px] pt-4 pb-10 sm:pb-14">
-            {/* Soft sky arch for mobile/tablet */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-2 -top-2 bottom-4 -z-10 rounded-[44px] bg-gradient-to-b from-[#c7e7ff]/75 to-[#89cbff]/65 lg:hidden"
-            />
-
             {/* Main product image above pedestal */}
             <div className="relative z-20 mx-auto flex items-end justify-center px-4">
               <Image
@@ -258,7 +252,7 @@ export function HeroSection({
                     {dict.home.entryFrom}
                   </span>
                   <span className="text-lg font-extrabold text-[#2D9FF6] tabular-nums sm:text-2xl">
-                    {formattedFee} ETB
+                    {formattedFee}
                   </span>
                 </div>
 
