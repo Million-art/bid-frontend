@@ -2,16 +2,24 @@
 
 import posthog from "posthog-js";
 
-const KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY || "";
-const HOST =
-  process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
+export type AnalyticsRuntimeConfig = {
+  posthogProjectToken?: string;
+  posthogHost?: string;
+};
 
+let token = "";
+let host = "https://us.i.posthog.com";
 let initialized = false;
 
+export function configureAnalytics(config: AnalyticsRuntimeConfig): void {
+  token = (config.posthogProjectToken || "").trim();
+  host = (config.posthogHost || "").trim() || "https://us.i.posthog.com";
+}
+
 export function initAnalytics(): void {
-  if (initialized || typeof window === "undefined" || !KEY) return;
-  posthog.init(KEY, {
-    api_host: HOST,
+  if (initialized || typeof window === "undefined" || !token) return;
+  posthog.init(token, {
+    api_host: host,
     person_profiles: "identified_only",
     capture_pageview: false,
     capture_pageleave: true,
@@ -21,7 +29,7 @@ export function initAnalytics(): void {
 }
 
 export function isAnalyticsEnabled(): boolean {
-  return Boolean(KEY);
+  return Boolean(token) && initialized;
 }
 
 export function trackPageView(path?: string): void {

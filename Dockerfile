@@ -14,7 +14,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Set environment variables for build
+# Build has no app secrets / public tokens — runtime env is injected by compose.
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
