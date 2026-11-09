@@ -27,25 +27,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroSection
-        featuredAuction={
-          auctions[0]
-            ? {
-                id: auctions[0].id,
-                title: auctions[0].title,
-                entranceFee: auctions[0].entranceFee,
-              }
-            : null
-        }
-        winner={
-          winners[0]
-            ? {
-                name: winners[0].winnerName,
-                product: winners[0].title,
-              }
-            : null
-        }
-      />
+      <HeroSection initialAuctions={auctions} />
       <HomeAuctionsSection auctions={auctions} />
       <HowLubWorks />
       <WinnersSection winners={winners} />

@@ -43,13 +43,13 @@ export const Navbar = () => {
   ];
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-2.5 sm:px-6 sm:pt-3.5">
-      <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between rounded-full border border-slate-200/80 bg-white/95 px-4 shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur-md transition-all duration-300 sm:h-16 sm:px-6">
-        <div className="flex items-center gap-3 sm:gap-4">
+    <header className="fixed inset-x-0 top-0 z-50 px-4 pt-2.5 sm:px-6 sm:pt-3.5">
+      <nav className="mx-auto flex h-14 max-w-6xl items-center gap-3 rounded-full border border-slate-200/80 bg-white/95 px-3 shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur-md transition-all duration-300 sm:h-16 sm:gap-4 sm:px-5">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-100 md:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 md:hidden"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
@@ -61,18 +61,18 @@ export const Navbar = () => {
               alt="CarraMarket"
               width={160}
               height={50}
-              className="h-8 w-auto object-contain sm:h-10"
+              className="h-8 w-auto object-contain sm:h-9"
               priority
             />
           </Link>
         </div>
 
-        <div className="hidden flex-1 items-center justify-center gap-1 md:flex lg:gap-4">
+        <div className="hidden flex-1 items-center justify-center gap-1 md:flex lg:gap-2">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-full px-3.5 py-2 text-sm font-bold transition-colors hover:bg-slate-50 hover:text-slate-950 ${
+              className={`inline-flex h-10 items-center rounded-full px-3.5 text-sm font-bold transition-colors hover:bg-slate-50 hover:text-slate-950 ${
                 pathname === link.href || pathname.startsWith(`${link.href}/`)
                   ? "text-slate-950 font-extrabold"
                   : "text-slate-700"
@@ -83,19 +83,19 @@ export const Navbar = () => {
           ))}
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          <LanguageSwitcher variant="pill" className="hidden sm:inline-flex" />
+        <div className="ml-auto flex items-center gap-2 sm:gap-2.5">
+          <LanguageSwitcher variant="pill" className="hidden h-10 sm:inline-flex" />
 
           {!loading && (
             <>
               {user ? (
-                <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-2 sm:gap-2.5">
                   <NotificationBell />
                   <div className="relative">
                     <button
                       type="button"
                       onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-                      className="flex max-w-[min(100vw-8rem,220px)] items-center gap-2 rounded-full border border-slate-200 px-2 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:px-3"
+                      className="inline-flex h-10 max-w-[min(100vw-8rem,220px)] items-center gap-2 rounded-full border border-slate-200 px-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:px-3"
                     >
                       {user.picture ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -148,13 +148,13 @@ export const Navbar = () => {
                 <div className="flex items-center gap-2 sm:gap-2.5">
                   <Link
                     href="/signup"
-                    className="inline-flex min-h-10 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-4 text-sm font-extrabold text-white shadow-sm transition-all hover:brightness-105 active:scale-[0.98] sm:px-6"
+                    className="inline-flex h-10 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-4 text-sm font-extrabold text-white shadow-sm transition-all hover:brightness-105 active:scale-[0.98] sm:px-5"
                   >
                     {dict.nav.signup}
                   </Link>
                   <Link
                     href="/login"
-                    className="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-extrabold text-slate-900 shadow-xs transition-all hover:bg-slate-50 active:scale-[0.98] sm:px-6"
+                    className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-extrabold text-slate-900 shadow-xs transition-all hover:bg-slate-50 active:scale-[0.98] sm:px-5"
                   >
                     {dict.nav.login}
                   </Link>
