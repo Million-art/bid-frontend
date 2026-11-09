@@ -9,7 +9,7 @@ import { auctionCoverImage } from "@/lib/auction-media";
 import {
   formatCountdownParts,
   getCountdownUrgency,
-  getEntrantProgress,
+  // getEntrantProgress,
 } from "@/lib/auction-card";
 
 function resolveEndsAt(auction: PublicAuctionCard): string | null | undefined {
@@ -26,13 +26,13 @@ export function AuctionCard({ auction }: { auction: PublicAuctionCard }) {
     ["closed", "executed", "cancelled"].includes(normalizedStatus);
   const cover = auctionCoverImage(auction);
 
-  const progress = getEntrantProgress(
-    Number(auction.participantCount ?? 0),
-    Number(auction.minParticipants ?? 10)
-  );
+  // const progress = getEntrantProgress(
+  //   Number(auction.participantCount ?? 0),
+  //   Number(auction.minParticipants ?? 10)
+  // );
   const participantCount = Number(auction.participantCount ?? 0);
-  const minParticipants = Math.max(1, Number(auction.minParticipants ?? 10));
-  const prizeUnlocked = Boolean(auction.prizeUnlocked) || progress.prizeUnlocked;
+  // const minParticipants = Math.max(1, Number(auction.minParticipants ?? 10));
+  // const prizeUnlocked = Boolean(auction.prizeUnlocked) || progress.prizeUnlocked;
   const retailValue = Number(auction.retailValue ?? 0);
   const hasJoined = Boolean(auction.userHasJoined);
   const tag = String(auction.tag || "").toLowerCase();
@@ -259,6 +259,7 @@ export function AuctionCard({ auction }: { auction: PublicAuctionCard }) {
           </span>
         </div>
 
+        {/* Progress bar temporarily hidden
         <div className="mt-3">
           <div className="mb-1.5 flex items-center justify-between gap-2 text-xs sm:text-sm font-extrabold">
             {prizeUnlocked ? (
@@ -307,6 +308,7 @@ export function AuctionCard({ auction }: { auction: PublicAuctionCard }) {
             />
           </div>
         </div>
+        */}
 
         <div className="mt-auto pt-3.5 sm:pt-4">
           {!isOpen && auction.winnerName ? (

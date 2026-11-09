@@ -65,7 +65,7 @@ export function BidPanel({
     auction.status === "active" || auction.status === "postponed";
   const hasJoined = Boolean(user) && (participating || myBids.length > 0);
   const canBid = hasJoined && isOpen;
-  const totalBidsCount = auction.totalBids ?? 0;
+  // const totalBidsCount = auction.totalBids ?? 0;
   const entranceFeeNum = Number(auction.entranceFee || 0);
   const draftAmountNum = roundMoney(Number.parseFloat(draftValue));
   const hasValidDraft =
@@ -387,6 +387,7 @@ export function BidPanel({
             {dict.auctionDetail.resultsIn}
           </p>
         )}
+        {/* Total bids temporarily hidden
         {hasJoined && (
           <div className="mt-3 flex items-center justify-between rounded-xl border border-emerald-200/80 bg-white/80 px-3.5 py-2.5 text-sm">
             <span className="font-semibold text-slate-600">
@@ -397,6 +398,7 @@ export function BidPanel({
             </span>
           </div>
         )}
+        */}
       </div>
     );
   }
@@ -413,6 +415,7 @@ export function BidPanel({
     return (
       <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-5 text-sm text-amber-900">
         <p>{dict.auctionDetail.biddingClosed}</p>
+        {/* Total bids temporarily hidden
         {hasJoined && (
           <div className="flex items-center justify-between rounded-xl border border-amber-200/80 bg-white/80 px-3.5 py-2.5 text-sm">
             <span className="font-semibold text-slate-600">
@@ -423,6 +426,7 @@ export function BidPanel({
             </span>
           </div>
         )}
+        */}
       </div>
     );
   }
@@ -447,6 +451,7 @@ export function BidPanel({
               : "+"}
           </p>
         </div>
+        {/* Total bids temporarily hidden
         {hasJoined && (
           <div className="shrink-0 rounded-xl border border-sky-200 bg-sky-50/80 px-3.5 py-2 text-right">
             <p className="text-[11px] font-bold uppercase tracking-wider text-sky-700">
@@ -457,6 +462,7 @@ export function BidPanel({
             </p>
           </div>
         )}
+        */}
       </div>
 
       {verifyMutation.isPending && !hasJoined && (
@@ -607,9 +613,11 @@ export function BidPanel({
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   {dict.auctionDetail.yourBids}
                 </p>
+                {/* Total bids temporarily hidden
                 <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
                   {dict.auctionDetail.totalBids}: {totalBidsCount.toLocaleString()}
                 </span>
+                */}
               </div>
               <ul className="space-y-2">
                 {myBids.map((bid) => {
