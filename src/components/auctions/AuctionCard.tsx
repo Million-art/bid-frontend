@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Gavel, Clock, Heart, ArrowRight, Users } from "lucide-react";
+import { Gavel, Clock, Heart, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { PublicAuctionCard } from "@/services/auctions.service";
 import { auctionCoverImage } from "@/lib/auction-media";
@@ -14,6 +14,16 @@ import {
 
 function resolveEndsAt(auction: PublicAuctionCard): string | null | undefined {
   return auction.endsAt ?? auction.closeAt;
+}
+
+/** First sentence of a description (falls back to a short truncated line). */
+function firstDescriptionSentence(text: string | null | undefined): string {
+  const raw = String(text || "").replace(/\s+/g, " ").trim();
+  if (!raw) return "";
+  const match = raw.match(/^(.+?[.!?])(?:\s|$)/);
+  const sentence = (match?.[1] || raw).trim();
+  if (sentence.length <= 140) return sentence;
+  return `${sentence.slice(0, 137).trimEnd()}…`;
 }
 
 export function AuctionCard({ auction }: { auction: PublicAuctionCard }) {
@@ -30,10 +40,11 @@ export function AuctionCard({ auction }: { auction: PublicAuctionCard }) {
   //   Number(auction.participantCount ?? 0),
   //   Number(auction.minParticipants ?? 10)
   // );
-  const participantCount = Number(auction.participantCount ?? 0);
+  // const participantCount = Number(auction.participantCount ?? 0);
   // const minParticipants = Math.max(1, Number(auction.minParticipants ?? 10));
   // const prizeUnlocked = Boolean(auction.prizeUnlocked) || progress.prizeUnlocked;
   const retailValue = Number(auction.retailValue ?? 0);
+  const descriptionPreview = firstDescriptionSentence(auction.description);
   const hasJoined = Boolean(auction.userHasJoined);
   const tag = String(auction.tag || "").toLowerCase();
 
@@ -252,12 +263,20 @@ export function AuctionCard({ auction }: { auction: PublicAuctionCard }) {
           </p>
         )}
 
+        {descriptionPreview ? (
+          <p className="mt-2.5 line-clamp-2 text-sm font-medium leading-snug text-slate-600 sm:text-base">
+            {descriptionPreview}
+          </p>
+        ) : null}
+
+        {/* Players joined / progress bar temporarily hidden
         <div className="mt-2.5 flex items-center gap-2 text-sm sm:text-base font-bold text-slate-700">
           <Users className="h-4 w-4 sm:h-5 sm:w-5 text-slate-400 shrink-0" aria-hidden />
           <span>
             {t("auctions.playersJoined", { count: participantCount })}
           </span>
         </div>
+        */}
 
         {/* Progress bar temporarily hidden
         <div className="mt-3">
