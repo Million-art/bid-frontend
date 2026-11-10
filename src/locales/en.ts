@@ -244,9 +244,11 @@ export const en = {
     placePackAndPayChapa: "Place {count} bids · {amount}",
     freeLabel: "Free",
     freeEntranceBanner:
-      "Free entrance: the first {limit} joiners skip the entrance fee. You only pay your bid amount via Chapa. Free entrance works on one auction per customer.",
+      "Free entrance: for the first {limit} joiners, the entrance fee of your first bid is free. From your second bid the entrance fee applies, and you always pay your bid amounts via Chapa. Free entrance works on one auction per customer.",
     freeEntranceBannerAll:
-      "Free entrance on this auction: the entrance fee is waived. You only pay your bid amount via Chapa. Free entrance works on one auction per customer.",
+      "Free entrance on this auction: the entrance fee of your first bid is free. From your second bid the entrance fee applies, and you always pay your bid amounts via Chapa. Free entrance works on one auction per customer.",
+    freeFirstBidBadge: "1st bid free",
+    freeFirstBidLine: "First bid · entrance fee",
     freeEntranceSpotsLeft: "{count} free spots left on this auction",
     freeEntranceUsed:
       "You already used your free entrance on another auction — entry fee applies here.",

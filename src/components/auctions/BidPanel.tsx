@@ -83,8 +83,14 @@ export function BidPanel({
   const freeUnlimited = Boolean(auction.freeEntranceUnlimited);
   const freeRemaining = Number(auction.freeEntranceRemaining ?? 0);
   const freeLimit = Number(auction.freeEntranceLimit ?? 0);
-  const packFeeFull = roundMoney(effectiveBids.length * entranceFeeNum);
-  const packEntranceSum = freeEligible ? 0 : packFeeFull;
+  // Free entrance waives the entrance fee of the FIRST bid only (index 0); every other bid in
+  // the pack still pays fee + bid. Mirrors domain.CheckoutCharge on the server.
+  const feeBidCount = freeEligible
+    ? Math.max(effectiveBids.length - 1, 0)
+    : effectiveBids.length;
+  const packEntranceSum = roundMoney(feeBidCount * entranceFeeNum);
+  const packFeeWaived =
+    freeEligible && effectiveBids.length > 0 ? roundMoney(entranceFeeNum) : 0;
   const packTotal = roundMoney(packEntranceSum + packBidsSum);
   const existingValues = new Set(
     myBids.map((b) => roundMoney(Number(b.bidValue)).toFixed(2))
@@ -452,26 +458,17 @@ export function BidPanel({
           <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
             {dict.auctionDetail.entranceFee}
           </p>
-          {freeEligible ? (
-            <p className="flex flex-wrap items-baseline gap-2 text-2xl font-extrabold text-slate-900">
-              <span className="text-slate-400 line-through decoration-2">
-                {formatCurrency(auction.entranceFee)}
+          <p className="flex flex-wrap items-baseline gap-2 text-2xl font-extrabold text-slate-900">
+            <span>{formatCurrency(auction.entranceFee)}</span>
+            <span className="text-sm font-semibold text-slate-500">
+              {dict.auctionDetail.perBid}
+            </span>
+            {freeEligible && (
+              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold uppercase text-emerald-800">
+                {dict.auctionDetail.freeFirstBidBadge}
               </span>
-              <span className="text-emerald-700">
-                {dict.auctionDetail.freeLabel}
-              </span>
-              <span className="text-sm font-semibold text-slate-500">
-                {dict.auctionDetail.perBid}
-              </span>
-            </p>
-          ) : (
-            <p className="text-2xl font-extrabold text-slate-900">
-              {formatCurrency(auction.entranceFee)}
-              <span className="ml-1 text-sm font-semibold text-slate-500">
-                {dict.auctionDetail.perBid}
-              </span>
-            </p>
-          )}
+            )}
+          </p>
           <p className="mt-1 text-xs text-slate-500">
             {dict.auctionDetail.bidRange}: {formatCurrency(auction.minBidValue ?? 0.01)}
             {auction.maxBidValue != null
@@ -613,24 +610,24 @@ export function BidPanel({
                 <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-2 text-xs text-slate-600 space-y-1">
                   <div className="flex items-center justify-between">
                     <span>
-                      {dict.auctionDetail.entranceFee} ({effectiveBids.length} ×{" "}
+                      {dict.auctionDetail.entranceFee} ({feeBidCount} ×{" "}
                       {formatCurrency(entranceFeeNum)})
                     </span>
-                    {freeEligible ? (
-                      <span className="flex items-center gap-1.5 font-semibold">
-                        <span className="text-slate-400 line-through">
-                          {formatCurrency(packFeeFull)}
-                        </span>
-                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold uppercase text-emerald-800">
-                          {dict.auctionDetail.freeLabel}
-                        </span>
-                      </span>
-                    ) : (
-                      <span className="font-semibold text-slate-800">
-                        {formatCurrency(packEntranceSum)}
-                      </span>
-                    )}
+                    <span className="font-semibold text-slate-800">
+                      {formatCurrency(packEntranceSum)}
+                    </span>
                   </div>
+                  {packFeeWaived > 0 && (
+                    <div className="flex items-center justify-between text-emerald-700">
+                      <span>{dict.auctionDetail.freeFirstBidLine}</span>
+                      <span className="font-semibold">
+                        <span className="mr-1.5 text-slate-400 line-through">
+                          {formatCurrency(packFeeWaived)}
+                        </span>
+                        {dict.auctionDetail.freeLabel}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <span>{dict.auctionDetail.yourBidValue}</span>
                     <span className="font-semibold text-slate-800">
