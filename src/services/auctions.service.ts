@@ -106,6 +106,10 @@ export interface ParticipateResult {
   participating?: boolean;
   participation?: AuctionParticipation;
   bid?: Bid;
+  bids?: Bid[];
+  /** True when the entrance fee was waived (free entrance): `amount` is the bid total only. */
+  entranceWaived?: boolean;
+  amount?: number | string;
   message?: string;
 }
 
@@ -119,7 +123,10 @@ export interface VerifyPaymentResult {
   bids?: Bid[];
 }
 
-/** Pay entrance fee × ticket count & place bid pack via Chapa checkout. */
+/**
+ * Pay entrance fee × ticket count & place bid pack via Chapa checkout.
+ * With free entrance the entrance fee is waived and only the bid total is charged.
+ */
 export async function participateInAuction(
   auctionId: string,
   options?: {
@@ -127,6 +134,11 @@ export async function participateInAuction(
     bidValues?: number[];
     returnUrl?: string;
     checkoutUrl?: string;
+    /**
+     * Set when the UI quoted a waived entrance fee. If the server can no longer honour it
+     * (slot taken / promo off) it answers 409 instead of silently charging more.
+     */
+    expectEntranceFree?: boolean;
   }
 ): Promise<ParticipateResult> {
   const body: Record<string, unknown> = {};
@@ -137,6 +149,7 @@ export async function participateInAuction(
   }
   if (options?.returnUrl) body.returnUrl = options.returnUrl;
   if (options?.checkoutUrl) body.checkoutUrl = options.checkoutUrl;
+  if (options?.expectEntranceFree) body.expectEntranceFree = true;
 
   const res = await apiFetch<ApiResponse<ParticipateResult>>(
     `/api/public/auctions/${auctionId}/participate`,

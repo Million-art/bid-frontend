@@ -23,6 +23,10 @@ export interface StaffAuctionPayload {
   maxBidValue?: number | null;
   startAt?: string | null;
   closeAt?: string | null;
+  /** Free-entrance promo: first N joiners skip the entrance fee (they still pay their bid). */
+  freeEntranceEnabled?: boolean;
+  /** Canonical limit text from `parseFreeEntranceLimit`: digits (e.g. "100", "1000") or "all". */
+  freeEntranceLimit?: string;
 }
 
 export interface DrawResult {

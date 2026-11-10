@@ -36,6 +36,12 @@ export const PublicAuctionCardSchema = z.object({
   endsAt: z.string().optional().nullable(),
   createdAt: z.string().optional(),
   winnerName: z.string().optional().nullable(),
+  // Free entrance is opt-in per auction (staff switch). Limit 0 = "all".
+  freeEntranceEnabled: z.boolean().optional().default(false),
+  freeEntranceLimit: z.coerce.number().optional().default(100),
+  freeEntranceRemaining: z.coerce.number().optional().default(0),
+  freeEntranceUnlimited: z.boolean().optional().default(false),
+  userEligibleForFreeEntrance: z.boolean().optional().default(false),
 });
 
 export type PublicAuctionCard = z.infer<typeof PublicAuctionCardSchema>;
@@ -49,6 +55,7 @@ export const AuctionSchema = PublicAuctionCardSchema.extend({
   winnerParticipantId: z.string().optional().nullable(),
   winnerBidValue: z.coerce.number().optional().nullable(),
   totalBids: z.coerce.number().optional().default(0),
+  freeEntranceClaimed: z.coerce.number().optional().default(0),
   updatedAt: z.string().optional(),
 });
 

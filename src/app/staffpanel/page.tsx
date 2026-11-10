@@ -34,6 +34,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { isStaffRole } from "@/services/auth.service";
 import { getCsrfToken } from "@/lib/api";
 import { toastApiError } from "@/lib/toast-api-error";
+import {
+  DEFAULT_FREE_ENTRANCE_LIMIT,
+  FREE_ENTRANCE_UNLIMITED,
+  formatFreeEntranceLimit,
+  parseFreeEntranceLimit,
+} from "@/lib/free-entrance";
 import { AuthSplitShell } from "@/components/auth/AuthSplitShell";
 import { PhonePrefixInput } from "@/components/auth/PhonePrefixInput";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
@@ -324,6 +330,23 @@ function AuctionFormModal({
   const [closeAt, setCloseAt] = useState(
     toLocalDatetimeInput(initial?.closeAt)
   );
+  // Free entrance: off unless staff turns it on. New auctions suggest the 100-joiner promo.
+  const [freeEnabled, setFreeEnabled] = useState(
+    initial ? Boolean(initial.freeEntranceEnabled) : true
+  );
+  const [freeLimit, setFreeLimit] = useState(
+    initial
+      ? formatFreeEntranceLimit(initial.freeEntranceLimit)
+      : String(DEFAULT_FREE_ENTRANCE_LIMIT)
+  );
+  const freeClaimed = Number(initial?.freeEntranceClaimed ?? 0);
+  const freeLimitParsed = parseFreeEntranceLimit(freeLimit);
+  const freeLimitError = !freeLimitParsed.ok
+    ? freeLimitParsed.error
+    : freeLimitParsed.limit !== FREE_ENTRANCE_UNLIMITED &&
+        freeLimitParsed.limit < freeClaimed
+      ? `Cannot be lower than the ${freeClaimed} spots already claimed`
+      : null;
   const [uploadingImage, setUploadingImage] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -376,6 +399,10 @@ function AuctionFormModal({
       toast.error("Minimum participants must be at least 1");
       return;
     }
+    if (!freeLimitParsed.ok || freeLimitError) {
+      toast.error(`Free entrance limit: ${freeLimitError ?? "invalid value"}`);
+      return;
+    }
 
     const payload: StaffAuctionPayload = {
       title: title.trim(),
@@ -390,6 +417,8 @@ function AuctionFormModal({
       maxBidValue: maxBid,
       startAt: fromLocalDatetimeInput(startAt),
       closeAt: fromLocalDatetimeInput(closeAt),
+      freeEntranceEnabled: freeEnabled,
+      freeEntranceLimit: freeLimitParsed.canonical,
     };
 
     setSaving(true);
@@ -543,6 +572,57 @@ function AuctionFormModal({
                 value={closeAt}
                 onChange={(e) => setCloseAt(e.target.value)}
               />
+            </div>
+          </div>
+
+          <div className="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4">
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={freeEnabled}
+                onChange={(e) => setFreeEnabled(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-emerald-600"
+              />
+              <span>
+                <span className="block text-sm font-bold text-slate-900">
+                  Free entrance
+                </span>
+                <span className="block text-xs text-slate-600">
+                  The first joiners skip the entrance fee and pay only their bid
+                  amount via Chapa. Each customer can use free entrance on one
+                  auction only.
+                </span>
+              </span>
+            </label>
+            <div className={freeEnabled ? "" : "opacity-50"}>
+              <label
+                htmlFor="free-entrance-limit"
+                className="mb-1.5 block text-sm font-semibold text-slate-800"
+              >
+                Free spots (how many joiners)
+              </label>
+              <Input
+                id="free-entrance-limit"
+                value={freeLimit}
+                onChange={(e) => setFreeLimit(e.target.value)}
+                inputMode="text"
+                autoComplete="off"
+                placeholder='e.g. 10, 100, 1k or "all"'
+                aria-invalid={Boolean(freeLimitError)}
+              />
+              {freeLimitError ? (
+                <p className="mt-1 text-xs font-medium text-red-600">
+                  {freeLimitError}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-slate-500">
+                  Type a number (10, 100, 1000), thousands (1k) or{" "}
+                  <span className="font-semibold">all</span> for everyone.
+                  {isEdit
+                    ? ` Claimed so far: ${freeClaimed}.`
+                    : ""}
+                </p>
+              )}
             </div>
           </div>
 

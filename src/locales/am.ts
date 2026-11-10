@@ -243,7 +243,16 @@ export const am: Translations = {
     loginToJoin: "ለመቀላቀል ይግቡ",
     payAndJoin: "የመግቢያ ክፍያ ከፍለው ይቀላቀሉ",
     setBidAndPayChapa: "ዋጋ ይሙሉ እና በቻፓ (Chapa) ይክፈሉ",
-    placePackAndPayChapa: "{count} ጨረታ ይጫኑ  {amount}",
+    placePackAndPayChapa: "{count} ጨረታ ይጫኑ · {amount}",
+    freeLabel: "ነፃ",
+    freeEntranceBanner:
+      "ነፃ መግቢያ፦ የመጀመሪያዎቹ {limit} ተሳታፊዎች የመግቢያ ክፍያ አይከፍሉም። የሚከፍሉት የጨረታዎን ዋጋ ብቻ ነው (በቻፓ)። ነፃ መግቢያ ለአንድ ሰው በአንድ ጨረታ ብቻ ይሰራል።",
+    freeEntranceBannerAll:
+      "በዚህ ጨረታ ነፃ መግቢያ፦ የመግቢያ ክፍያ ተሰርዟል። የሚከፍሉት የጨረታዎን ዋጋ ብቻ ነው (በቻፓ)። ነፃ መግቢያ ለአንድ ሰው በአንድ ጨረታ ብቻ ይሰራል።",
+    freeEntranceSpotsLeft: "በዚህ ጨረታ {count} ነፃ ቦታዎች ቀርተዋል",
+    freeEntranceUsed:
+      "ነፃ መግቢያዎን በሌላ ጨረታ ተጠቅመዋል — እዚህ የመግቢያ ክፍያ ይከፈላል።",
+    freeEntranceGone: "የዚህ ጨረታ ነፃ መግቢያ ቦታዎች ተሞልተዋል።",
     redirectingToChapa: "ወደ ቻፓ በመሄድ ላይ…",
     verifyingPayment: "የቻፓ ክፍያ በማረጋገጥ ላይ…",
     paymentVerifiedSuccess: "ክፍያዎ ተረጋግጧል እና ጨረታዎ ተመዝግቧል!",

@@ -77,7 +77,14 @@ export function BidPanel({
   const packBidsSum = roundMoney(
     effectiveBids.reduce((sum, val) => sum + Number(val || 0), 0)
   );
-  const packEntranceSum = roundMoney(effectiveBids.length * entranceFeeNum);
+  // Free entrance waives the entrance fee only: the customer still pays their bid amount(s)
+  // through Chapa. The server decides eligibility; checkout re-validates it.
+  const freeEligible = Boolean(auction.userEligibleForFreeEntrance);
+  const freeUnlimited = Boolean(auction.freeEntranceUnlimited);
+  const freeRemaining = Number(auction.freeEntranceRemaining ?? 0);
+  const freeLimit = Number(auction.freeEntranceLimit ?? 0);
+  const packFeeFull = roundMoney(effectiveBids.length * entranceFeeNum);
+  const packEntranceSum = freeEligible ? 0 : packFeeFull;
   const packTotal = roundMoney(packEntranceSum + packBidsSum);
   const existingValues = new Set(
     myBids.map((b) => roundMoney(Number(b.bidValue)).toFixed(2))
@@ -284,6 +291,9 @@ export function BidPanel({
       return participateInAuction(auction.id, {
         bidValues,
         returnUrl,
+        // We quoted a waived entrance fee: if the slot is gone the server answers 409
+        // instead of silently charging the fee.
+        expectEntranceFree: freeEligible,
       });
     },
     onSuccess: (result, bidValues) => {
@@ -314,7 +324,11 @@ export function BidPanel({
       setPackTags([]);
       invalidate();
     },
-    onError: (err) => toastApiError(err, dict.auctionDetail.joinError),
+    onError: (err) => {
+      toastApiError(err, dict.auctionDetail.joinError);
+      // Free entrance may have just been taken / switched off: refresh the quote.
+      if (freeEligible) invalidate();
+    },
   });
 
   const updateMutation = useMutation({
@@ -438,12 +452,26 @@ export function BidPanel({
           <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
             {dict.auctionDetail.entranceFee}
           </p>
-          <p className="text-2xl font-extrabold text-slate-900">
-            {formatCurrency(auction.entranceFee)}
-            <span className="ml-1 text-sm font-semibold text-slate-500">
-              {dict.auctionDetail.perBid}
-            </span>
-          </p>
+          {freeEligible ? (
+            <p className="flex flex-wrap items-baseline gap-2 text-2xl font-extrabold text-slate-900">
+              <span className="text-slate-400 line-through decoration-2">
+                {formatCurrency(auction.entranceFee)}
+              </span>
+              <span className="text-emerald-700">
+                {dict.auctionDetail.freeLabel}
+              </span>
+              <span className="text-sm font-semibold text-slate-500">
+                {dict.auctionDetail.perBid}
+              </span>
+            </p>
+          ) : (
+            <p className="text-2xl font-extrabold text-slate-900">
+              {formatCurrency(auction.entranceFee)}
+              <span className="ml-1 text-sm font-semibold text-slate-500">
+                {dict.auctionDetail.perBid}
+              </span>
+            </p>
+          )}
           <p className="mt-1 text-xs text-slate-500">
             {dict.auctionDetail.bidRange}: {formatCurrency(auction.minBidValue ?? 0.01)}
             {auction.maxBidValue != null
@@ -556,15 +584,52 @@ export function BidPanel({
                     </div>
                   </>
                 )}
+                {freeEligible ? (
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 px-3 py-2 text-xs font-medium text-emerald-900">
+                    <p>
+                      {freeUnlimited
+                        ? dict.auctionDetail.freeEntranceBannerAll
+                        : t("auctionDetail.freeEntranceBanner", {
+                            limit: String(freeLimit),
+                          })}
+                    </p>
+                    {!freeUnlimited && freeRemaining > 0 && (
+                      <p className="mt-1 font-bold">
+                        {t("auctionDetail.freeEntranceSpotsLeft", {
+                          count: String(freeRemaining),
+                        })}
+                      </p>
+                    )}
+                  </div>
+                ) : Boolean(auction.freeEntranceEnabled) &&
+                  Boolean(user) &&
+                  !hasJoined ? (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs font-medium text-amber-950">
+                    {freeUnlimited || freeRemaining > 0
+                      ? dict.auctionDetail.freeEntranceUsed
+                      : dict.auctionDetail.freeEntranceGone}
+                  </div>
+                ) : null}
                 <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-2 text-xs text-slate-600 space-y-1">
                   <div className="flex items-center justify-between">
                     <span>
                       {dict.auctionDetail.entranceFee} ({effectiveBids.length} ×{" "}
                       {formatCurrency(entranceFeeNum)})
                     </span>
-                    <span className="font-semibold text-slate-800">
-                      {formatCurrency(packEntranceSum)}
-                    </span>
+                    {freeEligible ? (
+                      <span className="flex items-center gap-1.5 font-semibold">
+                        <span className="text-slate-400 line-through">
+                          {formatCurrency(packFeeFull)}
+                        </span>
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold uppercase text-emerald-800">
+                          {dict.auctionDetail.freeLabel}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="font-semibold text-slate-800">
+                        {formatCurrency(packEntranceSum)}
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center justify-between">
                     <span>{dict.auctionDetail.yourBidValue}</span>
@@ -602,7 +667,10 @@ export function BidPanel({
                 ? dict.auctionDetail.redirectingToChapa
                 : t("auctionDetail.placePackAndPayChapa", {
                     count: String(Math.max(effectiveBids.length, 1)),
-                    amount: formatCurrency(packTotal || entranceFeeNum),
+                    // Free entrance: the total is the bid amount only (never fall back to the fee).
+                    amount: formatCurrency(
+                      packTotal || (freeEligible ? 0 : entranceFeeNum)
+                    ),
                   })}
             </Button>
           </div>

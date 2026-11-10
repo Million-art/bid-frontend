@@ -241,7 +241,16 @@ export const en = {
     loginToJoin: "Log in to join",
     payAndJoin: "Pay entrance fee & join",
     setBidAndPayChapa: "Set bid & Pay via Chapa",
-    placePackAndPayChapa: "Place {count} bids  {amount}",
+    placePackAndPayChapa: "Place {count} bids · {amount}",
+    freeLabel: "Free",
+    freeEntranceBanner:
+      "Free entrance: the first {limit} joiners skip the entrance fee. You only pay your bid amount via Chapa. Free entrance works on one auction per customer.",
+    freeEntranceBannerAll:
+      "Free entrance on this auction: the entrance fee is waived. You only pay your bid amount via Chapa. Free entrance works on one auction per customer.",
+    freeEntranceSpotsLeft: "{count} free spots left on this auction",
+    freeEntranceUsed:
+      "You already used your free entrance on another auction — entry fee applies here.",
+    freeEntranceGone: "Free entrance spots on this auction are full.",
     redirectingToChapa: "Redirecting to Chapa…",
     verifyingPayment: "Verifying Chapa payment…",
     paymentVerifiedSuccess: "Payment verified & bid placed!",
