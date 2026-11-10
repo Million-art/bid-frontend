@@ -250,7 +250,7 @@ export const am: Translations = {
     freeEntranceBannerAll:
       "በዚህ ጨረታ ነፃ መግቢያ፦ የመጀመሪያ ጨረታዎ የመግቢያ ክፍያ ነፃ ነው። ከሁለተኛው ጨረታ ጀምሮ የመግቢያ ክፍያ ይከፈላል፤ የጨረታ ዋጋዎን ሁልጊዜ በቻፓ ይከፍላሉ። ነፃ መግቢያ ለአንድ ሰው በአንድ ጨረታ ብቻ ይሰራል።",
     freeFirstBidBadge: "1ኛ ጨረታ ነፃ",
-    freeFirstBidLine: "የመጀመሪያ ጨረታ · የመግቢያ ክፍያ",
+    freeFirstBidLine: "የመጀመሪያ ጨረታዎ የመግቢያ ክፍያ ነፃ ነው፤ የቀሩት ይከፍላሉ።",
     freeEntranceSpotsLeft: "በዚህ ጨረታ {count} ነፃ ቦታዎች ቀርተዋል",
     freeEntranceUsed:
       "ነፃ መግቢያዎን በሌላ ጨረታ ተጠቅመዋል — እዚህ የመግቢያ ክፍያ ይከፈላል።",
@@ -258,6 +258,7 @@ export const am: Translations = {
     redirectingToChapa: "ወደ ቻፓ በመሄድ ላይ…",
     verifyingPayment: "የቻፓ ክፍያ በማረጋገጥ ላይ…",
     paymentVerifiedSuccess: "ክፍያዎ ተረጋግጧል እና ጨረታዎ ተመዝግቧል!",
+    paymentStillProcessing: "ክፍያዎ አሁንም በመረጋገጥ ላይ ነው። ሲጠናቀቅ መልዕክት ይደርስዎታል — እንደገና መክፈል አያስፈልግም።",
     paymentVerifyError: "የቻፓ ክፍያውን ማረጋገጥ አልተቻለም",
     oneUpdateNotice:
       "ከተመዘገበ በኋላ እያንዳንዱን ጨረታ አንድ (1) ጊዜ ብቻ ማስተካከል ይችላሉ።",

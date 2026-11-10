@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import {
   getAuction,
   getMyBids,
@@ -10,10 +10,17 @@ import { queryKeys } from "@/lib/query-keys";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function useAuction(id: string) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: queryKeys.auctions.detail(id),
+    // Keyed by viewer: the first request often goes out before the session is restored
+    // (Telegram Mini App auto-login, expired token, logging in from the auction page). That
+    // anonymous answer says "not eligible for free entrance" and must not be reused once the
+    // customer is signed in - a new key forces a refetch with their identity.
+    queryKey: queryKeys.auctions.detailForViewer(id, user?.id),
     queryFn: () => getAuction(id),
     enabled: Boolean(id),
+    // Keep showing the auction while the signed-in version loads (no full-page spinner).
+    placeholderData: keepPreviousData,
   });
 }
 

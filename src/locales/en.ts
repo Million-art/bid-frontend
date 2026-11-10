@@ -248,7 +248,7 @@ export const en = {
     freeEntranceBannerAll:
       "Free entrance on this auction: the entrance fee of your first bid is free. From your second bid the entrance fee applies, and you always pay your bid amounts via Chapa. Free entrance works on one auction per customer.",
     freeFirstBidBadge: "1st bid free",
-    freeFirstBidLine: "First bid · entrance fee",
+    freeFirstBidLine: "Your first bid's entrance fee is free; the others pay it.",
     freeEntranceSpotsLeft: "{count} free spots left on this auction",
     freeEntranceUsed:
       "You already used your free entrance on another auction — entry fee applies here.",
@@ -256,6 +256,7 @@ export const en = {
     redirectingToChapa: "Redirecting to Chapa…",
     verifyingPayment: "Verifying Chapa payment…",
     paymentVerifiedSuccess: "Payment verified & bid placed!",
+    paymentStillProcessing: "Your payment is still being confirmed. You will get a message when it is done — no need to pay again.",
     paymentVerifyError: "Could not verify Chapa payment",
     oneUpdateNotice:
       "You can update each placed bid only 1 time before the auction closes.",

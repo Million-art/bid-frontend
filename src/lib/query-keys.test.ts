@@ -20,6 +20,14 @@ describe("queryKeys", () => {
     ]);
   });
 
+  it("auction detail is cached per viewer and stays under the detail prefix", () => {
+    const anon = queryKeys.auctions.detailForViewer("abc-123", null);
+    const signedIn = queryKeys.auctions.detailForViewer("abc-123", "user-1");
+    expect(anon).toEqual(["client", "auctions", "detail", "abc-123", "viewer", "anon"]);
+    expect(signedIn).not.toEqual(anon);
+    expect(signedIn.slice(0, 4)).toEqual(queryKeys.auctions.detail("abc-123"));
+  });
+
   it("me.auctions key includes filters", () => {
     expect(queryKeys.me.auctions({ page: 1 })).toEqual([
       "client",

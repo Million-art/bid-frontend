@@ -22,6 +22,13 @@ export const queryKeys = {
     }) => [...queryKeys.auctions.lists(), "infinite", filters] as const,
     details: () => [...queryKeys.auctions.all(), "detail"] as const,
     detail: (id: string) => [...queryKeys.auctions.details(), id] as const,
+    /**
+     * The detail payload is viewer-specific (free-entrance eligibility, joined flag), so the
+     * cache entry is per viewer. Still prefixed by detail(id), so invalidating detail(id)
+     * refreshes it.
+     */
+    detailForViewer: (id: string, viewerId?: string | null) =>
+      [...queryKeys.auctions.detail(id), "viewer", viewerId || "anon"] as const,
     myBids: (id: string) =>
       [...queryKeys.auctions.detail(id), "my-bids"] as const,
     myParticipation: (id: string) =>

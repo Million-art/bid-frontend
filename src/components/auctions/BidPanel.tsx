@@ -89,8 +89,6 @@ export function BidPanel({
     ? Math.max(effectiveBids.length - 1, 0)
     : effectiveBids.length;
   const packEntranceSum = roundMoney(feeBidCount * entranceFeeNum);
-  const packFeeWaived =
-    freeEligible && effectiveBids.length > 0 ? roundMoney(entranceFeeNum) : 0;
   const packTotal = roundMoney(packEntranceSum + packBidsSum);
   const existingValues = new Set(
     myBids.map((b) => roundMoney(Number(b.bidValue)).toFixed(2))
@@ -134,18 +132,45 @@ export function BidPanel({
       txRef: string;
       bidValues?: number[];
     }) => {
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 20000);
-      return verifyChapaPayment(txRef, bidValues, controller.signal).finally(
-        () => window.clearTimeout(timeout)
-      );
+      // Chapa reports "pending" for a few seconds after the return redirect. Poll briefly
+      // instead of treating that as the final answer (the server never fails a pending payment).
+      return (async () => {
+        const MAX_ATTEMPTS = 6;
+        let last: Awaited<ReturnType<typeof verifyChapaPayment>> | undefined;
+        for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+          const controller = new AbortController();
+          const timeout = window.setTimeout(() => controller.abort(), 20000);
+          try {
+            last = await verifyChapaPayment(txRef, bidValues, controller.signal);
+          } finally {
+            window.clearTimeout(timeout);
+          }
+          const inFlight = ["pending", "created", "processing", "initiated"].includes(
+            String(last.status ?? "").toLowerCase()
+          );
+          if (last.verified || last.participating || !inFlight) return last;
+          if (attempt < MAX_ATTEMPTS - 1) {
+            await new Promise((r) => window.setTimeout(r, 3000));
+          }
+        }
+        return last!;
+      })();
     },
     onSuccess: (res) => {
       track(AnalyticsEvents.PaymentVerified, {
         auction_id: auction.id,
         verified: Boolean(res.verified),
       });
-      finishVerifyUI(Boolean(res.verified || res.participating));
+      const done = Boolean(res.verified || res.participating);
+      finishVerifyUI(done);
+      if (
+        !done &&
+        ["pending", "created", "processing", "initiated"].includes(
+          String(res.status ?? "").toLowerCase()
+        )
+      ) {
+        toast.info(dict.auctionDetail.paymentStillProcessing);
+      }
     },
     onError: (err) => {
       track(AnalyticsEvents.PaymentVerifyFailed, { auction_id: auction.id });
@@ -610,23 +635,34 @@ export function BidPanel({
                 <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-2 text-xs text-slate-600 space-y-1">
                   <div className="flex items-center justify-between">
                     <span>
-                      {dict.auctionDetail.entranceFee} ({feeBidCount} ×{" "}
+                      {dict.auctionDetail.entranceFee} ({effectiveBids.length} ×{" "}
                       {formatCurrency(entranceFeeNum)})
                     </span>
-                    <span className="font-semibold text-slate-800">
-                      {formatCurrency(packEntranceSum)}
-                    </span>
-                  </div>
-                  {packFeeWaived > 0 && (
-                    <div className="flex items-center justify-between text-emerald-700">
-                      <span>{dict.auctionDetail.freeFirstBidLine}</span>
-                      <span className="font-semibold">
-                        <span className="mr-1.5 text-slate-400 line-through">
-                          {formatCurrency(packFeeWaived)}
+                    {freeEligible ? (
+                      <span className="flex items-center gap-1.5 font-semibold">
+                        <span className="text-slate-400 line-through">
+                          {formatCurrency(roundMoney(effectiveBids.length * entranceFeeNum))}
                         </span>
-                        {dict.auctionDetail.freeLabel}
+                        {packEntranceSum > 0 ? (
+                          <span className="text-slate-800">
+                            {formatCurrency(packEntranceSum)}
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold uppercase text-emerald-800">
+                            {dict.auctionDetail.freeLabel}
+                          </span>
+                        )}
                       </span>
-                    </div>
+                    ) : (
+                      <span className="font-semibold text-slate-800">
+                        {formatCurrency(packEntranceSum)}
+                      </span>
+                    )}
+                  </div>
+                  {freeEligible && packEntranceSum > 0 && (
+                    <p className="text-[11px] font-medium text-emerald-700">
+                      {dict.auctionDetail.freeFirstBidLine}
+                    </p>
                   )}
                   <div className="flex items-center justify-between">
                     <span>{dict.auctionDetail.yourBidValue}</span>
